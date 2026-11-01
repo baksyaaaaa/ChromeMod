@@ -7,8 +7,9 @@ import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * Drag a box to move it, drag any corner to resize it (the opposite corner stays put).
- * The left mouse button state is read directly, so no input overrides are needed.
+ * Click a box to select it, drag it to move it, drag any corner to resize it (the opposite corner stays put).
+ * A box is only selected while the cursor is on it. Double-click a selected box where others overlap it
+ * to cycle to the next one. The left mouse button state is read directly, so no input overrides are needed.
  */
 public class EditHudScreen extends Screen {
     private final Hud hud;
@@ -20,6 +21,7 @@ public class EditHudScreen extends Screen {
     private int startDist;              // how far the grab point was from the fixed (opposite) corner
     private int corner = 0;             // 0 top-left, 1 top-right, 2 bottom-left, 3 bottom-right
     private int anchorX, anchorY;       // the opposite corner stays where it is while you resize
+    private long lastClickAt = 0;       // for double-click: cycles through boxes that overlap
     private boolean wasDown = true;     // true at first so a held button doesn't count as a click
 
     public EditHudScreen(Hud hud) {
@@ -85,19 +87,23 @@ public class EditHudScreen extends Screen {
             onClose();
             return;
         } else if (click) {
-            // the selected box gets first pick when boxes overlap, then the rest from the top one down
-            // pressing again on the selected box, where other boxes overlap it, cycles the selection to the next one
-            // under the cursor (and around again); otherwise the top-most box under the cursor is picked.
+            // a single click keeps the selected box (so you can drag it even where others overlap it);
+            // a double click on it cycles the selection to the next box under the cursor, and around again.
             int[] order = new int[Hud.IDS.length];
             int n = 0;
+            long nowMs = System.currentTimeMillis();
+            boolean doubleClick = nowMs - lastClickAt < 400;
+            lastClickAt = nowMs;
             boolean keep = selected >= 0 && hit(hud.bounds(Hud.IDS[selected], mc), mouseX, mouseY);
             if (keep) {
                 int next = -1;   // next box below the selected one at this spot, wrapping around
-                for (int d = 1; d < Hud.IDS.length && next < 0; d++) {
-                    int i = ((selected - d) % Hud.IDS.length + Hud.IDS.length) % Hud.IDS.length;
-                    if (hit(hud.bounds(Hud.IDS[i], mc), mouseX, mouseY)) next = i;
+                if (doubleClick) {
+                    for (int d = 1; d < Hud.IDS.length && next < 0; d++) {
+                        int i = ((selected - d) % Hud.IDS.length + Hud.IDS.length) % Hud.IDS.length;
+                        if (hit(hud.bounds(Hud.IDS[i], mc), mouseX, mouseY)) next = i;
+                    }
                 }
-                order[n++] = next >= 0 ? next : selected;   // nothing else under the cursor: keep this one
+                order[n++] = next >= 0 ? next : selected;   // otherwise keep this one
             }
             int first = n > 0 ? order[0] : -1;
             for (int i = Hud.IDS.length - 1; i >= 0; i--) if (i != first) order[n++] = i;
@@ -150,7 +156,7 @@ public class EditHudScreen extends Screen {
             o[1] = y0 - base[1];
         }
 
-        // boxes: quiet outlines, only the one you're on gets colour, a name tag and a resize dot
+        // boxes: quiet outlines, only the one you're on gets colour, a name tag and resize dots
         int tagIndex = -1;   // the box that gets the highlight, name tag and dots
         if (dragging >= 0) tagIndex = dragging;
         else if (resizing >= 0) tagIndex = resizing;
@@ -186,26 +192,5 @@ public class EditHudScreen extends Screen {
         // one small glass bar in the middle with the hint and the two buttons
         int panelY = by - 30;
         Ui.glass(g, width / 2 - 112, panelY, 224, 62);
-        String hint = "Drag a box to move it, drag a corner to resize";
-        Ui.text(g, font, hint, width / 2 - font.width(hint) / 2, panelY + 10, Ui.MUTED);
-        Ui.button(g, font, "Reset", width / 2 - 105, by, 100, 22, hReset, false);
-        Ui.button(g, font, "Done", width / 2 + 5, by, 100, 22, hDone, false);
-    }
-
-    /** No blur behind the editor, so you can see the real HUD while you place things (just a light dim). */
-    @Override
-    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float delta) {
-        g.fill(0, 0, width, height, 0x30000000);
-    }
-
-    @Override
-    public boolean isPauseScreen() {
-        return false;
-    }
-
-    @Override
-    public void onClose() {
-        Config.save();
-        super.onClose();
-    }
-}
+        String hint = "Drag to move, corners to resize, double-click to switch";
+        Ui.text(g, font, hint, width / 2 - font.width(hint) / 2,
