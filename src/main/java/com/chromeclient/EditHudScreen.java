@@ -22,6 +22,7 @@ public class EditHudScreen extends Screen {
     private int corner = 0;             // 0 top-left, 1 top-right, 2 bottom-left, 3 bottom-right
     private int anchorX, anchorY;       // the opposite corner stays where it is while you resize
     private long lastClickAt = 0;       // for double-click: cycles through boxes that overlap
+    private int clickRun = 0;           // clicks in a quick row (only the 2nd one counts as a double-click)
     private boolean wasDown = true;     // true at first so a held button doesn't count as a click
 
     public EditHudScreen(Hud hud) {
@@ -92,8 +93,9 @@ public class EditHudScreen extends Screen {
             int[] order = new int[Hud.IDS.length];
             int n = 0;
             long nowMs = System.currentTimeMillis();
-            boolean doubleClick = nowMs - lastClickAt < 400;
+            clickRun = nowMs - lastClickAt < 250 ? clickRun + 1 : 1;   // clicks have to be fast to count together
             lastClickAt = nowMs;
+            boolean doubleClick = clickRun == 2;   // a third quick click is ignored
             boolean keep = selected >= 0 && hit(hud.bounds(Hud.IDS[selected], mc), mouseX, mouseY);
             if (keep) {
                 int next = -1;   // next box below the selected one at this spot, wrapping around
