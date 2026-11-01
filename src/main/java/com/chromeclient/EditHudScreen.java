@@ -193,4 +193,26 @@ public class EditHudScreen extends Screen {
         int panelY = by - 30;
         Ui.glass(g, width / 2 - 112, panelY, 224, 62);
         String hint = "Drag to move, corners to resize, double-click to switch";
-        Ui.text(g, font, hint, width / 2 - font.width(hint) / 2,
+              Ui.text(g, font, hint, width / 2 - font.width(hint) / 2, panelY + 10, Ui.MUTED);
+        Ui.button(g, font, "Reset", width / 2 - 105, by, 100, 22, hReset, false);
+        Ui.button(g, font, "Done", width / 2 + 5, by, 100, 22, hDone, false);
+    }
+
+                
+    /** No blur behind the editor, so you can see the real HUD while you place things (just a light dim). */
+    @Override
+    public void renderBackground(GuiGraphics g, int mouseX, int mouseY, float delta) {
+        g.fill(0, 0, width, height, 0x30000000);
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    @Override
+    public void onClose() {
+        Config.save();
+        super.onClose();
+    }
+}
