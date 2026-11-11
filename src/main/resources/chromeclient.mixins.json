@@ -1,0 +1,17 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.chromeclient.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "PlayerModelMixin",
+    "EntityTurnMixin",
+    "CameraFreelookMixin",
+    "LivingRendererMixin",
+    "HandTransformMixin",
+    "LowFireMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

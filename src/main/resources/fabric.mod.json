@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "chromeclient",
+  "version": "${version}",
+  "name": "Chrome Client",
+  "description": "Press Right Shift in game: HUD mods (FPS, CPS, keystrokes, armor, coordinates, ping, clock), zoom, auto sprint and a buddy.",
+  "authors": [
+    "Baksya"
+  ],
+  "license": "All-Rights-Reserved",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.chromeclient.ChromeClientMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "mixins": [
+    "chromeclient.mixins.json"
+  ]
+}
