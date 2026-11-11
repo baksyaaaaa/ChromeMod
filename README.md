@@ -334,3 +334,7 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 
 ## 2.42.45
 - Custom capes redone in the plain vanilla style: flat colours, simple border, one small emblem, no shine.
+- Twisted cape restored to the original (exact) design.
+
+## 2.42.46
+- Twisted cape back to the original exact design.
