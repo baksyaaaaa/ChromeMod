@@ -215,7 +215,7 @@ public final class CosmeticLayer extends RenderLayer {
                 if (fade > 0f) {
                     pose.pushPose();
                     // under the thighs, lifted with the body (model space: down is +y, forward is -z)
-                    pose.translate(0f, (14.6f - BuddyEmotes.starLift(tt)) / 16f, -0.25f);
+                    pose.translate(0f, (14.6f - BuddyEmotes.lift(BuddyEmotes.STAR, tt)) / 16f, -0.25f);
                     pose.mulPose(com.mojang.math.Axis.XP.rotation(0.07f * Mth.sin(tt * 0.15f + 1f)));   // rocks a little as it flies
                     pose.scale(fade, fade, fade);
                     drawFlag(pose, queue);
