@@ -338,3 +338,6 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 
 ## 2.42.46
 - Twisted cape back to the original exact design.
+
+## 2.42.47
+- Hand position: while you eat or drink only the hand using the item is left alone, the other hand keeps your size/position.
