@@ -51,12 +51,26 @@ public final class HatMesh {
             int nq = d.readInt();
             short[] q = new short[nq * 4];
             for (int i = 0; i < q.length; i++) q[i] = d.readShort();
+            if (name.equals("hat_2")) matte(dt);   // cat ears: soft, even lighting instead of shiny highlights
             m = new HatMesh(p, dt, q);
         } catch (Throwable t) {
             m = NONE;
         }
         BY_NAME.put(name, m);
         return m;
+    }
+
+    /** takes the shine off a mesh: normals are pulled towards one fixed direction (so every face is lit about the same
+     *  and no face catches a bright highlight) and the colours get a little darker */
+    private static void matte(byte[] dt) {
+        for (int i = 0; i + 5 < dt.length; i += 6) {
+            float nx = dt[i] / 127f * 0.25f, ny = dt[i + 1] / 127f * 0.25f + 0.2f, nz = dt[i + 2] / 127f * 0.25f + 0.9f;
+            float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+            dt[i] = (byte) Math.round(nx / len * 127f);
+            dt[i + 1] = (byte) Math.round(ny / len * 127f);
+            dt[i + 2] = (byte) Math.round(nz / len * 127f);
+            for (int k = 3; k < 6; k++) dt[i + k] = (byte) Math.round((dt[i + k] & 255) * 0.84f);
+        }
     }
 
     /** draws the model in the current pose (the pose is already at the head) */

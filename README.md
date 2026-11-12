@@ -344,3 +344,6 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 
 ## 2.42.48
 - Freelook rewritten: the camera offset is added to your rotation only while the camera is set up (fixes up/down being stuck).
+
+## 2.42.49
+- Cat ears: matte (no shine): even lighting and slightly darker colours.
