@@ -217,11 +217,8 @@ public final class CosmeticLayer extends RenderLayer {
                     // under the thighs, lifted with the body (model space: down is +y, forward is -z)
                     pose.translate(0f, (14.6f - BuddyEmotes.starLift(tt)) / 16f, -0.25f);
                     pose.mulPose(com.mojang.math.Axis.XP.rotation(0.07f * Mth.sin(tt * 0.15f + 1f)));   // rocks a little as it flies
-                    pose.mulPose(com.mojang.math.Axis.YP.rotation(tt * 0.04f));
                     pose.scale(fade, fade, fade);
-                    drawStar(pose, queue, 0.9f, 0, 38, 96, 255);
-                    pose.translate(0f, -0.012f, 0f);
-                    drawStar(pose, queue, 0.65f, 0, 120, 170, 255);
+                    drawFlag(pose, queue);
                     pose.popPose();
                 }
             }
@@ -290,20 +287,36 @@ public final class CosmeticLayer extends RenderLayer {
         }
     }
 
-    /** a flat six-pointed star (two triangles), full-bright, flat on the ground under the pose */
-    private static void drawStar(PoseStack pose, SubmitNodeCollector queue, float r, int unused, int cr, int cg, int cb) {
+    private static void quad(com.mojang.blaze3d.vertex.VertexConsumer vc, PoseStack.Pose p, float y, int[] col, float... xz) {
+        for (int k = 0; k < 4; k++) {
+            vc.addVertex(p, xz[k * 2], y, xz[k * 2 + 1])
+                    .setColor(col[0], col[1], col[2], 255)
+                    .setUv(0.5f, 0.5f)
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(0xF000F0)
+                    .setNormal(p, 0f, -1f, 0f);
+        }
+    }
+
+    /** a flat flag to sit on: white, two blue stripes and a blue six-pointed star outline in the middle, full-bright */
+    private static void drawFlag(PoseStack pose, SubmitNodeCollector queue) {
         queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/entity/mesh_white.png")), (p, vc) -> {
+            final float hx = 0.78f, hz = 0.56f;
+            int[] white = {250, 250, 252}, blue = {0, 56, 184};
+            quad(vc, p, 0f, white, -hx, -hz, hx, -hz, hx, hz, -hx, hz);
+            // the two stripes
+            quad(vc, p, -0.012f, blue, -hx, -0.46f, hx, -0.46f, hx, -0.36f, -hx, -0.36f);
+            quad(vc, p, -0.012f, blue, -hx, 0.36f, hx, 0.36f, hx, 0.46f, -hx, 0.46f);
+            // the star: two triangles drawn as outlines
+            float r = 0.25f, w = 0.032f;
             for (int tri = 0; tri < 2; tri++) {
-                float off = tri == 0 ? -(float) Math.PI / 2f : (float) Math.PI / 2f;   // the second triangle points the other way
-                for (int k = 0; k < 4; k++) {
-                    int idx = Math.min(k, 2);
-                    float a = off + idx * (float) (2 * Math.PI / 3);
-                    vc.addVertex(p, (float) Math.cos(a) * r, 0f, (float) Math.sin(a) * r)
-                            .setColor(cr, cg, cb, 255)
-                            .setUv(0.5f, 0.5f)
-                            .setOverlay(OverlayTexture.NO_OVERLAY)
-                            .setLight(0xF000F0)
-                            .setNormal(p, 0f, -1f, 0f);
+                float off = tri == 0 ? -(float) Math.PI / 2f : (float) Math.PI / 2f;
+                for (int e = 0; e < 3; e++) {
+                    float a0 = off + e * (float) (2 * Math.PI / 3), a1 = off + (e + 1) * (float) (2 * Math.PI / 3);
+                    float x0 = (float) Math.cos(a0) * r, z0 = (float) Math.sin(a0) * r, x1 = (float) Math.cos(a1) * r, z1 = (float) Math.sin(a1) * r;
+                    float dx = x1 - x0, dz = z1 - z0, len = (float) Math.sqrt(dx * dx + dz * dz);
+                    float nx = -dz / len * w, nz = dx / len * w;
+                    quad(vc, p, -0.024f, blue, x0 - nx, z0 - nz, x1 - nx, z1 - nz, x1 + nx, z1 + nz, x0 + nx, z0 + nz);
                 }
             }
         });

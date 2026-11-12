@@ -362,3 +362,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.57**: the Dance emote is now the Fortnite dance from the video (back kicks, arms sweeping across the chest, then elbows out).
 - **2.42.58**: Dance emote now copies the Fortnite dance from the video (replaces Obsession); fixed the build.
 - **2.42.59**: Star emote: you sit on the star (legs forward) and float up with it, rocking slightly.
+- **2.42.60**: Star emote platform is now a flag (white, two blue stripes, blue six-pointed star).
