@@ -178,6 +178,7 @@ public class ClickGui extends Screen {
         misc.add(new Mod("Menu theme", "Colours of this menu and the panels.", null, null)
                 .add(choice("Theme", Ui.THEMES, () -> Extras.uiTheme, i -> { Extras.uiTheme = i; Ui.setTheme(i); })));
         misc.add(new Mod("Auto sprint", "Sprints for you while you walk forward.", () -> c.autoSprint, v -> c.autoSprint = v));
+        misc.add(new Mod("Emotes", "Press B for an emote wheel. Look at yourself in third person (F5).", () -> Extras.emotes, v -> Extras.emotes = v));
         misc.add(new Mod("Buddy", "A little copy of a skin that follows you.", Buddy::enabled, Buddy::setEnabled)
                 .add(slider("Size", Buddy::size, v -> Buddy.setSize(v.floatValue()), 0.2, 1.5, "%.2f"))
                 .add(text(() -> "Name: " + Buddy.name() + "   Skin: " + Buddy.skinText()))

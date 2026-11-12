@@ -20,7 +20,7 @@ public class ChromeClientMod implements ClientModInitializer {
     public static final String MOD_ID = "chromeclient";
     private static final int ZOOM_FOV = 30;   // the lowest the game allows
 
-    private KeyMapping menuKey, zoomKey, editKey, freelookKey, musicKey;
+    private KeyMapping menuKey, zoomKey, editKey, freelookKey, musicKey, emoteKey;
     private boolean zooming = false;
     private int savedFov = 70;
 
@@ -52,6 +52,9 @@ public class ChromeClientMod implements ClientModInitializer {
         musicKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key." + MOD_ID + ".music", InputConstants.Type.KEYSYM, InputConstants.KEY_J, category));
 
+        emoteKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key." + MOD_ID + ".emotes", InputConstants.Type.KEYSYM, InputConstants.KEY_B, category));
+
         editKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key." + MOD_ID + ".edit", InputConstants.Type.KEYSYM, InputConstants.KEY_LBRACKET, category));
 
@@ -73,6 +76,10 @@ public class ChromeClientMod implements ClientModInitializer {
             while (editKey.consumeClick()) {
                 if (client.player != null && client.screen == null) client.setScreen(new EditHudScreen(hud));
             }
+            while (emoteKey.consumeClick()) {
+                if (Extras.emotes && client.player != null && client.screen == null) client.setScreen(new EmoteWheelScreen());
+            }
+            PlayerEmotes.tick(client);
             Freelook.update(freelookKey.isDown() && client.player != null && client.screen == null);
             handleZoom(client);
             handleSprint(client);

@@ -3,6 +3,7 @@
   "key.chromeclient.edit": "Move HUD",
   "key.chromeclient.zoom": "Zoom (hold)",
   "key.chromeclient.freelook": "Freelook (hold)",
+  "key.chromeclient.emotes": "Emote wheel",
   "key.chromeclient.music": "Music drop-down",
   "key.category.chromeclient.main": "Chrome Client"
 }

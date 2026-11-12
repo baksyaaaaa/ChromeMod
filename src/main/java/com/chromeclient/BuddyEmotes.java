@@ -8,9 +8,9 @@ import net.minecraft.util.Mth;
  * Angles are radians as the model uses them: arm xRot -PI/2 = straight forward, -PI = straight up.
  */
 public final class BuddyEmotes {
-    public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3;
+    public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3, WAVE = 4, DANCE = 5, CHEER = 6, BOW = 7;   // 4..7 are for the player's emote wheel
     public static final int COUNT = 3;
-    private static final int[] LENGTH = {0, 44, 80, 90};
+    private static final int[] LENGTH = {0, 44, 80, 90, 64, 120, 64, 56};
 
     // indices of the array pose() fills in
     public static final int HX = 0, HY = 1, HZ = 2, RAX = 3, RAY = 4, RAZ = 5, LAX = 6, LAY = 7, LAZ = 8,
@@ -77,6 +77,38 @@ public final class BuddyEmotes {
                 p[LAX] = 0.45f;
                 p[RAZ] = 0.02f;
                 p[LAZ] = -0.02f;
+            }
+            case WAVE -> {   // right arm up, waving side to side
+                p[RAX] = -2.75f;
+                p[RAZ] = 0.15f + 0.5f * Mth.sin(t * 0.75f);
+                p[LAX] = 0.05f;
+                p[HY] = 0.2f * Mth.sin(t * 0.25f);
+                p[HZ] = 0.06f * Mth.sin(t * 0.75f);
+            }
+            case DANCE -> {  // arms alternate up, legs step, head bobs
+                float s = Mth.sin(t * 0.45f);
+                p[RAX] = -2.1f + 0.9f * s;
+                p[LAX] = -2.1f - 0.9f * s;
+                p[RAZ] = 0.45f;
+                p[LAZ] = -0.45f;
+                p[RLX] = 0.55f * s;
+                p[LLX] = -0.55f * s;
+                p[HZ] = 0.22f * s;
+                p[HX] = 0.12f * Mth.sin(t * 0.9f);
+            }
+            case CHEER -> {  // both fists pumping overhead
+                float u = Math.abs(Mth.sin(t * 0.35f));
+                p[RAX] = Mth.lerp(u, -2.4f, -3.0f);
+                p[LAX] = p[RAX];
+                p[RAZ] = 0.3f;
+                p[LAZ] = -0.3f;
+                p[HX] = -0.3f;
+            }
+            case BOW -> {    // a slow bow: head and arms dip and come back
+                float k = Mth.sin(PI * Math.min(1f, t / 46f));
+                p[HX] = 0.95f * k;
+                p[RAX] = 0.25f * k;
+                p[LAX] = 0.25f * k;
             }
             default -> { }
         }

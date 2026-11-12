@@ -23,6 +23,24 @@ public abstract class PlayerModelMixin {
         boolean buddy = state.id == Buddy.BUDDY_ID;
         boolean posed = false;
 
+        if (!buddy && com.chromeclient.PlayerEmotes.emote != BuddyEmotes.NONE) {
+            var me = net.minecraft.client.Minecraft.getInstance().player;
+            if (me != null && state.id == me.getId()) {
+                int emote = com.chromeclient.PlayerEmotes.emote;
+                float t = state.ageInTicks - com.chromeclient.PlayerEmotes.start;
+                float w = BuddyEmotes.weight(emote, t);
+                if (w > 0f) {
+                    float[] p = BuddyEmotes.pose(emote, t);
+                    blend(model.head, w, p[BuddyEmotes.HX], p[BuddyEmotes.HY], p[BuddyEmotes.HZ]);
+                    blend(model.rightArm, w, p[BuddyEmotes.RAX], p[BuddyEmotes.RAY], p[BuddyEmotes.RAZ]);
+                    blend(model.leftArm, w, p[BuddyEmotes.LAX], p[BuddyEmotes.LAY], p[BuddyEmotes.LAZ]);
+                    blend(model.rightLeg, w, p[BuddyEmotes.RLX], 0f, p[BuddyEmotes.RLZ]);
+                    blend(model.leftLeg, w, p[BuddyEmotes.LLX], 0f, p[BuddyEmotes.LLZ]);
+                    posed = true;
+                }
+            }
+        }
+
         if (buddy) {
             int emote = Buddy.emote;
             if (emote != BuddyEmotes.NONE) {
