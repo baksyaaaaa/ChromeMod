@@ -359,3 +359,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.55**: emote wheel (press **B**, switch it in menu > Misc > Emotes): Wave, Dance, Cheer, Bow, Jump, Jog. Move or jump to stop. Best seen in third person (F5).
 - **2.42.56**: emote wheel: removed Dance and Cheer, added the Obsession dance.
 - **2.42.56**: new "Star" emote: you stand on a glowing blue six-pointed star with your arms out (emote wheel, B).
+- **2.42.57**: the Dance emote is now the Fortnite dance from the video (back kicks, arms sweeping across the chest, then elbows out).
