@@ -93,7 +93,13 @@ public class ClickGui extends Screen {
     private final List<List<Mod>> tabs = new ArrayList<>();
     private final int[] sel = new int[TABS.length];
     private int tab = 0, cosCat = 0, cosScroll = 0;
-    private boolean wasDownNow = false;
+    private boolean wasDownNow = false, pendingClick = false;
+
+    /** the game's own click event: a backup in case polling the mouse button misses the press */
+    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() == 0) pendingClick = true;
+        return true;
+    }
     private final List<Opt> effOpts = new ArrayList<>();
     private final List<Opt> syncOpts = new ArrayList<>();
     private int scroll = 0;
@@ -213,7 +219,8 @@ public class ClickGui extends Screen {
         int vw = Math.round(width / s), vh = Math.round(height / s);
         int mx = Math.round(mouseX / s), my = Math.round(mouseY / s);
         boolean down = EditHudScreen.leftDown(mc);
-        boolean click = down && !wasDown;
+        boolean click = (down && !wasDown) || pendingClick;   // also counts a click the game itself reported
+        pendingClick = false;
         wasDownNow = down;
         wasDown = down;
         if (!down) dragging = null;
