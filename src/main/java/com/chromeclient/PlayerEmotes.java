@@ -12,6 +12,7 @@ public final class PlayerEmotes {
         if (mc.player == null) return;
         start = mc.player.tickCount;
         emote = id;
+        org.slf4j.LoggerFactory.getLogger("ChromeEmotes").info("emote {} started", id);
     }
 
     /** every tick: ends the emote when it is over, or as soon as you move, jump, hit or use something */
@@ -21,6 +22,9 @@ public final class PlayerEmotes {
         if (p == null || !Extras.emotes) { emote = BuddyEmotes.NONE; return; }
         int t = p.tickCount - start;
         boolean moved = p.getDeltaMovement().horizontalDistanceSqr() > 0.004 || !p.onGround() || p.swinging || p.isUsingItem();
-        if (t >= BuddyEmotes.length(emote) || (t > 4 && moved)) emote = BuddyEmotes.NONE;
+        if (t >= BuddyEmotes.length(emote) || (t > 4 && moved)) {
+            org.slf4j.LoggerFactory.getLogger("ChromeEmotes").info("emote {} ended after {} ticks (moved={})", emote, t, moved);
+            emote = BuddyEmotes.NONE;
+        }
     }
 }

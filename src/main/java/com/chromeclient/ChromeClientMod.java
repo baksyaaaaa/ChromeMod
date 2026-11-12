@@ -77,6 +77,7 @@ public class ChromeClientMod implements ClientModInitializer {
                 if (client.player != null && client.screen == null) client.setScreen(new EditHudScreen(hud));
             }
             while (emoteKey.consumeClick()) {
+                org.slf4j.LoggerFactory.getLogger("ChromeEmotes").info("B pressed: emotes={} screen={}", Extras.emotes, client.screen);
                 if (Extras.emotes && client.player != null && client.screen == null) client.setScreen(new EmoteWheelScreen());
             }
             PlayerEmotes.tick(client);

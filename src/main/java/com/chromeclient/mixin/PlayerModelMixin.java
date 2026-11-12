@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(PlayerModel.class)
 public abstract class PlayerModelMixin {
+    private static boolean loggedPose = false;
     @Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;)V", at = @At("TAIL"))
     private void chromeclient$buddy(AvatarRenderState state, CallbackInfo ci) {
         PlayerModel model = (PlayerModel) (Object) this;
@@ -30,6 +31,7 @@ public abstract class PlayerModelMixin {
                 float t = state.ageInTicks - com.chromeclient.PlayerEmotes.start;
                 float w = BuddyEmotes.weight(emote, t);
                 if (w > 0f) {
+                    if (!loggedPose) { loggedPose = true; org.slf4j.LoggerFactory.getLogger("ChromeEmotes").info("posing the player: emote {} weight {}", emote, w); }
                     float[] p = BuddyEmotes.pose(emote, t);
                     blend(model.head, w, p[BuddyEmotes.HX], p[BuddyEmotes.HY], p[BuddyEmotes.HZ]);
                     blend(model.rightArm, w, p[BuddyEmotes.RAX], p[BuddyEmotes.RAY], p[BuddyEmotes.RAZ]);

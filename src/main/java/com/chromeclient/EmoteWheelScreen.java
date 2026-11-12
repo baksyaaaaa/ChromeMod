@@ -56,6 +56,7 @@ public final class EmoteWheelScreen extends Screen {
             Ui.textCenter(g, font, NAMES[i], ix - HALF, iy - 4, 2 * HALF, Ui.lerp(Ui.TEXT, 0xFF1A1430, hov[i]));
             if (h) chosen = i;
         }
+        if (click) org.slf4j.LoggerFactory.getLogger("ChromeEmotes").info("wheel click, chosen={} mouse={},{}", chosen, mouseX, mouseY);
         if (click && chosen >= 0) {
             PlayerEmotes.play(IDS[chosen]);
             onClose();

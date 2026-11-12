@@ -364,3 +364,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.59**: Star emote: you sit on the star (legs forward) and float up with it, rocking slightly.
 - **2.42.60**: Star emote platform is now a flag (white, two blue stripes, blue six-pointed star).
 - **2.42.61**: emote wheel is now Griddy, Levitate (The Honored One) and Star; the other emotes were removed.
+- **2.42.62**: calmer Griddy; emote wheel writes lines to latest.log (search ChromeEmotes) to find why it fails.

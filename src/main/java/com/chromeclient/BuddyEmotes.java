@@ -90,18 +90,18 @@ public final class BuddyEmotes {
                 p[RAZ] = 0.02f;
                 p[LAZ] = -0.02f;
             }
-            case GRIDDY -> {   // the Griddy: arms wide and flapping, feet shuffling, head nodding to the beat
-                float s = Mth.sin(t * 0.7f);
-                p[RAX] = -0.15f + 0.12f * s;
-                p[LAX] = -0.15f - 0.12f * s;
-                p[RAZ] = 1.25f + 0.28f * s;
-                p[LAZ] = -1.25f + 0.28f * s;
-                p[RLX] = 0.35f * s;
-                p[LLX] = -0.35f * s;
-                p[RLZ] = 0.2f + 0.1f * Math.max(0f, s);
-                p[LLZ] = -0.2f - 0.1f * Math.max(0f, -s);
-                p[HX] = 0.12f * Mth.sin(t * 1.4f);
-                p[HZ] = 0.12f * s;
+            case GRIDDY -> {   // the Griddy: arms held wide like wings, a wide stance, feet stepping in and out slowly
+                float s = Mth.sin(t * 0.3f);          // about one step a second
+                p[RAX] = -0.1f;
+                p[LAX] = -0.1f;
+                p[RAZ] = 1.5f + 0.08f * s;
+                p[LAZ] = -1.5f + 0.08f * s;
+                p[RLX] = -0.35f * Math.max(0f, s);    // knee comes up on one side...
+                p[LLX] = -0.35f * Math.max(0f, -s);   // ...then the other
+                p[RLZ] = 0.22f + 0.12f * Math.max(0f, s);
+                p[LLZ] = -0.22f - 0.12f * Math.max(0f, -s);
+                p[HX] = 0.08f;
+                p[HZ] = 0.07f * s;
             }
             case LEVITATE -> {   // The Honored One: floating cross-legged, one hand up making the sign, calm head
                 p[RLX] = -1.3f;
