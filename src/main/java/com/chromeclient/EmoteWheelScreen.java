@@ -7,9 +7,9 @@ import net.minecraft.network.chat.Component;
 
 /** The emote wheel (B): move the mouse onto one and click it. Esc closes it. */
 public final class EmoteWheelScreen extends Screen {
-    private static final String[] NAMES = {"Wave", "Dance", "Cheer", "Bow", "Jump", "Jog"};
-    private static final int[] IDS = {BuddyEmotes.WAVE, BuddyEmotes.DANCE, BuddyEmotes.CHEER, BuddyEmotes.BOW, BuddyEmotes.JUMP, BuddyEmotes.JOG};
-    private static final int R = 62, HALF = 26;
+    private static final String[] NAMES = {"Obsession", "Wave", "Bow", "Jump", "Jog"};
+    private static final int[] IDS = {BuddyEmotes.OBSESSION, BuddyEmotes.WAVE, BuddyEmotes.BOW, BuddyEmotes.JUMP, BuddyEmotes.JOG};
+    private static final int R = 72, HALF = 30;
 
     private boolean wasDown = true, pendingClick = false;
     private final float[] hov = new float[NAMES.length];

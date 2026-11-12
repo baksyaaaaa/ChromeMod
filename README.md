@@ -357,3 +357,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.53**: menu clicks (tabs, buttons) also use the game's own click event, so they cannot be missed.
 - **2.42.54**: cat ears no longer change brightness when you turn your head (that was the shine).
 - **2.42.55**: emote wheel (press **B**, switch it in menu > Misc > Emotes): Wave, Dance, Cheer, Bow, Jump, Jog. Move or jump to stop. Best seen in third person (F5).
+- **2.42.56**: emote wheel: removed Dance and Cheer, added the Obsession dance.

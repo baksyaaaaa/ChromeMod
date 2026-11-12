@@ -8,7 +8,7 @@ import net.minecraft.util.Mth;
  * Angles are radians as the model uses them: arm xRot -PI/2 = straight forward, -PI = straight up.
  */
 public final class BuddyEmotes {
-    public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3, WAVE = 4, DANCE = 5, CHEER = 6, BOW = 7;   // 4..7 are for the player's emote wheel
+    public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3, WAVE = 4, OBSESSION = 5, BOW = 7;   // 4..7 are for the player's emote wheel
     public static final int COUNT = 3;
     private static final int[] LENGTH = {0, 44, 80, 90, 64, 120, 64, 56};
 
@@ -85,24 +85,26 @@ public final class BuddyEmotes {
                 p[HY] = 0.2f * Mth.sin(t * 0.25f);
                 p[HZ] = 0.06f * Mth.sin(t * 0.75f);
             }
-            case DANCE -> {  // arms alternate up, legs step, head bobs
-                float s = Mth.sin(t * 0.45f);
-                p[RAX] = -2.1f + 0.9f * s;
-                p[LAX] = -2.1f - 0.9f * s;
-                p[RAZ] = 0.45f;
-                p[LAZ] = -0.45f;
-                p[RLX] = 0.55f * s;
-                p[LLX] = -0.55f * s;
-                p[HZ] = 0.22f * s;
-                p[HX] = 0.12f * Mth.sin(t * 0.9f);
-            }
-            case CHEER -> {  // both fists pumping overhead
-                float u = Math.abs(Mth.sin(t * 0.35f));
-                p[RAX] = Mth.lerp(u, -2.4f, -3.0f);
-                p[LAX] = p[RAX];
-                p[RAZ] = 0.3f;
-                p[LAZ] = -0.3f;
-                p[HX] = -0.3f;
+            case OBSESSION -> {   // upbeat bouncy dance: alternating arm pumps, then both hands up, head snapping on the beat
+                float beat = t * 0.55f;
+                float s = Mth.sin(beat);
+                boolean up = ((int) (t / 20f)) % 2 == 1;
+                if (up) {
+                    p[RAX] = -2.6f + 0.35f * s;
+                    p[LAX] = -2.6f - 0.35f * s;
+                    p[RAZ] = 0.5f + 0.2f * Mth.cos(beat * 2f);
+                    p[LAZ] = -p[RAZ];
+                } else {
+                    p[RAX] = -1.5f + 0.9f * s;
+                    p[LAX] = -1.5f - 0.9f * s;
+                    p[RAZ] = 0.25f;
+                    p[LAZ] = -0.25f;
+                }
+                p[RLX] = 0.45f * s;
+                p[LLX] = -0.45f * s;
+                p[HY] = 0.45f * Mth.sin(beat * 0.5f);
+                p[HZ] = 0.14f * s;
+                p[HX] = 0.1f * Mth.cos(beat * 2f);
             }
             case BOW -> {    // a slow bow: head and arms dip and come back
                 float k = Mth.sin(PI * Math.min(1f, t / 46f));
