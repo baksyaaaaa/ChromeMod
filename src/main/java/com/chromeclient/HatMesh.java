@@ -64,13 +64,13 @@ public final class HatMesh {
      *  and no face catches a bright highlight) and the colours get a little darker */
     private static void matte(byte[] dt) {
         // every vertex gets the SAME normal, so the whole ear is lit evenly and nothing can shine
-        float nx = 0f, ny = 0.35f, nz = 0.94f;
+        float nx = 0f, ny = 1f, nz = 0f;   // straight up: turning your head left/right never changes how it is lit
         float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
         for (int i = 0; i + 5 < dt.length; i += 6) {
             dt[i] = (byte) Math.round(nx / len * 127f);
             dt[i + 1] = (byte) Math.round(ny / len * 127f);
             dt[i + 2] = (byte) Math.round(nz / len * 127f);
-            for (int k = 3; k < 6; k++) dt[i + k] = (byte) Math.round((dt[i + k] & 255) * 0.94f);
+            for (int k = 3; k < 6; k++) dt[i + k] = (byte) Math.round((dt[i + k] & 255) * 0.88f);
         }
     }
 

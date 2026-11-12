@@ -355,3 +355,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - Cat ears: the two layers of the ear now meet at the edges (no gap / ripped look), still fat from the side.
 - **2.42.52**: cat ears are closed at the tip, fat from the side and fully matte (no shine).
 - **2.42.53**: menu clicks (tabs, buttons) also use the game's own click event, so they cannot be missed.
+- **2.42.54**: cat ears no longer change brightness when you turn your head (that was the shine).
