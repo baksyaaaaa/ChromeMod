@@ -2,47 +2,56 @@ package com.chromeclient.mixin;
 
 import com.chromeclient.Freelook;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Freelook: adds the camera offset on top of where your character looks.
- * Two independent hooks do the same job so one of them is enough: the call inside Camera.setup (setRotation(yaw, pitch))
- * and the method itself. When the first one already added the offset, the second one skips it for that call.
- * Either one that runs also tells Freelook the camera is hooked (without that the mouse is never taken away from you).
+ * Freelook: while it is active the mouse only changes Freelook.yaw / Freelook.pitch. Just for the moment the camera is
+ * set up, the offset is added to your character's rotation (both the current and the previous values, so the
+ * per-frame smoothing stays consistent) and taken away again straight after. The camera therefore turns - in first
+ * and third person, up/down as well as left/right - while your character keeps facing the same way.
  */
 @Mixin(Camera.class)
 public abstract class CameraFreelookMixin {
-    private static boolean chromeclient$siteDone = false;
+    @Unique private boolean chromeclient$swapped = false;
+    @Unique private float chromeclient$y, chromeclient$x, chromeclient$yo, chromeclient$xo;
 
-    @ModifyArgs(method = "setup", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setRotation(FF)V"))
-    private void chromeclient$site(Args args) {
+    @Inject(method = "setup", at = @At("HEAD"), require = 0)
+    private void chromeclient$before(CallbackInfo ci) {
         Freelook.hooked = true;
+        chromeclient$swapped = false;
         if (!Freelook.active) return;
-        args.set(0, args.<Float>get(0) + Freelook.yaw);
-        args.set(1, Mth.clamp(args.<Float>get(1) + Freelook.pitch, -90f, 90f));
-        chromeclient$siteDone = true;
+        Minecraft mc = Minecraft.getInstance();
+        Entity e = mc.getCameraEntity();
+        if (e == null || e != mc.player) return;
+        chromeclient$y = e.getYRot();
+        chromeclient$x = e.getXRot();
+        chromeclient$yo = e.yRotO;
+        chromeclient$xo = e.xRotO;
+        float newX = Mth.clamp(chromeclient$x + Freelook.pitch, -90f, 90f);
+        e.setYRot(chromeclient$y + Freelook.yaw);
+        e.yRotO = chromeclient$yo + Freelook.yaw;
+        e.setXRot(newX);
+        e.xRotO = Mth.clamp(chromeclient$xo + Freelook.pitch, -90f, 90f);
+        chromeclient$swapped = true;
     }
 
-    @Inject(method = "setRotation(FF)V", at = @At("RETURN"))
-    private void chromeclient$leave(float yRot, float xRot, CallbackInfo ci) {
-        chromeclient$siteDone = false;
-    }
-
-    @ModifyVariable(method = "setRotation(FF)V", at = @At("HEAD"), argsOnly = true, index = 1)
-    private float chromeclient$yaw(float yRot) {
-        Freelook.hooked = true;
-        return Freelook.active && !chromeclient$siteDone ? yRot + Freelook.yaw : yRot;
-    }
-
-    @ModifyVariable(method = "setRotation(FF)V", at = @At("HEAD"), argsOnly = true, index = 2)
-    private float chromeclient$pitch(float xRot) {
-        return Freelook.active && !chromeclient$siteDone ? Mth.clamp(xRot + Freelook.pitch, -90f, 90f) : xRot;
+    @Inject(method = "setup", at = @At("RETURN"), require = 0)
+    private void chromeclient$after(CallbackInfo ci) {
+        if (!chromeclient$swapped) return;
+        chromeclient$swapped = false;
+        Minecraft mc = Minecraft.getInstance();
+        Entity e = mc.getCameraEntity();
+        if (e == null || e != mc.player) return;
+        e.setYRot(chromeclient$y);
+        e.setXRot(chromeclient$x);
+        e.yRotO = chromeclient$yo;
+        e.xRotO = chromeclient$xo;
     }
 }

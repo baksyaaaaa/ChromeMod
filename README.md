@@ -341,3 +341,6 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 
 ## 2.42.47
 - Hand position: while you eat or drink only the hand using the item is left alone, the other hand keeps your size/position.
+
+## 2.42.48
+- Freelook rewritten: the camera offset is added to your rotation only while the camera is set up (fixes up/down being stuck).
