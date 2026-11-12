@@ -63,9 +63,10 @@ public final class HatMesh {
     /** takes the shine off a mesh: normals are pulled towards one fixed direction (so every face is lit about the same
      *  and no face catches a bright highlight) and the colours get a little darker */
     private static void matte(byte[] dt) {
+        // every vertex gets the SAME normal, so the whole ear is lit evenly and nothing can shine
+        float nx = 0f, ny = 0.35f, nz = 0.94f;
+        float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
         for (int i = 0; i + 5 < dt.length; i += 6) {
-            float nx = dt[i] / 127f * 0.25f, ny = dt[i + 1] / 127f * 0.25f + 0.2f, nz = dt[i + 2] / 127f * 0.25f + 0.9f;
-            float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
             dt[i] = (byte) Math.round(nx / len * 127f);
             dt[i + 1] = (byte) Math.round(ny / len * 127f);
             dt[i + 2] = (byte) Math.round(nz / len * 127f);
