@@ -209,6 +209,20 @@ public final class CosmeticLayer extends RenderLayer {
                 clock += dt;
             }
             lastNanos = nanos;
+            if (local && PlayerEmotes.emote == BuddyEmotes.STAR) {
+                float tt = (av.ageInTicks - PlayerEmotes.start);
+                float fade = Mth.clamp(Math.min(tt / 8f, (BuddyEmotes.length(BuddyEmotes.STAR) - tt) / 8f), 0f, 1f);
+                if (fade > 0f) {
+                    pose.pushPose();
+                    pose.translate(0f, 1.52f + 0.03f * Mth.sin(tt * 0.15f), 0f);   // under the feet (model space: down is +y)
+                    pose.mulPose(com.mojang.math.Axis.YP.rotation(tt * 0.04f));
+                    pose.scale(fade, fade, fade);
+                    drawStar(pose, queue, 0.95f, 0, 38, 96, 255);
+                    pose.translate(0f, -0.012f, 0f);
+                    drawStar(pose, queue, 0.7f, 0, 120, 170, 255);
+                    pose.popPose();
+                }
+            }
             if (hat == 0 && cape == 0 && wings == 0) return;
             float t = clock % 6000f;
             speed = local ? smoothSpeed : otherSpeed(mc, av.id);
@@ -272,5 +286,24 @@ public final class CosmeticLayer extends RenderLayer {
             queue.submitModelPart(p.part(), pose, RenderTypes.entityCutoutNoCull(p.tex()), light, OverlayTexture.NO_OVERLAY,
                     null, false, false, p.tint(), null, 0);
         }
+    }
+
+    /** a flat six-pointed star (two triangles), full-bright, flat on the ground under the pose */
+    private static void drawStar(PoseStack pose, SubmitNodeCollector queue, float r, int unused, int cr, int cg, int cb) {
+        queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/entity/mesh_white.png")), (p, vc) -> {
+            for (int tri = 0; tri < 2; tri++) {
+                float off = tri == 0 ? -(float) Math.PI / 2f : (float) Math.PI / 2f;   // the second triangle points the other way
+                for (int k = 0; k < 4; k++) {
+                    int idx = Math.min(k, 2);
+                    float a = off + idx * (float) (2 * Math.PI / 3);
+                    vc.addVertex(p, (float) Math.cos(a) * r, 0f, (float) Math.sin(a) * r)
+                            .setColor(cr, cg, cb, 255)
+                            .setUv(0.5f, 0.5f)
+                            .setOverlay(OverlayTexture.NO_OVERLAY)
+                            .setLight(0xF000F0)
+                            .setNormal(p, 0f, -1f, 0f);
+                }
+            }
+        });
     }
 }

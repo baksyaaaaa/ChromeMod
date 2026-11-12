@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 public final class BuddyEmotes {
     public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3, WAVE = 4, OBSESSION = 5, BOW = 7;   // 4..7 are for the player's emote wheel
     public static final int COUNT = 3;
-    private static final int[] LENGTH = {0, 44, 80, 90, 64, 120, 64, 56};
+    private static final int[] LENGTH = {0, 44, 80, 90, 64, 120, 64, 56, 600};
 
     // indices of the array pose() fills in
     public static final int HX = 0, HY = 1, HZ = 2, RAX = 3, RAY = 4, RAZ = 5, LAX = 6, LAY = 7, LAZ = 8,
@@ -111,6 +111,16 @@ public final class BuddyEmotes {
                 p[HX] = 0.95f * k;
                 p[RAX] = 0.25f * k;
                 p[LAX] = 0.25f * k;
+            }
+            case STAR -> {   // riding the star: arms out for balance, feet apart, head up
+                float sw = 0.06f * Mth.sin(t * 0.12f);
+                p[RAZ] = 1.35f + sw;
+                p[LAZ] = -1.35f - sw;
+                p[RAX] = 0.0f;
+                p[LAX] = 0.0f;
+                p[RLZ] = 0.14f;
+                p[LLZ] = -0.14f;
+                p[HX] = -0.12f;
             }
             default -> { }
         }
