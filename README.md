@@ -347,3 +347,6 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 
 ## 2.42.49
 - Cat ears: matte (no shine): even lighting and slightly darker colours.
+
+## 2.42.50
+- Cat ears: fatter from the side (about 60% deeper), calmer colours (no light grey tips) and matte lighting.

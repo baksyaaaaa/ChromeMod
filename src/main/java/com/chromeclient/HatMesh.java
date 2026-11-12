@@ -69,7 +69,7 @@ public final class HatMesh {
             dt[i] = (byte) Math.round(nx / len * 127f);
             dt[i + 1] = (byte) Math.round(ny / len * 127f);
             dt[i + 2] = (byte) Math.round(nz / len * 127f);
-            for (int k = 3; k < 6; k++) dt[i + k] = (byte) Math.round((dt[i + k] & 255) * 0.84f);
+            for (int k = 3; k < 6; k++) dt[i + k] = (byte) Math.round((dt[i + k] & 255) * 0.94f);
         }
     }
 
