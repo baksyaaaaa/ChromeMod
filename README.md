@@ -350,3 +350,6 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 
 ## 2.42.50
 - Cat ears: fatter from the side (about 60% deeper), calmer colours (no light grey tips) and matte lighting.
+
+## 2.42.51
+- Cat ears: the two layers of the ear now meet at the edges (no gap / ripped look), still fat from the side.
