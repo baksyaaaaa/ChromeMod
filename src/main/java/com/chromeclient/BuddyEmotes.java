@@ -8,9 +8,9 @@ import net.minecraft.util.Mth;
  * Angles are radians as the model uses them: arm xRot -PI/2 = straight forward, -PI = straight up.
  */
 public final class BuddyEmotes {
-    public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3, WAVE = 4, OBSESSION = 5, BOW = 7;   // 4..7 are for the player's emote wheel
+    public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3, WAVE = 4, DANCE = 5, BOW = 7, STAR = 8;   // 4..7 are for the player's emote wheel
     public static final int COUNT = 3;
-    private static final int[] LENGTH = {0, 44, 80, 90, 64, 120, 64, 56, 600};
+    private static final int[] LENGTH = {0, 44, 80, 90, 64, 160, 64, 56, 600};
 
     // indices of the array pose() fills in
     public static final int HX = 0, HY = 1, HZ = 2, RAX = 3, RAY = 4, RAZ = 5, LAX = 6, LAY = 7, LAZ = 8,
@@ -42,6 +42,11 @@ public final class BuddyEmotes {
     /** how far it sinks down, blocks (none of the current emotes sit) */
     public static double sink(int emote, float t, float size) {
         return 0.0;
+    }
+
+    private static float ss(float x) {
+        x = Mth.clamp(x, 0f, 1f);
+        return x * x * (3f - 2f * x);
     }
 
     public static float[] pose(int emote, float t) {
@@ -85,26 +90,25 @@ public final class BuddyEmotes {
                 p[HY] = 0.2f * Mth.sin(t * 0.25f);
                 p[HZ] = 0.06f * Mth.sin(t * 0.75f);
             }
-            case OBSESSION -> {   // upbeat bouncy dance: alternating arm pumps, then both hands up, head snapping on the beat
-                float beat = t * 0.55f;
-                float s = Mth.sin(beat);
-                boolean up = ((int) (t / 20f)) % 2 == 1;
-                if (up) {
-                    p[RAX] = -2.6f + 0.35f * s;
-                    p[LAX] = -2.6f - 0.35f * s;
-                    p[RAZ] = 0.5f + 0.2f * Mth.cos(beat * 2f);
-                    p[LAZ] = -p[RAZ];
-                } else {
-                    p[RAX] = -1.5f + 0.9f * s;
-                    p[LAX] = -1.5f - 0.9f * s;
-                    p[RAZ] = 0.25f;
-                    p[LAZ] = -0.25f;
-                }
-                p[RLX] = 0.45f * s;
-                p[LLX] = -0.45f * s;
-                p[HY] = 0.45f * Mth.sin(beat * 0.5f);
-                p[HZ] = 0.14f * s;
-                p[HX] = 0.1f * Mth.cos(beat * 2f);
+            case DANCE -> {  // the Fortnite dance from the video: alternating back kicks with arms sweeping across the chest, then elbows out
+                float m = t % 80f;
+                float b = ss((m - 46f) / 6f) * (1f - ss((m - 74f) / 6f));   // 0 = kick-and-sweep part, 1 = elbows-out bounce
+                float s = Mth.sin(t * PI / 10f);                              // one kick every half second
+                float aRLX = Math.max(0f, s) * 1.15f - Math.max(0f, -s) * 0.45f;
+                float aLLX = Math.max(0f, -s) * 1.15f - Math.max(0f, s) * 0.45f;
+                float aRAY = 0.75f * Mth.sin(t * PI / 10f + 0.6f);
+                float s2 = Mth.sin(t * 0.9f);
+                float bRLX = 0.35f * Math.max(0f, s2), bLLX = 0.35f * Math.max(0f, -s2);
+                p[RLX] = Mth.lerp(b, aRLX, bRLX);
+                p[LLX] = Mth.lerp(b, aLLX, bLLX);
+                p[RAX] = Mth.lerp(b, -1.35f, -0.55f + 0.12f * s2);
+                p[LAX] = Mth.lerp(b, -1.35f, -0.55f - 0.12f * s2);
+                p[RAY] = Mth.lerp(b, aRAY, 0f);
+                p[LAY] = Mth.lerp(b, aRAY, 0f);
+                p[RAZ] = Mth.lerp(b, 0.1f, 1.05f);
+                p[LAZ] = Mth.lerp(b, -0.1f, -1.05f);
+                p[HZ] = Mth.lerp(b, 0.08f * s, 0.1f * s2);
+                p[HX] = 0.05f;
             }
             case BOW -> {    // a slow bow: head and arms dip and come back
                 float k = Mth.sin(PI * Math.min(1f, t / 46f));
