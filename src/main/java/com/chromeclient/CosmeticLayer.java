@@ -211,15 +211,17 @@ public final class CosmeticLayer extends RenderLayer {
             lastNanos = nanos;
             if (local && PlayerEmotes.emote == BuddyEmotes.STAR) {
                 float tt = (av.ageInTicks - PlayerEmotes.start);
-                float fade = Mth.clamp(Math.min(tt / 8f, (BuddyEmotes.length(BuddyEmotes.STAR) - tt) / 8f), 0f, 1f);
+                float fade = BuddyEmotes.weight(BuddyEmotes.STAR, tt);
                 if (fade > 0f) {
                     pose.pushPose();
-                    pose.translate(0f, 1.52f + 0.03f * Mth.sin(tt * 0.15f), 0f);   // under the feet (model space: down is +y)
+                    // under the thighs, lifted with the body (model space: down is +y, forward is -z)
+                    pose.translate(0f, (14.6f - BuddyEmotes.starLift(tt)) / 16f, -0.25f);
+                    pose.mulPose(com.mojang.math.Axis.XP.rotation(0.07f * Mth.sin(tt * 0.15f + 1f)));   // rocks a little as it flies
                     pose.mulPose(com.mojang.math.Axis.YP.rotation(tt * 0.04f));
                     pose.scale(fade, fade, fade);
-                    drawStar(pose, queue, 0.95f, 0, 38, 96, 255);
+                    drawStar(pose, queue, 0.9f, 0, 38, 96, 255);
                     pose.translate(0f, -0.012f, 0f);
-                    drawStar(pose, queue, 0.7f, 0, 120, 170, 255);
+                    drawStar(pose, queue, 0.65f, 0, 120, 170, 255);
                     pose.popPose();
                 }
             }

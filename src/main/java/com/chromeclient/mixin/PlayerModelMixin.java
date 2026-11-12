@@ -37,6 +37,12 @@ public abstract class PlayerModelMixin {
                     blend(model.rightLeg, w, p[BuddyEmotes.RLX], 0f, p[BuddyEmotes.RLZ]);
                     blend(model.leftLeg, w, p[BuddyEmotes.LLX], 0f, p[BuddyEmotes.LLZ]);
                     posed = true;
+                    if (emote == BuddyEmotes.STAR) {   // the whole body floats up on the star
+                        float lift = BuddyEmotes.starLift(t);
+                        lift(model.head, lift); lift(model.hat, lift); lift(model.body, lift); lift(model.jacket, lift);
+                        lift(model.rightArm, lift); lift(model.leftArm, lift); lift(model.rightSleeve, lift); lift(model.leftSleeve, lift);
+                        lift(model.rightLeg, lift); lift(model.leftLeg, lift); lift(model.rightPants, lift); lift(model.leftPants, lift);
+                    }
                 }
             }
         }
@@ -98,6 +104,10 @@ public abstract class PlayerModelMixin {
         model.hat.xScale = k;
         model.hat.yScale = k;
         model.hat.zScale = k;
+    }
+
+    private static void lift(ModelPart part, float px) {
+        part.y -= px;
     }
 
     private static void blend(ModelPart part, float w, float x, float y, float z) {

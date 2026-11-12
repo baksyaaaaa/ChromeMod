@@ -44,6 +44,11 @@ public final class BuddyEmotes {
         return 0.0;
     }
 
+    /** how far the whole player is lifted while flying on the star, in model pixels (1/16 block) */
+    public static float starLift(float t) {
+        return weight(STAR, t) * (12f + 1.6f * Mth.sin(t * 0.15f));
+    }
+
     private static float ss(float x) {
         x = Mth.clamp(x, 0f, 1f);
         return x * x * (3f - 2f * x);
@@ -116,14 +121,16 @@ public final class BuddyEmotes {
                 p[RAX] = 0.25f * k;
                 p[LAX] = 0.25f * k;
             }
-            case STAR -> {   // riding the star: arms out for balance, feet apart, head up
+            case STAR -> {   // sitting on the star like on a horse: legs forward, arms out for balance
                 float sw = 0.06f * Mth.sin(t * 0.12f);
-                p[RAZ] = 1.35f + sw;
-                p[LAZ] = -1.35f - sw;
-                p[RAX] = 0.0f;
-                p[LAX] = 0.0f;
-                p[RLZ] = 0.14f;
-                p[LLZ] = -0.14f;
+                p[RAZ] = 1.2f + sw;
+                p[LAZ] = -1.2f - sw;
+                p[RAX] = -0.25f;
+                p[LAX] = -0.25f;
+                p[RLX] = -1.4137f;
+                p[LLX] = -1.4137f;
+                p[RLZ] = 0.0785f;
+                p[LLZ] = -0.0785f;
                 p[HX] = -0.12f;
             }
             default -> { }
