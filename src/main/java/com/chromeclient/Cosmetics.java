@@ -27,7 +27,7 @@ public final class Cosmetics {
     public static final String[] CATS = {"Hats", "Capes", "Wings"};
     private static String[] capeNames() {
         String[] mine = {"None", "Midnight", "Snow", "Twisted", "Cherry"};
-        String[] extra = {"Aurora", "Ember", "Abyss", "Galaxy"};   // newer ones go after the others so saved picks keep their number
+        String[] extra = {"Aurora", "Ember", "Abyss", "Galaxy", "Web"};   // newer ones go after the others so saved picks keep their number
         String[] all = new String[mine.length + CapeArt.NAMES.length + extra.length];
         System.arraycopy(mine, 0, all, 0, mine.length);
         System.arraycopy(CapeArt.NAMES, 0, all, mine.length, CapeArt.NAMES.length);
