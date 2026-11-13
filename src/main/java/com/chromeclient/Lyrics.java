@@ -87,6 +87,7 @@ public final class Lyrics {
     // ---- following the song ----
 
     private static double songTime(YtBridge.Track t) {
+        if (t.exact() >= 0) return t.exact();   // the music mod now reports the exact time: no guessing between whole seconds
         long now = System.nanoTime();
         if (t.position() != lastPos) {
             lastPos = t.position();
@@ -116,7 +117,8 @@ public final class Lyrics {
             clearPopups();
             fetch(k, t.title(), t.artist(), t.duration());
         }
-        double now = songTime(t) + Extras.lyricsSync;
+        // the default sync offset (-0.7) was tuned to cover the old whole-second guessing; with the exact time that part is not needed
+        double now = songTime(t) + Extras.lyricsSync + (t.exact() >= 0 ? 0.6 : 0.0);
         songNow = now;
         songNowNanos = System.nanoTime();
         songPlaying = t.playing();
@@ -373,10 +375,17 @@ public final class Lyrics {
                 JsonElement e = JsonParser.parseString(s);
                 if (e.isJsonArray()) {
                     JsonArray arr = e.getAsJsonArray();
+                    // several recordings of the same song have different timings: take the one whose length is closest to this one
+                    List<Line> best = List.of();
+                    double bestDiff = 1e9;
                     for (JsonElement el : arr) {
                         List<Line> l = parse(el);
-                        if (!l.isEmpty()) return l;
+                        if (l.isEmpty()) continue;
+                        double d = el.getAsJsonObject().has("duration") && !el.getAsJsonObject().get("duration").isJsonNull()
+                                ? Math.abs(el.getAsJsonObject().get("duration").getAsDouble() - duration) : 1e8;
+                        if (d < bestDiff) { bestDiff = d; best = l; }
                     }
+                    if (bestDiff <= 6.0) return best;   // a very different length means different timing: better none than wrong
                 }
             }
         }

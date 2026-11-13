@@ -366,10 +366,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.61**: emote wheel is now Griddy, Levitate (The Honored One) and Star; the other emotes were removed.
 - **2.42.62**: calmer Griddy; emote wheel writes lines to latest.log (search ChromeEmotes) to find why it fails.
 - **2.42.63**: emote wheel and the Star/Griddy/Levitate emotes removed again.
-- **2.42.64**: new cape "Web" (black with a silver spiderweb and a small purple spider).
-- **2.42.65**: Web cape is now red with a dark web.
-- **2.42.66**: Web cape redrawn with a proper hanging spiderweb and a small spider.
-- **2.42.67**: Web cape simplified to chunky pixels like the other capes.
-- **2.42.68**: Web cape redone with thick clean lines (five threads, three rings, plain spider).
-- **2.42.69**: Web cape back to the detailed web design (2.42.66).
-- **2.42.70**: Web cape back to the chunky pixel design (2.42.67).
+- **2.42.71**: lyrics stay in sync: uses the exact play time from YT Music In-Game 1.2.3 and picks the lyrics version whose length matches the song.

@@ -16,7 +16,7 @@ public final class YtBridge {
     private static final String PLAYER_SCREEN = "com.ytmusic.ingame.PlayerScreen";
 
     private static Object player;
-    private static Method mPlaying, mTitle, mArtist, mPosition, mDuration;
+    private static Method mPlaying, mTitle, mArtist, mPosition, mDuration, mExact;
     private static boolean failed = false;
     private static boolean overlayHidden = false;
 
@@ -52,6 +52,7 @@ public final class YtBridge {
             mArtist = pc.getMethod("artist");
             mPosition = pc.getMethod("position");
             mDuration = pc.getMethod("duration");
+            try { mExact = pc.getMethod("positionPrecise"); } catch (Throwable ignored) { mExact = null; }   // only newer versions of that mod have it
             player = p;
             hideTopRightOverlay(client);
             return true;
@@ -128,13 +129,17 @@ public final class YtBridge {
     }
 
     /** title, artist, position (s), duration (s), playing: null if nothing can be read */
-    public record Track(String title, String artist, int position, int duration, boolean playing) {}
+    public record Track(String title, String artist, int position, int duration, boolean playing, double exact) {}
 
     public static Track current() {
         if (!bind()) return null;
         try {
+            double exact = -1;
+            if (mExact != null) {
+                try { exact = (Double) mExact.invoke(player); } catch (Throwable ignored) { exact = -1; }
+            }
             return new Track((String) mTitle.invoke(player), (String) mArtist.invoke(player),
-                    (Integer) mPosition.invoke(player), (Integer) mDuration.invoke(player), (Boolean) mPlaying.invoke(player));
+                    (Integer) mPosition.invoke(player), (Integer) mDuration.invoke(player), (Boolean) mPlaying.invoke(player), exact);
         } catch (Throwable t) {
             return null;
         }
