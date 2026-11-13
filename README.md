@@ -371,3 +371,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.66**: Web cape redrawn with a proper hanging spiderweb and a small spider.
 - **2.42.67**: Web cape simplified to chunky pixels like the other capes.
 - **2.42.68**: Web cape redone with thick clean lines (five threads, three rings, plain spider).
+- **2.42.69**: Web cape back to the detailed web design (2.42.66).
