@@ -369,3 +369,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.64**: new cape "Web" (black with a silver spiderweb and a small purple spider).
 - **2.42.65**: Web cape is now red with a dark web.
 - **2.42.66**: Web cape redrawn with a proper hanging spiderweb and a small spider.
+- **2.42.67**: Web cape simplified to chunky pixels like the other capes.
