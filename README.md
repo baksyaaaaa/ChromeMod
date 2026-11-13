@@ -367,3 +367,4 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.62**: calmer Griddy; emote wheel writes lines to latest.log (search ChromeEmotes) to find why it fails.
 - **2.42.63**: emote wheel and the Star/Griddy/Levitate emotes removed again.
 - **2.42.64**: new cape "Web" (black with a silver spiderweb and a small purple spider).
+- **2.42.65**: Web cape is now red with a dark web.
