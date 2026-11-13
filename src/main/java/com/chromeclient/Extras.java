@@ -11,7 +11,6 @@ import java.nio.file.Path;
 public final class Extras {
     public static boolean freelook = true;
     public static boolean lyrics = false;
-    public static boolean emotes = true;           // press B for the emote wheel
     // world lyrics settings
     public static float lyricsDistance = 9f;       // how far away the words hang (blocks)
     public static float lyricsSize = 1f;
@@ -37,7 +36,6 @@ public final class Extras {
             if (!Files.isRegularFile(f)) return;
             JsonObject o = JsonParser.parseString(Files.readString(f)).getAsJsonObject();
             if (o.has("freelook")) freelook = o.get("freelook").getAsBoolean();
-            if (o.has("emotes")) emotes = o.get("emotes").getAsBoolean();
             if (o.has("lyrics")) lyrics = o.get("lyrics").getAsBoolean();
             if (o.has("lyricsDistance")) lyricsDistance = o.get("lyricsDistance").getAsFloat();
             if (o.has("lyricsSize")) lyricsSize = o.get("lyricsSize").getAsFloat();
@@ -62,7 +60,6 @@ public final class Extras {
             o.addProperty("freelook", freelook);
             o.addProperty("uiTheme", uiTheme);
             o.addProperty("lyrics", lyrics);
-            o.addProperty("emotes", emotes);
             o.addProperty("lyricsDistance", lyricsDistance);
             o.addProperty("lyricsSize", lyricsSize);
             o.addProperty("lyricsScatter", lyricsScatter);

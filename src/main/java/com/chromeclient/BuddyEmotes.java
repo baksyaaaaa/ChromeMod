@@ -8,9 +8,9 @@ import net.minecraft.util.Mth;
  * Angles are radians as the model uses them: arm xRot -PI/2 = straight forward, -PI = straight up.
  */
 public final class BuddyEmotes {
-    public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3, GRIDDY = 4, LEVITATE = 5, STAR = 8;   // 4..7 are for the player's emote wheel
+    public static final int NONE = 0, JUMP = 1, JOG = 2, LOOK = 3;
     public static final int COUNT = 3;
-    private static final int[] LENGTH = {0, 44, 80, 90, 180, 600, 0, 0, 600};
+    private static final int[] LENGTH = {0, 44, 80, 90};
 
     // indices of the array pose() fills in
     public static final int HX = 0, HY = 1, HZ = 2, RAX = 3, RAY = 4, RAZ = 5, LAX = 6, LAY = 7, LAZ = 8,
@@ -42,18 +42,6 @@ public final class BuddyEmotes {
     /** how far it sinks down, blocks (none of the current emotes sit) */
     public static double sink(int emote, float t, float size) {
         return 0.0;
-    }
-
-    /** how far the whole player is lifted while floating (on the star or levitating), in model pixels (1/16 block) */
-    public static float lift(int emote, float t) {
-        if (emote == STAR) return weight(STAR, t) * (12f + 1.6f * Mth.sin(t * 0.15f));
-        if (emote == LEVITATE) return weight(LEVITATE, t) * (16f + 1.8f * Mth.sin(t * 0.1f));
-        return 0f;
-    }
-
-    private static float ss(float x) {
-        x = Mth.clamp(x, 0f, 1f);
-        return x * x * (3f - 2f * x);
     }
 
     public static float[] pose(int emote, float t) {
@@ -89,44 +77,6 @@ public final class BuddyEmotes {
                 p[LAX] = 0.45f;
                 p[RAZ] = 0.02f;
                 p[LAZ] = -0.02f;
-            }
-            case GRIDDY -> {   // the Griddy: arms held wide like wings, a wide stance, feet stepping in and out slowly
-                float s = Mth.sin(t * 0.3f);          // about one step a second
-                p[RAX] = -0.1f;
-                p[LAX] = -0.1f;
-                p[RAZ] = 1.5f + 0.08f * s;
-                p[LAZ] = -1.5f + 0.08f * s;
-                p[RLX] = -0.35f * Math.max(0f, s);    // knee comes up on one side...
-                p[LLX] = -0.35f * Math.max(0f, -s);   // ...then the other
-                p[RLZ] = 0.22f + 0.12f * Math.max(0f, s);
-                p[LLZ] = -0.22f - 0.12f * Math.max(0f, -s);
-                p[HX] = 0.08f;
-                p[HZ] = 0.07f * s;
-            }
-            case LEVITATE -> {   // The Honored One: floating cross-legged, one hand up making the sign, calm head
-                p[RLX] = -1.3f;
-                p[LLX] = -1.3f;
-                p[RLZ] = 0.55f;
-                p[LLZ] = -0.55f;
-                p[RAX] = -1.45f;
-                p[RAZ] = 0.1f;
-                p[RAY] = -0.35f;
-                p[LAX] = -0.85f;
-                p[LAZ] = -0.2f;
-                p[HX] = -0.08f;
-                p[HY] = 0.15f * Mth.sin(t * 0.04f);
-            }
-            case STAR -> {   // sitting on the star like on a horse: legs forward, arms out for balance
-                float sw = 0.06f * Mth.sin(t * 0.12f);
-                p[RAZ] = 1.2f + sw;
-                p[LAZ] = -1.2f - sw;
-                p[RAX] = -0.25f;
-                p[LAX] = -0.25f;
-                p[RLX] = -1.4137f;
-                p[LLX] = -1.4137f;
-                p[RLZ] = 0.0785f;
-                p[LLZ] = -0.0785f;
-                p[HX] = -0.12f;
             }
             default -> { }
         }

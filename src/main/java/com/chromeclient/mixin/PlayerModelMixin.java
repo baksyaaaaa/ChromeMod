@@ -17,37 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(PlayerModel.class)
 public abstract class PlayerModelMixin {
-    private static boolean loggedPose = false;
     @Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/AvatarRenderState;)V", at = @At("TAIL"))
     private void chromeclient$buddy(AvatarRenderState state, CallbackInfo ci) {
         PlayerModel model = (PlayerModel) (Object) this;
         boolean buddy = state.id == Buddy.BUDDY_ID;
         boolean posed = false;
-
-        if (!buddy && com.chromeclient.PlayerEmotes.emote != BuddyEmotes.NONE) {
-            var me = net.minecraft.client.Minecraft.getInstance().player;
-            if (me != null && state.id == me.getId()) {
-                int emote = com.chromeclient.PlayerEmotes.emote;
-                float t = state.ageInTicks - com.chromeclient.PlayerEmotes.start;
-                float w = BuddyEmotes.weight(emote, t);
-                if (w > 0f) {
-                    if (!loggedPose) { loggedPose = true; org.slf4j.LoggerFactory.getLogger("ChromeEmotes").info("posing the player: emote {} weight {}", emote, w); }
-                    float[] p = BuddyEmotes.pose(emote, t);
-                    blend(model.head, w, p[BuddyEmotes.HX], p[BuddyEmotes.HY], p[BuddyEmotes.HZ]);
-                    blend(model.rightArm, w, p[BuddyEmotes.RAX], p[BuddyEmotes.RAY], p[BuddyEmotes.RAZ]);
-                    blend(model.leftArm, w, p[BuddyEmotes.LAX], p[BuddyEmotes.LAY], p[BuddyEmotes.LAZ]);
-                    blend(model.rightLeg, w, p[BuddyEmotes.RLX], 0f, p[BuddyEmotes.RLZ]);
-                    blend(model.leftLeg, w, p[BuddyEmotes.LLX], 0f, p[BuddyEmotes.LLZ]);
-                    posed = true;
-                    if (emote == BuddyEmotes.STAR || emote == BuddyEmotes.LEVITATE) {   // the whole body floats up on the star
-                        float lift = BuddyEmotes.lift(emote, t);
-                        lift(model.head, lift); lift(model.hat, lift); lift(model.body, lift); lift(model.jacket, lift);
-                        lift(model.rightArm, lift); lift(model.leftArm, lift); lift(model.rightSleeve, lift); lift(model.leftSleeve, lift);
-                        lift(model.rightLeg, lift); lift(model.leftLeg, lift); lift(model.rightPants, lift); lift(model.leftPants, lift);
-                    }
-                }
-            }
-        }
 
         if (buddy) {
             int emote = Buddy.emote;
@@ -106,10 +80,6 @@ public abstract class PlayerModelMixin {
         model.hat.xScale = k;
         model.hat.yScale = k;
         model.hat.zScale = k;
-    }
-
-    private static void lift(ModelPart part, float px) {
-        part.y -= px;
     }
 
     private static void blend(ModelPart part, float w, float x, float y, float z) {
