@@ -23,6 +23,7 @@ public final class HatMesh {
     private final float[] pos;      // x,y,z per vertex
     private final byte[] data;      // nx,ny,nz,r,g,b per vertex
     private final short[] quads;    // 4 indices per quad
+    private boolean flat;           // lit the same from every direction (cat ears)
 
     private HatMesh(float[] pos, byte[] data, short[] quads) {
         this.pos = pos; this.data = data; this.quads = quads;
@@ -53,6 +54,7 @@ public final class HatMesh {
             for (int i = 0; i < q.length; i++) q[i] = d.readShort();
             if (name.equals("hat_2")) matte(dt);   // cat ears: soft, even lighting instead of shiny highlights
             m = new HatMesh(p, dt, q);
+            m.flat = name.equals("hat_2");
         } catch (Throwable t) {
             m = NONE;
         }
@@ -85,7 +87,9 @@ public final class HatMesh {
                         .setUv(0.5f, 0.5f)
                         .setOverlay(OverlayTexture.NO_OVERLAY)
                         .setLight(light)
-                        .setNormal(p, data[v * 6] / 127f, data[v * 6 + 1] / 127f, data[v * 6 + 2] / 127f);
+                        ;
+                if (flat) vc.setNormal(0f, 1f, 0f);   // fixed normal that does not follow the head, so looking up/down never changes the lighting
+                else vc.setNormal(p, data[v * 6] / 127f, data[v * 6 + 1] / 127f, data[v * 6 + 2] / 127f);
             }
         });
     }
