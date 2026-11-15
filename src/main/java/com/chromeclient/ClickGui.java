@@ -103,6 +103,8 @@ public class ClickGui extends Screen {
     private final List<Opt> effOpts = new ArrayList<>();
     private final List<Opt> syncOpts = new ArrayList<>();
     private int scroll = 0;
+    private int listOff = 0;
+    private final int[] listArea = new int[4];
     private double pendingScroll = 0;
     private Opt dragging = null;
     private boolean wasDown = true;
@@ -253,7 +255,7 @@ public class ClickGui extends Screen {
             int col = Ui.lerp(i == tab ? Ui.TEXT : Ui.MUTED, Ui.TEXT, tabHov[i]);
             Ui.text(g, font, TABS[i], tx + 7, y + 10, col);
             if (i == tab) { targetUnder = tx + 7; underW = font.width(TABS[i]); }
-            if (click && hov && i != tab) { tab = i; scroll = 0; dragging = null; }
+            if (click && hov && i != tab) { tab = i; scroll = 0; listOff = 0; dragging = null; }
             tx += tw;
         }
         if (underX < 0) { underX = targetUnder; underWd = underW; }
@@ -288,9 +290,13 @@ public class ClickGui extends Screen {
         List<Mod> mods = tabs.get(tab);
         // ---- module list ----
         int lx = x + PAD, ly = top;
-        for (int i = 0; i < mods.size(); i++) {
+        listArea[0] = lx; listArea[1] = top; listArea[2] = lx + LIST_W; listArea[3] = bot;
+        int fit = Math.max(1, (bot - top + 2) / (ROW + 2));
+        int maxOff = Math.max(0, mods.size() - fit);
+        listOff = Mth.clamp(listOff, 0, maxOff);
+        for (int i = listOff; i < mods.size(); i++) {
             Mod m = mods.get(i);
-            int ry = ly + i * (ROW + 2);
+            int ry = ly + (i - listOff) * (ROW + 2);
             if (ry + ROW > bot) break;
             boolean hov = Ui.in(mx, my, lx, ry, LIST_W, ROW);
             listHov[i] += ((hov ? 1f : 0f) - listHov[i]) * ease;
@@ -500,6 +506,10 @@ public class ClickGui extends Screen {
     // ---------------------------------------------------------------- misc screen stuff
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (tab >= 0 && tab < tabs.size() && Ui.in((int) mouseX, (int) mouseY, listArea[0], listArea[1], listArea[2] - listArea[0], listArea[3] - listArea[1])) {
+            listOff = Math.max(0, listOff - (int) Math.signum(scrollY));
+            return true;
+        }
         pendingScroll += scrollY;
         return true;
     }
