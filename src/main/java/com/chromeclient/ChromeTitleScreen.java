@@ -161,7 +161,7 @@ public final class ChromeTitleScreen extends Screen {
         }
         g.pose().pushMatrix();
         g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
-        g.pose().translate(x, cy - 8f * k);
+        g.pose().translate(x, cy - 1.3f * k);
         g.pose().scale(k, k);
         g.drawString(font, c, 0, 0, color, false);
         g.pose().popMatrix();
@@ -209,9 +209,11 @@ public final class ChromeTitleScreen extends Screen {
                 }
                 case 4 -> {    // account
                     float bx = x + 9f * f, by = y + 4.5f * f, bs = 28f * f;
-                    roundBox(g, bx, by, bs, bs, 5f * f, 0xFF29D48F);
-                    String ini = it.name.isEmpty() ? "?" : it.name.substring(0, 1).toUpperCase();
-                    dyn(g, ini, bx + bs / 2f - textW(ini, 15f, true) * f / 2f, by + bs / 2f, 15f, true, 0xFF0B0714, 30f * f);
+                    if (!head(g, bx, by, bs)) {
+                        roundBox(g, bx, by, bs, bs, 5f * f, 0xFF29D48F);
+                        String ini = it.name.isEmpty() ? "?" : it.name.substring(0, 1).toUpperCase();
+                        dyn(g, ini, bx + bs / 2f - textW(ini, 15f, true) * f / 2f, by + bs / 2f, 15f, true, 0xFF0B0714, 30f * f);
+                    }
                     float tw = textW(it.name, 15f, true);
                     dyn(g, it.name, x + (it.w - tw) / 2f * f, y + it.h / 2f * f, 15f, true, WHITE, (it.w - 70f) * f);
                     spr(g, MenuSprites.CHEV_D, x + (it.w - 26f) * f, y + (it.h - 6f) / 2f * f);
@@ -227,6 +229,22 @@ public final class ChromeTitleScreen extends Screen {
                 .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("");
         dyn(g, "Fabric 1.21.11  " + ver, (60f + dw(MenuSprites.T_FOOT) + 12f) * f, 1021f * f, 12f, false, GREY, 300f * f);
         spr(g, MenuSprites.T_COPY, rx(1874f - 34f - dw(MenuSprites.T_COPY), 2), 1014f * f);
+    }
+
+    /** draws your skin's head (real pixels); false if the skin is not available */
+    private boolean head(GuiGraphics g, float x, float y, float size) {
+        try {
+            net.minecraft.world.entity.player.PlayerSkin skin = minecraft.getSkinManager().getInsecureSkin(minecraft.getGameProfile());
+            g.pose().pushMatrix();
+            g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
+            g.pose().translate(x, y);
+            g.pose().scale(size / 8f, size / 8f);
+            net.minecraft.client.gui.components.PlayerFaceRenderer.draw(g, skin, 0, 0, 8);
+            g.pose().popMatrix();
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     /** a filled rounded square in real pixels (same helper the other screens use, but in real pixel coordinates) */
