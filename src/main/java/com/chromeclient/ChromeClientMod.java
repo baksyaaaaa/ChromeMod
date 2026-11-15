@@ -20,6 +20,7 @@ public class ChromeClientMod implements ClientModInitializer {
     public static final String MOD_ID = "chromeclient";
     private static final int ZOOM_FOV = 30;   // the lowest the game allows
 
+    public static Hud hudInstance;   // the main menu's Mods button opens the Chrome Client menu with it
     private KeyMapping menuKey, zoomKey, editKey, freelookKey, musicKey;
     private boolean zooming = false;
     private int savedFov = 70;
@@ -38,6 +39,7 @@ public class ChromeClientMod implements ClientModInitializer {
         HudPack.init();       // potion / keybind / target / performance panels, crosshair, jump ripples
         new Buddy().init();   // /buddy <uuid>: a little buddy follows you
         Hud hud = new Hud();
+        hudInstance = hud;
 
         KeyMapping.Category category = KeyMapping.Category.register(
                 Identifier.fromNamespaceAndPath(MOD_ID, "main"));

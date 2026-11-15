@@ -93,8 +93,8 @@ public final class ChromeTitleScreen extends Screen {
                 () -> minecraft.setScreen(new RealmsMainScreen(this)));
         add(0, 1, 751f, 679f, 179f, 38f, MenuSprites.BG_HALF, MenuSprites.BG_HALF_H, MenuSprites.I_GEAR, MenuSprites.T_SETTINGS, null, null,
                 () -> minecraft.setScreen(new OptionsScreen(this, minecraft.options)));
-        add(0, 1, 944f, 679f, 179f, 38f, MenuSprites.BG_HALF, MenuSprites.BG_HALF_H, MenuSprites.I_QUIT, MenuSprites.T_QUIT, null, null,
-                () -> minecraft.stop());
+        add(0, 1, 944f, 679f, 179f, 38f, MenuSprites.BG_HALF, MenuSprites.BG_HALF_H, MenuSprites.I_MODS, MenuSprites.T_MODS, null, null,
+                () -> { if (ChromeClientMod.hudInstance != null) minecraft.setScreen(new ClickGui(ChromeClientMod.hudInstance)); });
 
         // top right
         add(2, 2, 1764f, 24f, 36f, 36f, MenuSprites.BG_SQ, MenuSprites.BG_SQ_H, MenuSprites.I_FULL, null, null, null,

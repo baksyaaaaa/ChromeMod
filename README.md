@@ -368,6 +368,7 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.63**: emote wheel and the Star/Griddy/Levitate emotes removed again.
 - **2.42.71**: lyrics stay in sync: uses the exact play time from YT Music In-Game 1.2.3 and picks the lyrics version whose length matches the song.
 - **2.42.72**: new Chrome Client main menu (blurred panorama, name in the middle, Singleplayer / Multiplayer / Realms / Settings / Quit, your saved servers as Quickplay on the left, your account on the right). Switch: Right Shift > Misc > Main menu.
+- **2.42.82**: main menu glass, text weight and sizes measured from the reference; the Quit button became Mods (opens the Chrome Client menu).
 - **2.42.81**: cat ears made narrower so they stay inside the head width and no longer poke out the sides.
 - **2.42.80**: halo and void ring get a real glow (soft unlit shell around the ring).
 - **2.42.79**: halo and void ring shine again (full brightness, fixed lighting).
