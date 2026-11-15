@@ -312,7 +312,7 @@ public final class ChromeTitleScreen extends Screen {
             float scale = 0.97f * (yb - ya) / 2.125f;
             // only head and shoulders are shown: cut everything below the box above the account button
             g.enableScissor(Math.round(rx(1561f, 2) / (float) gs), Math.round(300f * f / (float) gs),
-                    Math.round(rx(1561f + 254f, 2) / (float) gs), Math.round(512f * f / (float) gs));
+                    Math.round(rx(1561f + 254f, 2) / (float) gs), Math.round(529f * f / (float) gs));
             g.submitSkinRenderState(model3d, tex, scale, -5f, yaw, -0.0625f, x0, ya, x1, yb);
             if (!logged3d) { logged3d = true; LOG.info("3D model submitted: texture={} box=({},{})-({},{}) scale={} guiScale={}", tex, x0, ya, x1, yb, scale, gs); }
             g.disableScissor();
@@ -392,7 +392,7 @@ public final class ChromeTitleScreen extends Screen {
         if (!loggedDrag) { loggedDrag = true; LOG.info("mouse drag reached the menu: button={} at {},{}", event.button(), event.x(), event.y()); }
         float f = f();
         double mx = 1874.0 - (minecraft.getWindow().getWidth() - event.x() * gs) / f, my = event.y() * gs / f;   // back to design pixels (right-anchored)
-        if (event.button() == 0 && mx >= 1561 && mx <= 1561 + 254 && my >= 300 && my <= 515) {
+        if (event.button() == 0 && mx >= 1561 && mx <= 1561 + 254 && my >= 300 && my <= 530) {
             yaw += (float) dragX * 2.5f;
             return true;
         }
