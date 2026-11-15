@@ -11,6 +11,7 @@ import java.nio.file.Path;
 public final class Extras {
     public static boolean freelook = true;
     public static boolean lyrics = false;
+    public static boolean customTitle = true;      // Chrome Client's own main menu
     // world lyrics settings
     public static float lyricsDistance = 9f;       // how far away the words hang (blocks)
     public static float lyricsSize = 1f;
@@ -40,6 +41,7 @@ public final class Extras {
             if (o.has("lyricsDistance")) lyricsDistance = o.get("lyricsDistance").getAsFloat();
             if (o.has("lyricsSize")) lyricsSize = o.get("lyricsSize").getAsFloat();
             if (o.has("lyricsScatter")) lyricsScatter = o.get("lyricsScatter").getAsFloat();
+            if (o.has("customTitle")) customTitle = o.get("customTitle").getAsBoolean();
             if (o.has("lyricsSync")) lyricsSync = o.get("lyricsSync").getAsFloat();
             if (o.has("lyricsGlow")) lyricsGlow = o.get("lyricsGlow").getAsBoolean();
             if (o.has("lyricsGlowStrength")) lyricsGlowStrength = o.get("lyricsGlowStrength").getAsFloat();
@@ -64,6 +66,7 @@ public final class Extras {
             o.addProperty("lyricsSize", lyricsSize);
             o.addProperty("lyricsScatter", lyricsScatter);
             o.addProperty("lyricsSync", lyricsSync);
+            o.addProperty("customTitle", customTitle);
             o.addProperty("lyricsGlow", lyricsGlow);
             o.addProperty("lyricsGlowStrength", lyricsGlowStrength);
             o.addProperty("lyricsShadow", lyricsShadow);

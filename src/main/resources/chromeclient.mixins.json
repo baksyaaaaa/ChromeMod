@@ -9,7 +9,8 @@
     "CameraFreelookMixin",
     "LivingRendererMixin",
     "HandTransformMixin",
-    "LowFireMixin"
+    "LowFireMixin",
+    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 0
