@@ -39,6 +39,9 @@ public final class ChromeTitleScreen extends Screen {
         int anchor;            // 0 = x measured from the left, 1 = from the middle (937), 2 = from the right
         int kind;              // 0 button, 1 server card, 2 square, 3 header, 4 account
         String name, sub;
+        byte[] iconBytes;                 // the server's own icon (png) if it has one
+        net.minecraft.resources.Identifier iconTex;
+        boolean iconTried;
         Button hit;
     }
 
@@ -110,8 +113,9 @@ public final class ChromeTitleScreen extends Screen {
             int n = Math.min(3, sl.size());
             for (int i = 0; i < n; i++) {
                 ServerData d = sl.get(i);
-                add(1, 0, 58f, 388f + 65f * i, 254f, 53f, MenuSprites.BG_CARD, MenuSprites.BG_CARD_H, null, null, d.name, d.ip,
+                Item card = add(1, 0, 58f, 388f + 65f * i, 254f, 53f, MenuSprites.BG_CARD, MenuSprites.BG_CARD_H, null, null, d.name, d.ip,
                         () -> ConnectScreen.startConnecting(this, minecraft, ServerAddress.parseString(d.ip), d, false, null));
+                try { card.iconBytes = d.getIconBytes(); } catch (Throwable ignored) { }
             }
         } catch (Throwable ignored) {
             // no server list: the left side just stays with the header
@@ -178,8 +182,8 @@ public final class ChromeTitleScreen extends Screen {
 
         profile(g);
         // logo and name in the middle
-        sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 360f, 1);
-        sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 441f, 1);
+        sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 386f - dh(MenuSprites.LOGO) / 2f, 1);   // centred on where the old logo square was
+        sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
 
         for (Item it : items) {
             float x = rx(it.x, it.anchor), y = it.y * f;
@@ -201,9 +205,19 @@ public final class ChromeTitleScreen extends Screen {
                     float bx = x + 10f * f, by = y + 4.5f * f, bs = 44f * f;
                     int hue = Math.abs(it.name.hashCode());
                     int col = 0xFF000000 | (Ui.lerp(0xFF2F6BFF, 0xFF8B5CF6, (hue % 100) / 100f) & 0xFFFFFF);
-                    roundBox(g, bx, by, bs, bs, 8f * f, col);
-                    String ini = it.name.isEmpty() ? "?" : it.name.substring(0, 1).toUpperCase();
-                    dyn(g, ini, bx + bs / 2f - textW(ini, 17f, true) * f / 2f, by + bs / 2f, 17f, true, WHITE, 40f * f);
+                    net.minecraft.resources.Identifier icon = serverIcon(it);
+                    if (icon != null) {
+                        g.pose().pushMatrix();
+                        g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
+                        g.pose().translate(bx, by);
+                        g.pose().scale(bs / 64f, bs / 64f);
+                        g.blit(RenderPipelines.GUI_TEXTURED, icon, 0, 0, 0f, 0f, 64, 64, 64, 64);
+                        g.pose().popMatrix();
+                    } else {
+                        roundBox(g, bx, by, bs, bs, 8f * f, col);
+                        String ini = it.name.isEmpty() ? "?" : it.name.substring(0, 1).toUpperCase();
+                        dyn(g, ini, bx + bs / 2f - textW(ini, 17f, true) * f / 2f, by + bs / 2f, 17f, true, WHITE, 40f * f);
+                    }
                     dyn(g, it.name, x + 59f * f, y + 17f * f, 15f, true, WHITE, (it.w - 59f - 36f) * f);
                     dyn(g, it.sub, x + 59f * f, y + 37f * f, 13f, false, GREY, (it.w - 59f - 36f) * f);
                     spr(g, MenuSprites.CHEV_R, x + (it.w - 22f) * f, y + (it.h - 10f) / 2f * f);
@@ -224,7 +238,7 @@ public final class ChromeTitleScreen extends Screen {
         }
 
         // bottom corners
-        spr(g, MenuSprites.LOGO_S, 36f * f, 1012f * f);
+        spr(g, MenuSprites.LOGO_S, (45f - dw(MenuSprites.LOGO_S) / 2f) * f, (1021f - dh(MenuSprites.LOGO_S) / 2f) * f);
         spr(g, MenuSprites.T_FOOT, 60f * f, 1012f * f);
         String ver = FabricLoader.getInstance().getModContainer("chromeclient")
                 .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("");
@@ -266,6 +280,7 @@ public final class ChromeTitleScreen extends Screen {
         try {
             Object skin = skin();
             if (skin == null) return null;
+            net.minecraft.resources.Identifier fallback = null;
             for (java.lang.reflect.Method m : skin.getClass().getMethods()) {
                 if (m.getParameterCount() != 0 || m.getReturnType().isPrimitive() || m.getReturnType() == String.class) continue;
                 Object a;
@@ -275,9 +290,11 @@ public final class ChromeTitleScreen extends Screen {
                     if (m2.getParameterCount() != 0 || m2.getReturnType() != net.minecraft.resources.Identifier.class) continue;
                     net.minecraft.resources.Identifier id = (net.minecraft.resources.Identifier) m2.invoke(a);
                     String p = id == null ? "" : id.getPath();
-                    if (id != null && !p.contains("cape") && !p.contains("elytra")) { skinTex = id; return id; }
+                    if (id != null && p.endsWith(".png") && !p.contains("cape") && !p.contains("elytra")) { skinTex = id; return id; }
+                    if (id != null && fallback == null && !p.contains("cape") && !p.contains("elytra")) fallback = id;
                 }
             }
+            if (fallback != null) { skinTex = fallback; return fallback; }
         } catch (Throwable ignored) {
             // no skin picture: the model is just not drawn
         }
@@ -309,6 +326,22 @@ public final class ChromeTitleScreen extends Screen {
         part(g, tex, 40, 36, 4, 4, body, top + 8f * k, k);          // sleeve layer
         part(g, tex, 0, 8, 8, 8, head, top, k);                     // head (right side)
         part(g, tex, 32, 8, 8, 8, head, top, k);                    // hat layer
+    }
+
+    /** the server's icon as a texture (made once from the png in your server list); null if it has none */
+    private net.minecraft.resources.Identifier serverIcon(Item it) {
+        if (it.iconTried) return it.iconTex;
+        it.iconTried = true;
+        try {
+            if (it.iconBytes == null || it.iconBytes.length == 0) return null;
+            com.mojang.blaze3d.platform.NativeImage img = com.mojang.blaze3d.platform.NativeImage.read(new java.io.ByteArrayInputStream(it.iconBytes));
+            net.minecraft.resources.Identifier id = Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "server_icon/" + Math.abs(it.name.hashCode()) + "_" + Math.abs(java.util.Arrays.hashCode(it.iconBytes)));
+            minecraft.getTextureManager().register(id, new net.minecraft.client.renderer.texture.DynamicTexture(() -> "chromeclient server icon", img));
+            it.iconTex = id;
+        } catch (Throwable ignored) {
+            // no icon: the coloured initial is shown
+        }
+        return it.iconTex;
     }
 
     /** draws your skin's head (real pixels); false if the skin is not available */

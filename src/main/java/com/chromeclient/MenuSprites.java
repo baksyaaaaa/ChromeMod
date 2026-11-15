@@ -32,9 +32,9 @@ final class MenuSprites {
     static final int[] T_MODS = {1645, 186, 80, 44};
     static final int[] T_QUICK = {1727, 186, 147, 44};
     static final int[] T_HOST = {1876, 186, 158, 44};
-    static final int[] T_TITLE = {0, 294, 661, 100};
-    static final int[] T_FOOT = {663, 294, 192, 36};
-    static final int[] T_COPY = {857, 294, 478, 36};
-    static final int[] LOGO = {1337, 294, 104, 104};
-    static final int[] LOGO_S = {1443, 294, 36, 36};
+    static final int[] T_TITLE = {0, 294, 717, 156};
+    static final int[] T_FOOT = {719, 294, 192, 36};
+    static final int[] T_COPY = {913, 294, 478, 36};
+    static final int[] LOGO = {1393, 294, 152, 160};
+    static final int[] LOGO_S = {1547, 294, 26, 28};
 }
