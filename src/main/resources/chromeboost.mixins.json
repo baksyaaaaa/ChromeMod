@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.chromeboost.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "FramerateMixin",
+    "EntityCullMixin",
+    "ParticleMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

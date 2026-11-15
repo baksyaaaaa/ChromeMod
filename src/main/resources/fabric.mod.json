@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "chromeboost",
+  "version": "${version}",
+  "name": "Chrome Boost",
+  "description": "Lightweight performance mod: entity and particle culling, adaptive render distance, background FPS limit and memory care. Press F10 in game for the settings.",
+  "authors": [
+    "Baksya"
+  ],
+  "license": "All-Rights-Reserved",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.chromeboost.Boost"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "mixins": [
+    "chromeboost.mixins.json"
+  ]
+}
