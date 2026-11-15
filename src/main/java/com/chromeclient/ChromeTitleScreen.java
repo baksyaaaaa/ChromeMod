@@ -29,7 +29,7 @@ import java.util.List;
  */
 public final class ChromeTitleScreen extends Screen {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("ChromeTitle");
-    private static float yaw = 30f;          // how far the model is turned (kept when the menu is opened again)
+    private static float yaw = -35f;          // how far the model is turned (kept when the menu is opened again)
     private boolean logged, logged3d, loggedDrag;
     private static final Identifier ATLAS = Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png");
     private static final FontDescription MEDIUM = new FontDescription.Resource(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "poppins"));
@@ -316,6 +316,14 @@ public final class ChromeTitleScreen extends Screen {
                     Math.round(rx(1561f + 254f, 2) / (float) gs), Math.round(529f * f / (float) gs));
             g.submitSkinRenderState(model3d, tex, scale, -5f, yaw, -0.0625f, x0, ya, x1, yb);
             if (!logged3d) { logged3d = true; LOG.info("3D model submitted: texture={} box=({},{})-({},{}) scale={} guiScale={}", tex, x0, ya, x1, yb, scale, gs); }
+            // soft shadow under the shoulders: stacked gradients that get narrower, so the cut edge melts into the background
+            float gl = rx(1561f, 2) / (float) gs, gr = rx(1561f + 254f, 2) / (float) gs;
+            float gcx = (gl + gr) / 2f, gh = (gr - gl) / 2f;
+            int gTop = Math.round((529f - 120f) * f / (float) gs), gBot = Math.round(529f * f / (float) gs);
+            for (int i = 0; i < 14; i++) {
+                float half = gh * (1f - i * 0.045f);
+                g.fillGradient(Math.round(gcx - half), gTop, Math.round(gcx + half), gBot, 0x00000000, 0x0E000000);
+            }
             g.disableScissor();
             return true;
         } catch (Throwable t) {
