@@ -243,8 +243,14 @@ public class ClickGui extends Screen {
         Ui.glass(g, x, y, W, H);
 
         // ---- header: logo, tabs, close ----
-        Ui.rrect(g, x + PAD + 2, y + 10, 9, 9, 4.5f, Ui.ACCENT);
-        Ui.rrect(g, x + PAD + 4.5f, y + 12.5f, 4, 4, 2, 0xFF1A1430);
+        g.pose().pushMatrix();
+        g.pose().translate(x + PAD + 1, y + 6);
+        g.pose().scale(0.5f, 0.5f);
+        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
+                net.minecraft.resources.Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png"),
+                0, 0, (float) MenuSprites.LOGO_S[0], (float) MenuSprites.LOGO_S[1], MenuSprites.LOGO_S[2], MenuSprites.LOGO_S[3],
+                MenuSprites.ATLAS_W, MenuSprites.ATLAS_H);
+        g.pose().popMatrix();
         g.drawString(font, Component.literal("Chrome Client").withStyle(ChatFormatting.BOLD), x + PAD + 16, y + 10, Ui.mul(Ui.TEXT), false);
         int tx = x + PAD + 16 + font.width("Chrome Client") + 18;
         float targetUnder = 0, underW = 0;
@@ -262,9 +268,6 @@ public class ClickGui extends Screen {
         underX += (targetUnder - underX) * ease;
         underWd += (underW - underWd) * ease;   // the width glides too, so the bar never jumps when it moves to the left
         Ui.rect(g, underX, y + 22, Math.max(6f, underWd), 2, Ui.ACCENT);
-        String ver = "v" + net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer(ChromeClientMod.MOD_ID)
-                .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?");
-        Ui.text(g, font, ver, x + W - 30 - font.width(ver), y + 10, Ui.MUTED);
         boolean hClose = Ui.in(mx, my, x + W - 24, y + 5, 18, 18);
         Ui.rect(g, x + W - 24, y + 5, 18, 18, hClose ? Ui.HOVER : Ui.SURFACE);
         Ui.text(g, font, "x", x + W - 24 + (18 - font.width("x")) / 2, y + 10, Ui.TEXT);
