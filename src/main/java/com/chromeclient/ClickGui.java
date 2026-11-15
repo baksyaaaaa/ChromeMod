@@ -246,10 +246,11 @@ public class ClickGui extends Screen {
         g.pose().pushMatrix();
         g.pose().translate(x + PAD + 1, y + 6);
         g.pose().scale(0.5f, 0.5f);
-        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
-                net.minecraft.resources.Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png"),
-                0, 0, (float) MenuSprites.LOGO_S[0], (float) MenuSprites.LOGO_S[1], MenuSprites.LOGO_S[2], MenuSprites.LOGO_S[3],
-                MenuSprites.ATLAS_W, MenuSprites.ATLAS_H);
+        for (int pass = 0; pass < 3; pass++)   // the sprite is see-through white; stacking it makes it solid on the light glass
+            g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png"),
+                    0, 0, (float) MenuSprites.LOGO_S[0], (float) MenuSprites.LOGO_S[1], MenuSprites.LOGO_S[2], MenuSprites.LOGO_S[3],
+                    MenuSprites.ATLAS_W, MenuSprites.ATLAS_H);
         g.pose().popMatrix();
         g.drawString(font, Component.literal("Chrome Client").withStyle(ChatFormatting.BOLD), x + PAD + 16, y + 10, Ui.mul(Ui.TEXT), false);
         int tx = x + PAD + 16 + font.width("Chrome Client") + 18;
