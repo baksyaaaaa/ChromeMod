@@ -389,7 +389,7 @@ public final class ChromeTitleScreen extends Screen {
     @Override
     public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event, double dragX, double dragY) {
         float f = f();
-        double mx = event.x() * gs / f, my = event.y() * gs / f;       // back to design pixels
+        double mx = 1874.0 - (minecraft.getWindow().getWidth() - event.x() * gs) / f, my = event.y() * gs / f;   // back to design pixels (right-anchored)
         if (event.button() == 0 && mx >= 1561 && mx <= 1561 + 254 && my >= 300 && my <= 515) {
             yaw += (float) dragX * 2.5f;
             return true;
