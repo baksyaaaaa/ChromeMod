@@ -30,7 +30,7 @@ import java.util.List;
 public final class ChromeTitleScreen extends Screen {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("ChromeTitle");
     private static float yaw = 30f;          // how far the model is turned (kept when the menu is opened again)
-    private boolean logged;
+    private boolean logged, logged3d, loggedDrag;
     private static final Identifier ATLAS = Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png");
     private static final FontDescription MEDIUM = new FontDescription.Resource(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "poppins"));
     private static final FontDescription BOLD = new FontDescription.Resource(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "poppins_bold"));
@@ -314,6 +314,7 @@ public final class ChromeTitleScreen extends Screen {
             g.enableScissor(Math.round(rx(1561f, 2) / (float) gs), Math.round(300f * f / (float) gs),
                     Math.round(rx(1561f + 254f, 2) / (float) gs), Math.round(512f * f / (float) gs));
             g.submitSkinRenderState(model3d, tex, scale, -5f, yaw, -0.0625f, x0, ya, x1, yb);
+            if (!logged3d) { logged3d = true; LOG.info("3D model submitted: texture={} box=({},{})-({},{}) scale={} guiScale={}", tex, x0, ya, x1, yb, scale, gs); }
             g.disableScissor();
             return true;
         } catch (Throwable t) {
@@ -388,6 +389,7 @@ public final class ChromeTitleScreen extends Screen {
     /** hold the left mouse button on the model and move left / right to turn it */
     @Override
     public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event, double dragX, double dragY) {
+        if (!loggedDrag) { loggedDrag = true; LOG.info("mouse drag reached the menu: button={} at {},{}", event.button(), event.x(), event.y()); }
         float f = f();
         double mx = 1874.0 - (minecraft.getWindow().getWidth() - event.x() * gs) / f, my = event.y() * gs / f;   // back to design pixels (right-anchored)
         if (event.button() == 0 && mx >= 1561 && mx <= 1561 + 254 && my >= 300 && my <= 515) {
