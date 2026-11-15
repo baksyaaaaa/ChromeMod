@@ -30,8 +30,6 @@ import java.util.List;
 public final class ChromeTitleScreen extends Screen {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("ChromeTitle");
     private static float yaw = 30f;          // how far the model is turned (kept when the menu is opened again)
-    private boolean turning;                  // the mouse went down on the model and is still held
-    private double lastMouseX;
     private boolean logged;
     private static final Identifier ATLAS = Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png");
     private static final FontDescription MEDIUM = new FontDescription.Resource(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "poppins"));
@@ -185,7 +183,7 @@ public final class ChromeTitleScreen extends Screen {
         super.render(g, mouseX, mouseY, delta);   // blurred panorama
         float f = f();
 
-        if (!model3d(g, mouseX, mouseY)) profile(g);
+        if (!model3d(g)) profile(g);
         // logo and name in the middle
         sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 386f - dh(MenuSprites.LOGO) / 2f, 1);   // centred on where the old logo square was
         sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
@@ -228,12 +226,6 @@ public final class ChromeTitleScreen extends Screen {
                     spr(g, MenuSprites.CHEV_R, x + (it.w - 22f) * f, y + (it.h - 10f) / 2f * f);
                 }
                 case 4 -> {    // account
-                    float bx = x + 9f * f, by = y + 4.5f * f, bs = 28f * f;
-                    if (!head(g, bx, by, bs)) {
-                        roundBox(g, bx, by, bs, bs, 5f * f, 0xFF29D48F);
-                        String ini = it.name.isEmpty() ? "?" : it.name.substring(0, 1).toUpperCase();
-                        dyn(g, ini, bx + bs / 2f - textW(ini, 15f, true) * f / 2f, by + bs / 2f, 15f, true, 0xFF0B0714, 30f * f);
-                    }
                     float tw = textW(it.name, 15f, true);
                     dyn(g, it.name, x + (it.w - tw) / 2f * f, y + it.h / 2f * f, 15f, true, WHITE, (it.w - 70f) * f);
                 }
@@ -303,7 +295,7 @@ public final class ChromeTitleScreen extends Screen {
     private net.minecraft.client.model.player.PlayerModel model3d;
 
     /** your real player model (3D, same renderer the game uses in its own menus), cropped to head and shoulders */
-    private boolean model3d(GuiGraphics g, int mouseX, int mouseY) {
+    private boolean model3d(GuiGraphics g) {
         try {
             net.minecraft.world.entity.player.PlayerSkin skin = skin();
             if (skin == null) return false;
@@ -321,12 +313,6 @@ public final class ChromeTitleScreen extends Screen {
             // only head and shoulders are shown: cut everything below the box above the account button
             g.enableScissor(Math.round(rx(1561f, 2) / (float) gs), Math.round(300f * f / (float) gs),
                     Math.round(rx(1561f + 254f, 2) / (float) gs), Math.round(512f * f / (float) gs));
-            // hold the left mouse button on the model and move left / right to turn it
-            boolean down = minecraft.mouseHandler.isLeftPressed();
-            boolean over = mouseX >= x0 + (x1 - x0) * 0.2f && mouseX <= x1 - (x1 - x0) * 0.2f && mouseY >= ya && mouseY <= Math.round(512f * f / (float) gs);
-            if (down && !turning && over) { turning = true; lastMouseX = mouseX; }
-            if (!down) turning = false;
-            if (turning) { yaw += (float) (mouseX - lastMouseX) * 2.5f; lastMouseX = mouseX; }
             g.submitSkinRenderState(model3d, tex, scale, -5f, yaw, -0.0625f, x0, ya, x1, yb);
             g.disableScissor();
             return true;
@@ -397,6 +383,18 @@ public final class ChromeTitleScreen extends Screen {
             g.fill(X + in, Y + dy, X + W - in, Y + dy + 1, color);
         }
         g.pose().popMatrix();
+    }
+
+    /** hold the left mouse button on the model and move left / right to turn it */
+    @Override
+    public boolean mouseDragged(net.minecraft.client.input.MouseButtonEvent event, double dragX, double dragY) {
+        float f = f();
+        double mx = event.x() * gs / f, my = event.y() * gs / f;       // back to design pixels
+        if (event.button() == 0 && mx >= 1561 && mx <= 1561 + 254 && my >= 300 && my <= 515) {
+            yaw += (float) dragX * 2.5f;
+            return true;
+        }
+        return super.mouseDragged(event, dragX, dragY);
     }
 
     @Override

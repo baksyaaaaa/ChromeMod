@@ -368,6 +368,7 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.63**: emote wheel and the Star/Griddy/Levitate emotes removed again.
 - **2.42.71**: lyrics stay in sync: uses the exact play time from YT Music In-Game 1.2.3 and picks the lyrics version whose length matches the song.
 - **2.42.72**: new Chrome Client main menu (blurred panorama, name in the middle, Singleplayer / Multiplayer / Realms / Settings / Quit, your saved servers as Quickplay on the left, your account on the right). Switch: Right Shift > Misc > Main menu.
+- **2.42.88**: main-menu model turns with real mouse drag events; face icon in the account box removed.
 - **2.42.87**: hold the left mouse button on the main-menu model and move left/right to turn it; logs why if the 3D model cannot draw.
 - **2.42.86**: 3D player model on the main menu, account arrow removed, Right Shift tab bar no longer jumps when moving left.
 - **2.42.85**: skin picture for the main-menu profile is read straight from the skin (body texture).
