@@ -231,10 +231,36 @@ public final class ChromeTitleScreen extends Screen {
         spr(g, MenuSprites.T_COPY, rx(1874f - 34f - dw(MenuSprites.T_COPY), 2), 1014f * f);
     }
 
+    private net.minecraft.world.entity.player.PlayerSkin cachedSkin;
+    private java.lang.reflect.Method skinMethod;
+
+    /** your skin; found by method signature (GameProfile -> skin / future of skin) so it does not depend on the exact method name */
+    private net.minecraft.world.entity.player.PlayerSkin skin() throws Exception {
+        Object sm = minecraft.getSkinManager();
+        if (skinMethod == null) {
+            for (java.lang.reflect.Method m : sm.getClass().getMethods()) {
+                Class<?>[] p = m.getParameterTypes();
+                if (p.length != 1 || p[0] != com.mojang.authlib.GameProfile.class) continue;
+                Class<?> r = m.getReturnType();
+                if (r == net.minecraft.world.entity.player.PlayerSkin.class || r == java.util.concurrent.CompletableFuture.class || r == java.util.Optional.class) {
+                    skinMethod = m;
+                    break;
+                }
+            }
+            if (skinMethod == null) return null;
+        }
+        Object o = skinMethod.invoke(sm, minecraft.getGameProfile());
+        if (o instanceof java.util.concurrent.CompletableFuture<?> cf) o = cf.getNow(null);
+        if (o instanceof java.util.Optional<?> op) o = op.orElse(null);
+        if (o instanceof net.minecraft.world.entity.player.PlayerSkin ps) cachedSkin = ps;
+        return cachedSkin;
+    }
+
     /** draws your skin's head (real pixels); false if the skin is not available */
     private boolean head(GuiGraphics g, float x, float y, float size) {
         try {
-            net.minecraft.world.entity.player.PlayerSkin skin = minecraft.getSkinManager().getInsecureSkin(minecraft.getGameProfile());
+            net.minecraft.world.entity.player.PlayerSkin skin = skin();
+            if (skin == null) return false;
             g.pose().pushMatrix();
             g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
             g.pose().translate(x, y);
