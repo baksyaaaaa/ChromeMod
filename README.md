@@ -1,6 +1,6 @@
 # Chrome Boost
 
-A small client-side Fabric performance mod for Minecraft 1.21.11. Press **F10** in game for the settings.
+A small client-side Fabric performance mod for Minecraft 1.21.11. No settings screen: it runs with sensible defaults (advanced: edit `config/chrome-boost.json`).
 Every module is something that measurably cuts work; nothing here is a placebo.
 
 | Module | What it does | Why it helps |

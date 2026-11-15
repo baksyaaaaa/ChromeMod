@@ -3,7 +3,7 @@
   "id": "chromeboost",
   "version": "${version}",
   "name": "Chrome Boost",
-  "description": "Lightweight performance mod: entity and particle culling, adaptive render distance, background FPS limit and memory care. Press F10 in game for the settings.",
+  "description": "Lightweight performance mod: entity and particle culling, adaptive render distance, background FPS limit and memory care.",
   "authors": [
     "Baksya"
   ],
