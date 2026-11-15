@@ -368,6 +368,7 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.63**: emote wheel and the Star/Griddy/Levitate emotes removed again.
 - **2.42.71**: lyrics stay in sync: uses the exact play time from YT Music In-Game 1.2.3 and picks the lyrics version whose length matches the song.
 - **2.42.72**: new Chrome Client main menu (blurred panorama, name in the middle, Singleplayer / Multiplayer / Realms / Settings / Quit, your saved servers as Quickplay on the left, your account on the right). Switch: Right Shift > Misc > Main menu.
+- **2.42.95**: main-menu logo and title have no glow; buttons and cards use light frosted glass instead of dark fills.
 - **2.42.94**: logo is white and see-through like the title.
 - **2.42.93**: the main-menu model is cut right where the account box starts, so there is no visible edge.
 - **2.42.92**: removed the visible fade box; title and logo are more transparent with a white glow.
