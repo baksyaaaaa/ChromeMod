@@ -23,7 +23,6 @@ public final class HatMesh {
     private final float[] pos;      // x,y,z per vertex
     private final byte[] data;      // nx,ny,nz,r,g,b per vertex
     private final short[] quads;    // 4 indices per quad
-    private boolean glow;          // halo / void ring get a soft glow shell
     private boolean flat;           // lit the same from every direction (cat ears)
 
     private HatMesh(float[] pos, byte[] data, short[] quads) {
@@ -59,7 +58,6 @@ public final class HatMesh {
             }
             if (name.equals("hat_2")) matte(dt);   // cat ears: soft, even lighting instead of shiny highlights
             m = new HatMesh(p, dt, q);
-            m.glow = name.equals("hat_1") || name.equals("hat_4");
             m.flat = name.equals("hat_1") || name.equals("hat_2") || name.equals("hat_4");
         } catch (Throwable t) {
             m = NONE;
@@ -85,22 +83,6 @@ public final class HatMesh {
     /** draws the model in the current pose (the pose is already at the head) */
     public void draw(PoseStack pose, SubmitNodeCollector queue, int light) {
         if (quads.length == 0) return;
-        if (glow) {   // a soft, slightly bigger copy that is drawn without any lighting: this is the shine around the ring
-            pose.pushPose();
-            pose.scale(1.14f, 1.5f, 1.14f);
-            queue.submitCustomGeometry(pose, RenderTypes.eyes(WHITE), (p, vc) -> {
-                for (int i = 0; i < quads.length; i++) {
-                    int v = quads[i];
-                    vc.addVertex(p, pos[v * 3] / 16f, pos[v * 3 + 1] / 16f, pos[v * 3 + 2] / 16f)
-                            .setColor(data[v * 6 + 3] & 255, data[v * 6 + 4] & 255, data[v * 6 + 5] & 255, 90)
-                            .setUv(0.5f, 0.5f)
-                            .setOverlay(OverlayTexture.NO_OVERLAY)
-                            .setLight(0xF000F0);
-                    vc.setNormal(0f, 1f, 0f);
-                }
-            });
-            pose.popPose();
-        }
         queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(WHITE), (p, vc) -> {
             for (int i = 0; i < quads.length; i++) {
                 int v = quads[i];
