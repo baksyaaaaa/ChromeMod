@@ -278,27 +278,12 @@ public final class ChromeTitleScreen extends Screen {
     private net.minecraft.resources.Identifier skinTexture() {
         if (skinTex != null) return skinTex;
         try {
-            Object skin = skin();
-            if (skin == null) return null;
-            net.minecraft.resources.Identifier fallback = null;
-            for (java.lang.reflect.Method m : skin.getClass().getMethods()) {
-                if (m.getParameterCount() != 0 || m.getReturnType().isPrimitive() || m.getReturnType() == String.class) continue;
-                Object a;
-                try { a = m.invoke(skin); } catch (Throwable t) { continue; }
-                if (a == null || a.getClass().getName().startsWith("java.")) continue;
-                for (java.lang.reflect.Method m2 : a.getClass().getMethods()) {
-                    if (m2.getParameterCount() != 0 || m2.getReturnType() != net.minecraft.resources.Identifier.class) continue;
-                    net.minecraft.resources.Identifier id = (net.minecraft.resources.Identifier) m2.invoke(a);
-                    String p = id == null ? "" : id.getPath();
-                    if (id != null && p.endsWith(".png") && !p.contains("cape") && !p.contains("elytra")) { skinTex = id; return id; }
-                    if (id != null && fallback == null && !p.contains("cape") && !p.contains("elytra")) fallback = id;
-                }
-            }
-            if (fallback != null) { skinTex = fallback; return fallback; }
+            net.minecraft.world.entity.player.PlayerSkin skin = skin();
+            if (skin != null) skinTex = skin.body().texturePath();
         } catch (Throwable ignored) {
             // no skin picture: the model is just not drawn
         }
-        return null;
+        return skinTex;
     }
 
     /** one rectangle of the skin picture, drawn flipped so the profile looks to the left; (x, y) real pixels, k real pixels per skin pixel */
