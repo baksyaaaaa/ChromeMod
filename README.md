@@ -368,6 +368,7 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.63**: emote wheel and the Star/Griddy/Levitate emotes removed again.
 - **2.42.71**: lyrics stay in sync: uses the exact play time from YT Music In-Game 1.2.3 and picks the lyrics version whose length matches the song.
 - **2.42.72**: new Chrome Client main menu (blurred panorama, name in the middle, Singleplayer / Multiplayer / Realms / Settings / Quit, your saved servers as Quickplay on the left, your account on the right). Switch: Right Shift > Misc > Main menu.
+- **2.42.105**: the halo is a closed yellow ring (no gap) with true yellow colours.
 - **2.42.104**: same as 2.42.103 (cleaned up a merge slip).
 - **2.42.103**: halo is back to the normal (cheap) drawing because the unlit halo cost FPS; the lyric-text and far-sign-text savings are back on.
 - **2.42.102**: undid the last in-game changes (unlit halo, lyric text throttle, far sign text) because the game felt laggier.

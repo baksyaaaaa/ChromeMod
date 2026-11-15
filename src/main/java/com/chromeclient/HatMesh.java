@@ -52,7 +52,7 @@ public final class HatMesh {
             int nq = d.readInt();
             short[] q = new short[nq * 4];
             for (int i = 0; i < q.length; i++) q[i] = d.readShort();
-            if (name.equals("hat_1") || name.equals("hat_4")) {   // halo and void ring: brighter colours so they glow
+            if (name.equals("hat_4")) {   // void ring: brighter colours so it glows
                 for (int i = 0; i + 5 < dt.length; i += 6)
                     for (int k = 3; k < 6; k++) dt[i + k] = (byte) Math.min(255, Math.round((dt[i + k] & 255) * 1.3f + 18f));
             }
