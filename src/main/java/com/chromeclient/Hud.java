@@ -26,14 +26,14 @@ import java.util.List;
 /** Draws the on-screen info: text lines, keystrokes, armor status. Each can be dragged in the HUD editor. */
 public final class Hud {
     /** movable elements: our own three, then three from the vanilla game (moved by an offset in ChromeClientMod). */
-    public static final String[] IDS = {"info", "keys", "armor", "timer", "scoreboard", "boss_bar", "status_effects",
+    public static final String[] IDS = {"info", "keys", "armor", "timer", "p_potions", "p_binds", "p_target", "p_perf", "p_mark", "scoreboard", "boss_bar", "status_effects",
             "hotbar", "health_bar", "food_bar", "armor_bar", "air_bar", "info_bar", "experience_level",
             "held_item_tooltip", "overlay_message", "title_and_subtitle", "tab_list", "subtitles"};
-    public static final String[] LABELS = {"Info", "Keystrokes", "Armor status", "Pay timer", "Leaderboard", "Boss bar", "Effects",
+    public static final String[] LABELS = {"Info", "Keystrokes", "Armor status", "Pay timer", "Potion list", "Keybind list", "Target HUD", "Performance", "Watermark", "Leaderboard", "Boss bar", "Effects",
             "Hotbar", "Health", "Food", "Armor points", "Air", "XP bar", "XP",
             "Item name", "Action bar", "Titles", "Player list", "Subtitles"};
     /** the ids of the vanilla ones (everything from index 4 on) */
-    public static boolean isVanilla(int index) { return index >= 4; }
+    public static boolean isVanilla(int index) { return index >= 9; }
 
     private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm");
     private static final EquipmentSlot[] ARMOR = {
@@ -74,6 +74,11 @@ public final class Hud {
             case "timer" -> {
                 x = 6; y = sh / 2 + 56; w = timerW; h = timerH;
             }
+            case "p_potions" -> { int[] q = HudPack.baseOf(HudPack.potions, sw, sh); x = q[0]; y = q[1]; w = q[2]; h = q[3]; }
+            case "p_binds" -> { int[] q = HudPack.baseOf(HudPack.binds, sw, sh); x = q[0]; y = q[1]; w = q[2]; h = q[3]; }
+            case "p_target" -> { int[] q = HudPack.baseOf(HudPack.target, sw, sh); x = q[0]; y = q[1]; w = q[2]; h = q[3]; }
+            case "p_perf" -> { int[] q = HudPack.baseOf(HudPack.perf, sw, sh); x = q[0]; y = q[1]; w = q[2]; h = q[3]; }
+            case "p_mark" -> { int[] q = HudPack.baseOf(HudPack.mark, sw, sh); x = q[0]; y = q[1]; w = q[2]; h = q[3]; }
             case "scoreboard" -> {   // measured from the real leaderboard when there is one, else a guess
                 int[] m = measureScoreboard(mc, sw, sh);
                 if (m != null) { x = m[0]; y = m[1]; w = m[2]; h = m[3]; }
@@ -156,6 +161,11 @@ public final class Hud {
             case "keys" -> c.keystrokes;
             case "armor" -> c.armor;
             case "timer" -> PayTimer.get().visible();
+            case "p_potions" -> HudPack.potions.on;
+            case "p_binds" -> HudPack.binds.on;
+            case "p_target" -> HudPack.target.on;
+            case "p_perf" -> HudPack.perf.on;
+            case "p_mark" -> HudPack.mark.on;
             default -> true;
         };
     }

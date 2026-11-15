@@ -34,15 +34,18 @@ public final class HudPack {
         public boolean on;
         public int corner, ox, oy;
         public float scale = 1f;
+        int lw = 100, lh = 30;   // size it was last drawn at (before scaling), so the HUD editor can box it
+        String id = "";
         Panel(boolean on, int corner, int ox, int oy) { this.on = on; this.corner = corner; this.ox = ox; this.oy = oy; }
+        Panel id(String s) { this.id = s; return this; }
     }
 
     public static final String[] CORNERS = {"Top left", "Top right", "Bottom left", "Bottom right"};
-    public static final Panel potions = new Panel(false, 3, 6, 6);
-    public static final Panel binds = new Panel(false, 2, 6, 6);
-    public static final Panel target = new Panel(false, 0, 6, 70);
-    public static final Panel perf = new Panel(false, 1, 6, 6);
-    public static final Panel mark = new Panel(false, 0, 6, 6);
+    public static final Panel potions = new Panel(false, 3, 6, 6).id("p_potions");
+    public static final Panel binds = new Panel(false, 2, 6, 6).id("p_binds");
+    public static final Panel target = new Panel(false, 0, 6, 70).id("p_target");
+    public static final Panel perf = new Panel(false, 1, 6, 6).id("p_perf");
+    public static final Panel mark = new Panel(false, 0, 6, 6).id("p_mark");
 
     // crosshair
     public static boolean crossOn = false;
@@ -151,11 +154,23 @@ public final class HudPack {
     private interface Body { void draw(GuiGraphics g, Font f, int w, int h); }
 
     /** puts a panel in its corner (with offset and size), draws the glass behind it and then its content */
+    /** {x, y, w, h} of a panel at its corner spot (before any drag in the HUD editor) */
+    static int[] baseOf(Panel p, int sw, int sh) {
+        float s = p.scale;
+        int w = Math.round(p.lw * s), h = Math.round(p.lh * s);
+        int x = (p.corner & 1) == 0 ? p.ox : Math.round(sw - p.ox - w);
+        int y = (p.corner & 2) == 0 ? p.oy : Math.round(sh - p.oy - h);
+        return new int[]{x, y, w, h};
+    }
+
     private static void panel(GuiGraphics g, Minecraft mc, Panel p, int w, int h, Body body) {
         int sw = mc.getWindow().getGuiScaledWidth(), sh = mc.getWindow().getGuiScaledHeight();
-        float s = p.scale;
-        float x = (p.corner & 1) == 0 ? p.ox : sw - p.ox - w * s;
-        float y = (p.corner & 2) == 0 ? p.oy : sh - p.oy - h * s;
+        p.lw = w; p.lh = h;
+        int[] bb = baseOf(p, sw, sh);
+        int[] off = Config.get().off(p.id);
+        float s = p.scale * Config.get().scale(p.id);
+        float x = bb[0] + off[0];
+        float y = bb[1] + off[1];
         g.pose().pushMatrix();
         g.pose().translate(x, y);
         g.pose().scale(s, s);
