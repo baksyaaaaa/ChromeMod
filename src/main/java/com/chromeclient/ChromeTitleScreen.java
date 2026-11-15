@@ -184,6 +184,7 @@ public final class ChromeTitleScreen extends Screen {
         float f = f();
 
         if (!model3d(g)) profile(g);
+        fadeBottom(g);
         // logo and name in the middle
         sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 386f - dh(MenuSprites.LOGO) / 2f, 1);   // centred on where the old logo square was
         sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
@@ -384,6 +385,15 @@ public final class ChromeTitleScreen extends Screen {
             g.fill(X + in, Y + dy, X + W - in, Y + dy + 1, color);
         }
         g.pose().popMatrix();
+    }
+
+    /** the model fades out towards the account box instead of ending in a hard edge */
+    private void fadeBottom(GuiGraphics g) {
+        float f = f();
+        int xa = Math.round(rx(1561f - 40f, 2) / (float) gs), xb = Math.round(rx(1561f + 254f + 40f, 2) / (float) gs);
+        int y1 = Math.round(430f * f / (float) gs), y2 = Math.round(512f * f / (float) gs), y3 = Math.round(548f * f / (float) gs);
+        g.fillGradient(xa, y1, xb, y2, 0x00000000, 0xD8101418);
+        g.fillGradient(xa, y2, xb, y3, 0xD8101418, 0x00000000);
     }
 
     /** hold the left mouse button on the model and move left / right to turn it */
