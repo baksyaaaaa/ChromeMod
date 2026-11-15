@@ -176,6 +176,7 @@ public final class ChromeTitleScreen extends Screen {
         super.render(g, mouseX, mouseY, delta);   // blurred panorama
         float f = f();
 
+        profile(g);
         // logo and name in the middle
         sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 360f, 1);
         sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 441f, 1);
@@ -254,6 +255,60 @@ public final class ChromeTitleScreen extends Screen {
         if (o instanceof java.util.Optional<?> op) o = op.orElse(null);
         if (o instanceof net.minecraft.world.entity.player.PlayerSkin ps) cachedSkin = ps;
         return cachedSkin;
+    }
+
+
+    private net.minecraft.resources.Identifier skinTex;
+
+    /** the texture of your skin: found by type (the skin object holds an asset whose path is an Identifier) */
+    private net.minecraft.resources.Identifier skinTexture() {
+        if (skinTex != null) return skinTex;
+        try {
+            Object skin = skin();
+            if (skin == null) return null;
+            for (java.lang.reflect.Method m : skin.getClass().getMethods()) {
+                if (m.getParameterCount() != 0 || m.getReturnType().isPrimitive() || m.getReturnType() == String.class) continue;
+                Object a;
+                try { a = m.invoke(skin); } catch (Throwable t) { continue; }
+                if (a == null || a.getClass().getName().startsWith("java.")) continue;
+                for (java.lang.reflect.Method m2 : a.getClass().getMethods()) {
+                    if (m2.getParameterCount() != 0 || m2.getReturnType() != net.minecraft.resources.Identifier.class) continue;
+                    net.minecraft.resources.Identifier id = (net.minecraft.resources.Identifier) m2.invoke(a);
+                    String p = id == null ? "" : id.getPath();
+                    if (id != null && !p.contains("cape") && !p.contains("elytra")) { skinTex = id; return id; }
+                }
+            }
+        } catch (Throwable ignored) {
+            // no skin picture: the model is just not drawn
+        }
+        return null;
+    }
+
+    /** one rectangle of the skin picture, drawn flipped so the profile looks to the left; (x, y) real pixels, k real pixels per skin pixel */
+    private void part(GuiGraphics g, net.minecraft.resources.Identifier tex, int u, int v, int w, int h, float x, float y, float k) {
+        g.pose().pushMatrix();
+        g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
+        g.pose().translate(x + w * k, y);
+        g.pose().scale(-k, k);
+        g.blit(RenderPipelines.GUI_TEXTURED, tex, 0, 0, (float) u, (float) v, w, h, 64, 64);
+        g.pose().popMatrix();
+    }
+
+    /** a medium close-up of your skin in side profile (head and shoulders), above the account box */
+    private void profile(GuiGraphics g) {
+        net.minecraft.resources.Identifier tex = skinTexture();
+        if (tex == null) return;
+        float f = f(), k = 14f * f;                       // 14 design pixels per skin pixel
+        float cx = rx(1688f, 2) , top = 345f * f;
+        float head = cx - 4f * k;                          // head is 8 wide, the body 4 wide, both centred
+        float body = cx - 2f * k;
+        // body first (3.5 rows are visible), then the arm in front of it, then the head
+        part(g, tex, 16, 20, 4, 4, body, top + 8f * k, k);          // torso (right side)
+        part(g, tex, 16, 36, 4, 4, body - 0.0f, top + 8f * k, k);   // jacket layer
+        part(g, tex, 40, 20, 4, 4, body, top + 8f * k, k);          // arm (right side)
+        part(g, tex, 40, 36, 4, 4, body, top + 8f * k, k);          // sleeve layer
+        part(g, tex, 0, 8, 8, 8, head, top, k);                     // head (right side)
+        part(g, tex, 32, 8, 8, 8, head, top, k);                    // hat layer
     }
 
     /** draws your skin's head (real pixels); false if the skin is not available */
