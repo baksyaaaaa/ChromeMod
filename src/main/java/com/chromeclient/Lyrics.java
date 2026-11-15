@@ -49,6 +49,8 @@ public final class Lyrics {
         float phase;         // offsets the flowing gradient
         TextEntity ent;      // the 3D text in the world
         int id;
+        int lastStep = -1;   // last gradient step that was written into the text (the text is only rebuilt when it changes)
+        int lastPalette = -1;
     }
 
     private static final Pattern STAMP = Pattern.compile("\\[(\\d+):(\\d+(?:\\.\\d+)?)]");
@@ -281,17 +283,24 @@ public final class Lyrics {
             // turned away from you by yawOff for good: its front points the opposite way the readers look
             float face = p.faceYaw + p.yawOff + (float) Math.sin(age / 900.0 + p.phase * 6.0) * 5f;
             p.ent.moveTo(p.wx, wy, p.wz, face + 180f, p.lean);
-            // the colour flows along the words over time
-            net.minecraft.network.chat.MutableComponent comp = Component.empty();
-            int n = p.text.length();
-            for (int i = 0; i < n; i++) {
-                float t = (i + 0.5f) / Math.max(1, n);
-                float wave = 0.5f + 0.5f * (float) Math.sin((t * 1.4f - age / 1100f - p.phase) * Math.PI * 2.0);
-                int rgb = Ui.lerp(pal[0], pal[1], wave) & 0xFFFFFF;
-                comp.append(Component.literal(String.valueOf(p.text.charAt(i)))
-                        .withStyle(net.minecraft.network.chat.Style.EMPTY.withColor(rgb).withBold(true)));
+            // the colour flows along the words over time. Setting the text makes the game lay the whole text out again, so it is
+            // only rebuilt when the flow has moved a visible step (about 16 times a second), not on every call
+            int step = (int) (age / 60f);
+            if (step != p.lastStep || Extras.lyricsPalette != p.lastPalette) {
+                p.lastStep = step;
+                p.lastPalette = Extras.lyricsPalette;
+                float stepAge = step * 60f;
+                net.minecraft.network.chat.MutableComponent comp = Component.empty();
+                int n = p.text.length();
+                for (int i = 0; i < n; i++) {
+                    float t = (i + 0.5f) / Math.max(1, n);
+                    float wave = 0.5f + 0.5f * (float) Math.sin((t * 1.4f - stepAge / 1100f - p.phase) * Math.PI * 2.0);
+                    int rgb = Ui.lerp(pal[0], pal[1], wave) & 0xFFFFFF;
+                    comp.append(Component.literal(String.valueOf(p.text.charAt(i)))
+                            .withStyle(net.minecraft.network.chat.Style.EMPTY.withColor(rgb).withBold(true)));
+                }
+                p.ent.text(comp);
             }
-            p.ent.text(comp);
         }
     }
 
