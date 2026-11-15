@@ -368,6 +368,7 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.63**: emote wheel and the Star/Griddy/Levitate emotes removed again.
 - **2.42.71**: lyrics stay in sync: uses the exact play time from YT Music In-Game 1.2.3 and picks the lyrics version whose length matches the song.
 - **2.42.72**: new Chrome Client main menu (blurred panorama, name in the middle, Singleplayer / Multiplayer / Realms / Settings / Quit, your saved servers as Quickplay on the left, your account on the right). Switch: Right Shift > Misc > Main menu.
+- **2.42.99**: the halo and void ring are drawn unlit (like glowing eyes) so they shine in the world as well as in the inventory; still one ring.
 - **2.42.98**: halo is one ring again (the extra glow copy is gone); it keeps the bright, evenly lit look.
 - **2.42.97**: lighter wash on the menu background (was too foggy).
 - **2.42.96**: the moving main-menu background is brightened so no part of it is dark.
