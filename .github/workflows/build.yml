@@ -66,16 +66,13 @@ jobs:
             !build/libs/*-sources.jar
             build.log
 
-      - name: Publish the jar as a GitHub Release (the launcher downloads it from here)
-        if: success() && github.ref == 'refs/heads/main'
+      - name: Publish the jar as a GitHub Release (the launcher downloads it from the "chromeboost" release of ChromeMod)
+        if: success() && github.ref == 'refs/heads/chromeboost'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           VER=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
           JAR=$(ls build/libs/*.jar | grep -v -- '-sources' | head -n1)
-          TAG="build-${{ github.run_number }}"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$JAR" --clobber
-          else
-            gh release create "$TAG" "$JAR" --title "Chrome Boost $VER" --notes "Minecraft ${{ matrix.mc }}" --latest
-          fi
+          gh release delete chromeboost --yes --cleanup-tag >/dev/null 2>&1 || true
+          # --latest=false: the "latest" release stays the Chrome Client one
+          gh release create chromeboost "$JAR" --title "Chrome Boost $VER" --notes "Minecraft ${{ matrix.mc }}" --latest=false --target "$GITHUB_SHA"
