@@ -181,7 +181,7 @@ public final class ChromeTitleScreen extends Screen {
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
         super.render(g, mouseX, mouseY, delta);   // blurred panorama
-        g.fill(0, 0, width, height, 0x4AE6EAF0);   // a light wash: lifts the dark parts of the moving background much more than the bright ones
+        g.fill(0, 0, width, height, 0x1CFFFFFF);   // a light wash: lifts the dark parts of the moving background much more than the bright ones
         float f = f();
 
         if (!model3d(g)) profile(g);
