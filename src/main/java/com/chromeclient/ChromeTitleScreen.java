@@ -12,196 +12,234 @@ import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
+import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Chrome Client's main menu, laid out like a modern client menu: blurred panorama, name in the middle with the
- * main buttons under it, a Quickplay list of your saved servers on the left, your account on the right, small buttons
- * top right. The buttons are normal (invisible) game buttons that we draw over, so clicks and keys work like normal.
+ * Chrome Client's main menu. It is laid out on a 1874 x 1050 design (a modern client menu): everything is placed in real
+ * screen pixels and scaled by (window height / 1050). The artwork (buttons, icons, texts, logo) comes from one smooth
+ * picture (menu_atlas.png, made with the Poppins font) and the changing texts (server names, your name) use the same
+ * font. The clickable parts are normal (invisible) game buttons, so clicks and keys work like in the normal menu.
  */
 public final class ChromeTitleScreen extends Screen {
-    private static final int PANEL = 0xA6323236, PANEL_HOVER = 0xC04A4A50, EDGE = 0x33FFFFFF, MUTE = 0xFFB4B4B8;
+    private static final Identifier ATLAS = Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png");
+    private static final FontDescription MEDIUM = new FontDescription.Resource(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "poppins"));
+    private static final FontDescription BOLD = new FontDescription.Resource(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "poppins_bold"));
+    private static final int GREY = 0xFFC8C8CD, WHITE = 0xFFFFFFFF;
 
-    private static final class B {
-        String label, sub;
-        int kind;                 // 0 plain button, 1 server card, 2 small square, 3 header (no click)
-        int icon;
-        int x, y, w, h;
+    private static final class Item {
+        int[] bg, bgH, icon, label;
+        float x, y, w, h;      // design coordinates (1874 x 1050)
+        int anchor;            // 0 = x measured from the left, 1 = from the middle (937), 2 = from the right
+        int kind;              // 0 button, 1 server card, 2 square, 3 header, 4 account
+        String name, sub;
         Button hit;
-        float hov;
     }
 
-    private final List<B> bs = new ArrayList<>();
-    private long last = System.nanoTime();
-    private int cx, hh, sw;
+    private final List<Item> items = new ArrayList<>();
+    private double gs = 1;
 
     public ChromeTitleScreen() {
         super(Component.literal("Chrome Client"));
     }
 
-    private B add(int kind, String label, String sub, int icon, int x, int y, int w, int h, Runnable r) {
-        B b = new B();
-        b.kind = kind; b.label = label; b.sub = sub; b.icon = icon;
-        b.x = x; b.y = y; b.w = w; b.h = h;
-        if (r != null) {
-            b.hit = Button.builder(Component.literal(label), btn -> r.run()).bounds(x, y, w, h).build();
-            b.hit.setAlpha(0f);   // invisible: we draw it ourselves, the game still handles the clicks
-            addRenderableWidget(b.hit);
+    // ---- design -> real pixels ----
+    private float f() {
+        return minecraft.getWindow().getHeight() / 1050f;
+    }
+
+    private float rx(float x, int anchor) {
+        float W = minecraft.getWindow().getWidth(), f = f();
+        return switch (anchor) {
+            case 1 -> W / 2f + (x - 937f) * f;
+            case 2 -> W - (1874f - x) * f;
+            default -> x * f;
+        };
+    }
+
+    private Item add(int kind, int anchor, float x, float y, float w, float h, int[] bg, int[] bgH, int[] icon, int[] label,
+                     String name, String sub, Runnable click) {
+        Item it = new Item();
+        it.kind = kind; it.anchor = anchor; it.x = x; it.y = y; it.w = w; it.h = h;
+        it.bg = bg; it.bgH = bgH; it.icon = icon; it.label = label; it.name = name; it.sub = sub;
+        if (click != null) {
+            float f = f();
+            it.hit = Button.builder(Component.literal(name == null ? "" : name), btn -> click.run())
+                    .bounds(Math.round(rx(x, anchor) / (float) gs), Math.round(y * f / (float) gs),
+                            Math.max(1, Math.round(w * f / (float) gs)), Math.max(1, Math.round(h * f / (float) gs))).build();
+            it.hit.setAlpha(0f);   // invisible: we draw it ourselves, the game still handles the clicks
+            addRenderableWidget(it.hit);
         }
-        bs.add(b);
-        return b;
+        items.add(it);
+        return it;
     }
 
     @Override
     protected void init() {
-        bs.clear();
-        cx = width / 2;
-        hh = Math.max(18, Math.round(height * 0.0345f));         // button height
-        int gap = Math.max(3, Math.round(height * 0.0125f));
-        int bw = Math.max(150, Math.round(width * 0.2f));
-        int y0 = Math.round(height * 0.503f);
-        add(0, "Singleplayer", null, 0, cx - bw / 2, y0, bw, hh, () -> minecraft.setScreen(new SelectWorldScreen(this)));
-        add(0, "Multiplayer", null, 1, cx - bw / 2, y0 + (hh + gap), bw, hh, () -> minecraft.setScreen(new JoinMultiplayerScreen(this)));
-        add(0, "Realms", null, 2, cx - bw / 2, y0 + 2 * (hh + gap), bw, hh, () -> minecraft.setScreen(new RealmsMainScreen(this)));
-        int half = (bw - gap) / 2;
-        add(0, "Settings", null, 3, cx - bw / 2, y0 + 3 * (hh + gap), half, hh, () -> minecraft.setScreen(new OptionsScreen(this, minecraft.options)));
-        add(0, "Quit", null, 4, cx - bw / 2 + half + gap, y0 + 3 * (hh + gap), bw - half - gap, hh, () -> minecraft.stop());
+        items.clear();
+        gs = Math.max(1.0, minecraft.getWindow().getGuiScale());
+        // the middle column
+        add(0, 1, 751f, 528f, 372f, 38f, MenuSprites.BG_WIDE, MenuSprites.BG_WIDE_H, MenuSprites.I_PERSON, MenuSprites.T_SINGLE, null, null,
+                () -> minecraft.setScreen(new SelectWorldScreen(this)));
+        add(0, 1, 751f, 578.5f, 372f, 38f, MenuSprites.BG_WIDE, MenuSprites.BG_WIDE_H, MenuSprites.I_PEOPLE, MenuSprites.T_MULTI, null, null,
+                () -> minecraft.setScreen(new JoinMultiplayerScreen(this)));
+        add(0, 1, 751f, 629f, 372f, 38f, MenuSprites.BG_WIDE, MenuSprites.BG_WIDE_H, MenuSprites.I_GLOBE, MenuSprites.T_REALMS, null, null,
+                () -> minecraft.setScreen(new RealmsMainScreen(this)));
+        add(0, 1, 751f, 679f, 179f, 38f, MenuSprites.BG_HALF, MenuSprites.BG_HALF_H, MenuSprites.I_GEAR, MenuSprites.T_SETTINGS, null, null,
+                () -> minecraft.setScreen(new OptionsScreen(this, minecraft.options)));
+        add(0, 1, 944f, 679f, 179f, 38f, MenuSprites.BG_HALF, MenuSprites.BG_HALF_H, MenuSprites.I_QUIT, MenuSprites.T_QUIT, null, null,
+                () -> minecraft.stop());
 
-        // top right: small square buttons
-        int sq = Math.max(16, Math.round(width * 0.02f));
-        int m = Math.max(6, Math.round(width * 0.008f));
-        add(2, "Fullscreen", null, 5, width - m - 2 * sq - 4, m, sq, sq, () -> minecraft.getWindow().toggleFullScreen());
-        add(2, "Close", null, 4, width - m - sq, m, sq, sq, () -> minecraft.stop());
+        // top right
+        add(2, 2, 1764f, 24f, 36f, 36f, MenuSprites.BG_SQ, MenuSprites.BG_SQ_H, MenuSprites.I_FULL, null, null, null,
+                () -> minecraft.getWindow().toggleFullScreen());
+        add(2, 2, 1811f, 24f, 36f, 36f, MenuSprites.BG_SQ, MenuSprites.BG_SQ_H, MenuSprites.I_QUIT, null, null, null,
+                () -> minecraft.stop());
 
         // left: Quickplay header and your saved servers
-        int lw = Math.max(120, Math.round(width * 0.135f));
-        int lx = Math.max(8, Math.round(width * 0.031f));
-        int qy = Math.round(height * 0.324f);
-        add(3, "Quickplay", null, 6, lx, qy, lw, hh, null);
-        int ch = Math.max(24, Math.round(height * 0.05f));
+        add(3, 0, 58f, 340f, 254f, 36f, MenuSprites.BG_SIDE, MenuSprites.BG_SIDE, MenuSprites.I_QUICK, MenuSprites.T_QUICK, null, null, null);
         try {
             ServerList sl = new ServerList(minecraft);
             sl.load();
             int n = Math.min(3, sl.size());
             for (int i = 0; i < n; i++) {
                 ServerData d = sl.get(i);
-                add(1, d.name, d.ip, 0, lx, qy + hh + gap + i * (ch + gap), lw, ch, () ->
-                        ConnectScreen.startConnecting(this, minecraft, ServerAddress.parseString(d.ip), d, false, null));
+                add(1, 0, 58f, 388f + 65f * i, 254f, 53f, MenuSprites.BG_CARD, MenuSprites.BG_CARD_H, null, null, d.name, d.ip,
+                        () -> ConnectScreen.startConnecting(this, minecraft, ServerAddress.parseString(d.ip), d, false, null));
             }
         } catch (Throwable ignored) {
             // no server list: the left side just stays with the header
         }
 
-        // right: account and Host World (no skin render here)
-        int rw = lw;
-        int rx = width - lx - rw;
-        add(3, minecraft.getUser().getName(), null, 7, rx, y0, rw, hh, null);
-        add(0, "Host World", null, 8, rx, y0 + hh + gap, rw, hh, () -> minecraft.setScreen(new SelectWorldScreen(this)));
+        // right: your account and Host World
+        add(4, 2, 1561f, 530f, 254f, 37f, MenuSprites.BG_SIDE, MenuSprites.BG_SIDE, null, null, minecraft.getUser().getName(), null, null);
+        add(0, 2, 1561f, 580f, 254f, 37f, MenuSprites.BG_SIDE, MenuSprites.BG_SIDE_H, MenuSprites.I_HOST, MenuSprites.T_HOST, null, null,
+                () -> minecraft.setScreen(new SelectWorldScreen(this)));
     }
 
-    // ---- tiny icons drawn with rectangles ----
+    // ---- drawing ----
 
-    private static void icon(GuiGraphics g, int kind, float x, float y, int c) {
-        switch (kind) {
-            case 0 -> { Ui.rrect(g, x + 2.5f, y, 4, 4, 2, c); Ui.rrect(g, x, y + 5, 9, 4, 2, c); }                    // person
-            case 1 -> { Ui.rrect(g, x + 4.5f, y, 3, 3, 1.5f, c); Ui.rrect(g, x + 3, y + 4, 6, 5, 2, c);
-                        Ui.rrect(g, x, y + 1, 3, 3, 1.5f, c); Ui.rrect(g, x - 1, y + 5, 4, 4, 2, c); }                   // two people
-            case 2 -> { Ui.rring(g, x, y, 9, 9, 4.5f, c); g.fill((int) x + 4, (int) y + 1, (int) x + 5, (int) y + 8, c);
-                        g.fill((int) x + 1, (int) y + 4, (int) x + 8, (int) y + 5, c); }                                 // globe
-            case 3 -> { Ui.rring(g, x, y, 9, 9, 4.5f, c); Ui.rrect(g, x + 3, y + 3, 3, 3, 1.5f, c); }                   // gear
-            case 4 -> { for (int i = 0; i < 8; i++) { g.fill((int) x + i, (int) y + i, (int) x + i + 1, (int) y + i + 1, c);
-                        g.fill((int) x + 7 - i, (int) y + i, (int) x + 8 - i, (int) y + i + 1, c); } }                    // X
-            case 5 -> { int ix = (int) x, iy = (int) y;                                                                  // fullscreen corners
-                        g.fill(ix, iy, ix + 3, iy + 1, c); g.fill(ix, iy, ix + 1, iy + 3, c);
-                        g.fill(ix + 6, iy, ix + 9, iy + 1, c); g.fill(ix + 8, iy, ix + 9, iy + 3, c);
-                        g.fill(ix, iy + 8, ix + 3, iy + 9, c); g.fill(ix, iy + 6, ix + 1, iy + 9, c);
-                        g.fill(ix + 6, iy + 8, ix + 9, iy + 9, c); g.fill(ix + 8, iy + 6, ix + 9, iy + 9, c); }
-            case 6 -> { int ix = (int) x, iy = (int) y;                                                                  // quickplay arrow
-                        g.fill(ix, iy + 4, ix + 7, iy + 5, c);
-                        g.fill(ix + 5, iy + 2, ix + 6, iy + 3, c); g.fill(ix + 5, iy + 6, ix + 6, iy + 7, c);
-                        g.fill(ix + 6, iy + 3, ix + 7, iy + 4, c); g.fill(ix + 6, iy + 5, ix + 7, iy + 6, c); }
-            default -> { Ui.rring(g, x, y, 9, 9, 4.5f, c); }                                                              // ring
+    /** draws a piece of the atlas; (x, y) in real pixels, pieces are baked at twice the design size */
+    private void spr(GuiGraphics g, int[] s, float x, float y) {
+        float f = f();
+        g.pose().pushMatrix();
+        g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
+        g.pose().translate(x, y);
+        g.pose().scale(f / 2f, f / 2f);
+        g.blit(RenderPipelines.GUI_TEXTURED, ATLAS, 0, 0, (float) s[0], (float) s[1], s[2], s[3], MenuSprites.ATLAS_W, MenuSprites.ATLAS_H);
+        g.pose().popMatrix();
+    }
+
+    /** the same, placed by design coordinates; w/h of the piece in design pixels = texture size / 2 */
+    private void sprAt(GuiGraphics g, int[] s, float dx, float dy, int anchor) {
+        spr(g, s, rx(dx, anchor), dy * f());
+    }
+
+    private static float dw(int[] s) {
+        return s[2] / 2f;
+    }
+
+    private static float dh(int[] s) {
+        return s[3] / 2f;
+    }
+
+    /** a text in the menu font: (x, cy) real pixels, left aligned, centred on cy; size in design pixels */
+    private void dyn(GuiGraphics g, String text, float x, float cy, float size, boolean bold, int color, float maxW) {
+        float f = f(), k = size * f / 16f;
+        Style st = Style.EMPTY.withFont(bold ? BOLD : MEDIUM);
+        Component c = Component.literal(text).withStyle(st);
+        if (font.width(c) * k > maxW) {
+            String t = text;
+            while (t.length() > 1 && font.width(Component.literal(t + "...").withStyle(st)) * k > maxW) t = t.substring(0, t.length() - 1);
+            c = Component.literal(t + "...").withStyle(st);
         }
+        g.pose().pushMatrix();
+        g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
+        g.pose().translate(x, cy - 8f * k);
+        g.pose().scale(k, k);
+        g.drawString(font, c, 0, 0, color, false);
+        g.pose().popMatrix();
+    }
+
+    private float textW(String text, float size, boolean bold) {
+        return font.width(Component.literal(text).withStyle(Style.EMPTY.withFont(bold ? BOLD : MEDIUM))) * size / 16f;   // design pixels
     }
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
         super.render(g, mouseX, mouseY, delta);   // blurred panorama
-        Ui.fade = 1f;
-        long now = System.nanoTime();
-        float dt = Math.min(0.05f, (now - last) / 1e9f);
-        last = now;
-        float ease = 1f - (float) Math.exp(-dt * 16f);
+        float f = f();
 
-        // the logo and the name in the middle
-        float lg = Math.max(22f, height * 0.04f);
-        float lx0 = cx - lg / 2f, ly0 = height * 0.325f;
-        Ui.rring(g, lx0, ly0, lg, lg, lg / 2f, 0xFFFFFFFF);
-        Ui.rring(g, lx0 + 1, ly0 + 1, lg - 2, lg - 2, lg / 2f - 1, 0x55FFFFFF);
-        Ui.rrect(g, cx - lg * 0.22f, ly0 + lg * 0.28f, lg * 0.44f, lg * 0.44f, lg * 0.22f, 0xFFFFFFFF);
+        // logo and name in the middle
+        sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 360f, 1);
+        sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 441f, 1);
 
-        String title = "CHROME CLIENT";
-        float s = Math.max(1.8f, Math.min(3.2f, height * 0.0045f));
-        int track = 1;                                                // a little space between the letters
-        float tw = 0;
-        for (int i = 0; i < title.length(); i++) tw += font.width(Component.literal(String.valueOf(title.charAt(i))).withStyle(net.minecraft.ChatFormatting.BOLD)) + track;
-        tw -= track;
-        g.pose().pushMatrix();
-        g.pose().translate(cx - tw * s / 2f, height * 0.425f);
-        g.pose().scale(s, s);
-        float px = 0;
-        for (int i = 0; i < title.length(); i++) {
-            Component ch = Component.literal(String.valueOf(title.charAt(i))).withStyle(net.minecraft.ChatFormatting.BOLD);
-            g.drawString(font, ch, Math.round(px), 0, 0xFFFFFFFF, false);
-            px += font.width(ch) + track;
-        }
-        g.pose().popMatrix();
-
-        for (B b : bs) {
-            boolean h = b.hit != null && b.hit.isHoveredOrFocused();
-            b.hov += ((h ? 1f : 0f) - b.hov) * ease;
-            int fill = Ui.lerp(PANEL, PANEL_HOVER, b.hov);
-            Ui.rrect(g, b.x, b.y, b.w, b.h, 4, fill);
-            Ui.rring(g, b.x, b.y, b.w, b.h, 4, EDGE);
-            int ty = b.y + (b.h - 8) / 2;
-            switch (b.kind) {
-                case 0 -> {    // icon + label in the middle
-                    int lw2 = font.width(b.label) + 9 + 5;
-                    int x0 = b.x + (b.w - lw2) / 2;
-                    icon(g, b.icon, x0, b.y + (b.h - 9) / 2f, 0xFFFFFFFF);
-                    g.drawString(font, b.label, x0 + 14, ty, 0xFFFFFFFF, false);
+        for (Item it : items) {
+            float x = rx(it.x, it.anchor), y = it.y * f;
+            boolean hover = it.hit != null && it.hit.isHoveredOrFocused();
+            spr(g, hover ? it.bgH : it.bg, x, y);
+            switch (it.kind) {
+                case 0 -> {    // icon + label as a group in the middle
+                    float gw = 16f + 9f + dw(it.label), gx = (it.w - gw) / 2f;
+                    spr(g, it.icon, x + gx * f, y + (it.h - 16f) / 2f * f);
+                    spr(g, it.label, x + (gx + 25f) * f, y + (it.h - 22f) / 2f * f);
                 }
-                case 1 -> {    // server card: letter badge, name, address, arrow
-                    int bsz = b.h - 12;
-                    Ui.rrect(g, b.x + 6, b.y + 6, bsz, bsz, 4, 0xFF2F6BFF);
-                    String ini = b.label.isEmpty() ? "?" : b.label.substring(0, 1).toUpperCase();
-                    g.drawString(font, ini, b.x + 6 + (bsz - font.width(ini)) / 2, b.y + 6 + (bsz - 8) / 2, 0xFFFFFFFF, false);
-                    int tx = b.x + 6 + bsz + 7, maxW = b.w - (tx - b.x) - 16;
-                    Ui.textFit(g, font, b.label, tx, b.y + b.h / 2 - 9, maxW, 0xFFFFFFFF);
-                    Ui.textFit(g, font, b.sub, tx, b.y + b.h / 2 + 1, maxW, MUTE);
-                    g.drawString(font, ">", b.x + b.w - 10, ty, MUTE, false);
+                case 2 -> spr(g, it.icon, x + (it.w - 16f) / 2f * f, y + (it.h - 16f) / 2f * f);
+                case 3 -> {    // Quickplay header
+                    spr(g, it.icon, x + 19f * f, y + (it.h - 16f) / 2f * f);
+                    spr(g, it.label, x + (it.w - dw(it.label)) / 2f * f, y + (it.h - 22f) / 2f * f);
+                    spr(g, MenuSprites.CHEV_D, x + (it.w - 28f) * f, y + (it.h - 6f) / 2f * f);
                 }
-                case 2 -> icon(g, b.icon, b.x + (b.w - 9) / 2f, b.y + (b.h - 9) / 2f, 0xFFFFFFFF);
-                default -> {   // header / account: icon, label, little arrow on the right
-                    icon(g, b.icon, b.x + 10, b.y + (b.h - 9) / 2f, 0xFFFFFFFF);
-                    Ui.textFit(g, font, b.label, b.x + 26, ty, b.w - 48, 0xFFFFFFFF);
-                    g.drawString(font, "v", b.x + b.w - 12, ty, MUTE, false);
+                case 1 -> {    // saved server
+                    float bx = x + 10f * f, by = y + 4.5f * f, bs = 44f * f;
+                    int hue = Math.abs(it.name.hashCode());
+                    int col = 0xFF000000 | (Ui.lerp(0xFF2F6BFF, 0xFF8B5CF6, (hue % 100) / 100f) & 0xFFFFFF);
+                    roundBox(g, bx, by, bs, bs, 8f * f, col);
+                    String ini = it.name.isEmpty() ? "?" : it.name.substring(0, 1).toUpperCase();
+                    dyn(g, ini, bx + bs / 2f - textW(ini, 17f, true) * f / 2f, by + bs / 2f, 17f, true, WHITE, 40f * f);
+                    dyn(g, it.name, x + 59f * f, y + 17f * f, 15f, true, WHITE, (it.w - 59f - 36f) * f);
+                    dyn(g, it.sub, x + 59f * f, y + 37f * f, 13f, false, GREY, (it.w - 59f - 36f) * f);
+                    spr(g, MenuSprites.CHEV_R, x + (it.w - 22f) * f, y + (it.h - 10f) / 2f * f);
                 }
+                case 4 -> {    // account
+                    float bx = x + 9f * f, by = y + 4.5f * f, bs = 28f * f;
+                    roundBox(g, bx, by, bs, bs, 5f * f, 0xFF29D48F);
+                    String ini = it.name.isEmpty() ? "?" : it.name.substring(0, 1).toUpperCase();
+                    dyn(g, ini, bx + bs / 2f - textW(ini, 15f, true) * f / 2f, by + bs / 2f, 15f, true, 0xFF0B0714, 30f * f);
+                    float tw = textW(it.name, 15f, true);
+                    dyn(g, it.name, x + (it.w - tw) / 2f * f, y + it.h / 2f * f, 15f, true, WHITE, (it.w - 70f) * f);
+                    spr(g, MenuSprites.CHEV_D, x + (it.w - 26f) * f, y + (it.h - 6f) / 2f * f);
+                }
+                default -> { }
             }
         }
 
         // bottom corners
+        spr(g, MenuSprites.LOGO_S, 36f * f, 1012f * f);
+        spr(g, MenuSprites.T_FOOT, 60f * f, 1012f * f);
         String ver = FabricLoader.getInstance().getModContainer("chromeclient")
                 .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("");
-        Ui.rring(g, 10, height - 13, 9, 9, 4.5f, 0xFFFFFFFF);
-        g.drawString(font, Component.literal("CHROME CLIENT").withStyle(net.minecraft.ChatFormatting.BOLD), 24, height - 12, 0xFFFFFFFF, false);
-        int vx = 24 + font.width("CHROME CLIENT") + 8;
-        g.drawString(font, "Fabric 1.21.11  " + ver, vx, height - 12, MUTE, false);
-        String c = "Copyright Mojang AB. Do not distribute!";
-        g.drawString(font, c, width - font.width(c) - 8, height - 12, 0xFFB0B0B0, false);
+        dyn(g, "Fabric 1.21.11  " + ver, (60f + dw(MenuSprites.T_FOOT) + 12f) * f, 1021f * f, 12f, false, GREY, 300f * f);
+        spr(g, MenuSprites.T_COPY, rx(1874f - 34f - dw(MenuSprites.T_COPY), 2), 1014f * f);
+    }
+
+    /** a filled rounded square in real pixels (same helper the other screens use, but in real pixel coordinates) */
+    private void roundBox(GuiGraphics g, float x, float y, float w, float h, float r, int color) {
+        g.pose().pushMatrix();
+        g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
+        int X = Math.round(x), Y = Math.round(y), W = Math.round(w), H = Math.round(h), R = Math.max(0, Math.min(Math.round(r), Math.min(W, H) / 2));
+        for (int dy = 0; dy < H; dy++) {
+            int d = dy < R ? R - dy : (dy >= H - R ? dy - (H - R) + 1 : 0);
+            int in = d == 0 ? 0 : (int) Math.ceil(R - Math.sqrt(Math.max(0.0, (double) R * R - (d - 0.5) * (d - 0.5))));
+            g.fill(X + in, Y + dy, X + W - in, Y + dy + 1, color);
+        }
+        g.pose().popMatrix();
     }
 
     @Override
