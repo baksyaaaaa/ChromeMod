@@ -28,6 +28,11 @@ import java.util.List;
  * font. The clickable parts are normal (invisible) game buttons, so clicks and keys work like in the normal menu.
  */
 public final class ChromeTitleScreen extends Screen {
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("ChromeTitle");
+    private static float yaw = 30f;          // how far the model is turned (kept when the menu is opened again)
+    private boolean turning;                  // the mouse went down on the model and is still held
+    private double lastMouseX;
+    private boolean logged;
     private static final Identifier ATLAS = Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png");
     private static final FontDescription MEDIUM = new FontDescription.Resource(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "poppins"));
     private static final FontDescription BOLD = new FontDescription.Resource(Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "poppins_bold"));
@@ -180,7 +185,7 @@ public final class ChromeTitleScreen extends Screen {
         super.render(g, mouseX, mouseY, delta);   // blurred panorama
         float f = f();
 
-        if (!model3d(g)) profile(g);
+        if (!model3d(g, mouseX, mouseY)) profile(g);
         // logo and name in the middle
         sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 386f - dh(MenuSprites.LOGO) / 2f, 1);   // centred on where the old logo square was
         sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
@@ -298,7 +303,7 @@ public final class ChromeTitleScreen extends Screen {
     private net.minecraft.client.model.player.PlayerModel model3d;
 
     /** your real player model (3D, same renderer the game uses in its own menus), cropped to head and shoulders */
-    private boolean model3d(GuiGraphics g) {
+    private boolean model3d(GuiGraphics g, int mouseX, int mouseY) {
         try {
             net.minecraft.world.entity.player.PlayerSkin skin = skin();
             if (skin == null) return false;
@@ -316,10 +321,17 @@ public final class ChromeTitleScreen extends Screen {
             // only head and shoulders are shown: cut everything below the box above the account button
             g.enableScissor(Math.round(rx(1561f, 2) / (float) gs), Math.round(300f * f / (float) gs),
                     Math.round(rx(1561f + 254f, 2) / (float) gs), Math.round(512f * f / (float) gs));
-            g.submitSkinRenderState(model3d, tex, scale, -5f, 30f, -0.0625f, x0, ya, x1, yb);
+            // hold the left mouse button on the model and move left / right to turn it
+            boolean down = minecraft.mouseHandler.isLeftPressed();
+            boolean over = mouseX >= x0 + (x1 - x0) * 0.2f && mouseX <= x1 - (x1 - x0) * 0.2f && mouseY >= ya && mouseY <= Math.round(512f * f / (float) gs);
+            if (down && !turning && over) { turning = true; lastMouseX = mouseX; }
+            if (!down) turning = false;
+            if (turning) { yaw += (float) (mouseX - lastMouseX) * 2.5f; lastMouseX = mouseX; }
+            g.submitSkinRenderState(model3d, tex, scale, -5f, yaw, -0.0625f, x0, ya, x1, yb);
             g.disableScissor();
             return true;
         } catch (Throwable t) {
+            if (!logged) { logged = true; LOG.warn("3D model on the main menu failed, drawing the flat profile instead", t); }
             return false;
         }
     }
