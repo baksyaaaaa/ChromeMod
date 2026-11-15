@@ -368,6 +368,7 @@ Right Shift > HUD: **Potion list**, **Keybind list**, **Target HUD**, **Performa
 - **2.42.63**: emote wheel and the Star/Griddy/Levitate emotes removed again.
 - **2.42.71**: lyrics stay in sync: uses the exact play time from YT Music In-Game 1.2.3 and picks the lyrics version whose length matches the song.
 - **2.42.72**: new Chrome Client main menu (blurred panorama, name in the middle, Singleplayer / Multiplayer / Realms / Settings / Quit, your saved servers as Quickplay on the left, your account on the right). Switch: Right Shift > Misc > Main menu.
+- **2.42.80**: halo and void ring get a real glow (soft unlit shell around the ring).
 - **2.42.79**: halo and void ring shine again (full brightness, fixed lighting).
 - **2.42.78**: cat ears rebuilt as closed solids (no torn tips) and lit with a fixed normal so neither ear shines when you look up or down.
 - **2.42.77**: fixes the build (skin lookup) so 2.42.75/2.42.76 actually ship.
