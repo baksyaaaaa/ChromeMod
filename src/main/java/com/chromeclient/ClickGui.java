@@ -171,6 +171,7 @@ public class ClickGui extends Screen {
         render.add(ch);
         render.add(new Mod("Freelook", "Hold Left Alt to look around without turning.", () -> Extras.freelook, v -> Extras.freelook = v));
         render.add(new Mod("Zoom", "Hold C to zoom in.", () -> c.zoom, v -> c.zoom = v));
+        render.add(new Mod("Far sign text", "Skips the text on signs further than 24 blocks away (it is too small to read there). Saves work in towns with many signs.", () -> Extras.farSigns, v -> Extras.farSigns = v));
         tabs.add(render);
 
         // ---- Misc ----
