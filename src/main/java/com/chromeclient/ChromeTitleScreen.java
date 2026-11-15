@@ -180,7 +180,7 @@ public final class ChromeTitleScreen extends Screen {
         super.render(g, mouseX, mouseY, delta);   // blurred panorama
         float f = f();
 
-        profile(g);
+        if (!model3d(g)) profile(g);
         // logo and name in the middle
         sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 386f - dh(MenuSprites.LOGO) / 2f, 1);   // centred on where the old logo square was
         sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
@@ -231,7 +231,6 @@ public final class ChromeTitleScreen extends Screen {
                     }
                     float tw = textW(it.name, 15f, true);
                     dyn(g, it.name, x + (it.w - tw) / 2f * f, y + it.h / 2f * f, 15f, true, WHITE, (it.w - 70f) * f);
-                    spr(g, MenuSprites.CHEV_D, x + (it.w - 26f) * f, y + (it.h - 6f) / 2f * f);
                 }
                 default -> { }
             }
@@ -294,6 +293,35 @@ public final class ChromeTitleScreen extends Screen {
         g.pose().scale(-k, k);
         g.blit(RenderPipelines.GUI_TEXTURED, tex, 0, 0, (float) u, (float) v, w, h, 64, 64);
         g.pose().popMatrix();
+    }
+
+    private net.minecraft.client.model.player.PlayerModel model3d;
+
+    /** your real player model (3D, same renderer the game uses in its own menus), cropped to head and shoulders */
+    private boolean model3d(GuiGraphics g) {
+        try {
+            net.minecraft.world.entity.player.PlayerSkin skin = skin();
+            if (skin == null) return false;
+            net.minecraft.resources.Identifier tex = skin.body().texturePath();
+            if (model3d == null) {
+                model3d = new net.minecraft.client.model.player.PlayerModel(
+                        minecraft.getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER), false);
+            }
+            float f = f();
+            float hr = 490f * f;                                   // height of the whole body area, real pixels
+            float cx = rx(1688f, 2), y0 = 330f * f;
+            int x0 = Math.round((cx - hr / 2f) / (float) gs), x1 = Math.round((cx + hr / 2f) / (float) gs);
+            int ya = Math.round(y0 / (float) gs), yb = Math.round((y0 + hr) / (float) gs);
+            float scale = 0.97f * (yb - ya) / 2.125f;
+            // only head and shoulders are shown: cut everything below the box above the account button
+            g.enableScissor(Math.round(rx(1561f, 2) / (float) gs), Math.round(300f * f / (float) gs),
+                    Math.round(rx(1561f + 254f, 2) / (float) gs), Math.round(512f * f / (float) gs));
+            g.submitSkinRenderState(model3d, tex, scale, -5f, 30f, -0.0625f, x0, ya, x1, yb);
+            g.disableScissor();
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     /** a medium close-up of your skin in side profile (head and shoulders), above the account box */

@@ -106,7 +106,7 @@ public class ClickGui extends Screen {
     private double pendingScroll = 0;
     private Opt dragging = null;
     private boolean wasDown = true;
-    private float openT = 0f, underX = -1f;
+    private float openT = 0f, underX = -1f, underWd = -1f;
     private final float[] tabHov = new float[TABS.length];
     private final float[] listHov = new float[16];
     private final float[] cellHov = new float[64];
@@ -255,9 +255,10 @@ public class ClickGui extends Screen {
             if (click && hov && i != tab) { tab = i; scroll = 0; dragging = null; }
             tx += tw;
         }
-        if (underX < 0) underX = targetUnder;
+        if (underX < 0) { underX = targetUnder; underWd = underW; }
         underX += (targetUnder - underX) * ease;
-        Ui.rect(g, underX, y + 22, Math.max(6f, underW), 2, Ui.ACCENT);
+        underWd += (underW - underWd) * ease;   // the width glides too, so the bar never jumps when it moves to the left
+        Ui.rect(g, underX, y + 22, Math.max(6f, underWd), 2, Ui.ACCENT);
         String ver = "v" + net.fabricmc.loader.api.FabricLoader.getInstance().getModContainer(ChromeClientMod.MOD_ID)
                 .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?");
         Ui.text(g, font, ver, x + W - 30 - font.width(ver), y + 10, Ui.MUTED);
