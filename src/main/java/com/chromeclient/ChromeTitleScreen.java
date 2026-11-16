@@ -243,6 +243,60 @@ public final class ChromeTitleScreen extends Screen {
         spr(g, MenuSprites.T_COPY, rx(1874f - 34f - dw(MenuSprites.T_COPY), 2), 1014f * f);
     }
 
+    // ---- your real skin, fetched straight from Mojang (the game's own lookup can hand back a default skin on this screen) ----
+    private static volatile com.mojang.blaze3d.platform.NativeImage pendingSkin;
+    private static volatile boolean pendingSlim;
+    private static boolean skinFetchStarted;
+    private static Identifier ownTex;
+    private static boolean ownSlim;
+
+    private void startSkinFetch() {
+        if (skinFetchStarted) return;
+        skinFetchStarted = true;
+        final String id = minecraft.getUser().getProfileId().toString().replace("-", "");
+        Thread t = new Thread(() -> {
+            try {
+                java.net.http.HttpClient hc = java.net.http.HttpClient.newHttpClient();
+                String body = hc.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + id)).build(),
+                        java.net.http.HttpResponse.BodyHandlers.ofString()).body();
+                com.google.gson.JsonObject root = com.google.gson.JsonParser.parseString(body).getAsJsonObject();
+                String value = root.getAsJsonArray("properties").get(0).getAsJsonObject().get("value").getAsString();
+                com.google.gson.JsonObject skin = com.google.gson.JsonParser.parseString(new String(java.util.Base64.getDecoder().decode(value)))
+                        .getAsJsonObject().getAsJsonObject("textures").getAsJsonObject("SKIN");
+                String url = skin.get("url").getAsString();
+                boolean slim = skin.has("metadata") && skin.getAsJsonObject("metadata").has("model")
+                        && skin.getAsJsonObject("metadata").get("model").getAsString().equals("slim");
+                byte[] png = hc.send(java.net.http.HttpRequest.newBuilder(java.net.URI.create(url)).build(),
+                        java.net.http.HttpResponse.BodyHandlers.ofByteArray()).body();
+                com.mojang.blaze3d.platform.NativeImage img = com.mojang.blaze3d.platform.NativeImage.read(new java.io.ByteArrayInputStream(png));
+                pendingSlim = slim;
+                pendingSkin = img;
+                LOG.info("fetched your skin from Mojang: {} ({}x{}, {})", url, img.getWidth(), img.getHeight(), slim ? "slim" : "wide");
+            } catch (Throwable e) {
+                LOG.warn("could not fetch your skin from Mojang, using the game's lookup", e);
+            }
+        }, "chrome-skin-fetch");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /** turns a finished download into a texture (on the render thread) */
+    private void pollSkin() {
+        com.mojang.blaze3d.platform.NativeImage img = pendingSkin;
+        if (img == null) return;
+        pendingSkin = null;
+        try {
+            Identifier id = Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "own_skin");
+            minecraft.getTextureManager().register(id, new net.minecraft.client.renderer.texture.DynamicTexture(() -> "chrome_own_skin", img));
+            ownTex = id;
+            ownSlim = pendingSlim;
+        } catch (Throwable e) {
+            LOG.warn("could not register your skin texture", e);
+        }
+    }
+
+    private net.minecraft.client.model.player.PlayerModel model3dSlim;
+
     private net.minecraft.world.entity.player.PlayerSkin cachedSkin;
     private java.lang.reflect.Method skinMethod;
 
@@ -298,12 +352,24 @@ public final class ChromeTitleScreen extends Screen {
     /** your real player model (3D, same renderer the game uses in its own menus), cropped to head and shoulders */
     private boolean model3d(GuiGraphics g) {
         try {
-            net.minecraft.world.entity.player.PlayerSkin skin = skin();
-            if (skin == null) return false;
-            net.minecraft.resources.Identifier tex = skin.body().texturePath();
+            startSkinFetch();
+            pollSkin();
+            net.minecraft.resources.Identifier tex;
+            net.minecraft.client.model.player.PlayerModel mdl;
             if (model3d == null) {
                 model3d = new net.minecraft.client.model.player.PlayerModel(
                         minecraft.getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER), false);
+                model3dSlim = new net.minecraft.client.model.player.PlayerModel(
+                        minecraft.getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER_SLIM), true);
+            }
+            if (ownTex != null) {
+                tex = ownTex;
+                mdl = ownSlim ? model3dSlim : model3d;
+            } else {   // until the download finishes: the game's own lookup
+                net.minecraft.world.entity.player.PlayerSkin skin = skin();
+                if (skin == null) return false;
+                tex = skin.body().texturePath();
+                mdl = model3d;
             }
             float f = f();
             float hr = 490f * f;                                   // height of the whole body area, real pixels
@@ -314,7 +380,7 @@ public final class ChromeTitleScreen extends Screen {
             // only head and shoulders are shown: cut everything below the box above the account button
             g.enableScissor(Math.round(rx(1561f, 2) / (float) gs), Math.round(300f * f / (float) gs),
                     Math.round(rx(1561f + 254f, 2) / (float) gs), Math.round(529f * f / (float) gs));
-            g.submitSkinRenderState(model3d, tex, scale, -5f, yaw, -0.0625f, x0, ya, x1, yb);
+            g.submitSkinRenderState(mdl, tex, scale, -5f, yaw, -0.0625f, x0, ya, x1, yb);
             if (!logged3d) { logged3d = true; LOG.info("3D model submitted: texture={} box=({},{})-({},{}) scale={} guiScale={}", tex, x0, ya, x1, yb, scale, gs); }
             // soft shadow under the shoulders: stacked gradients that get narrower, so the cut edge melts into the background
             float gl = rx(1561f, 2) / (float) gs, gr = rx(1561f + 254f, 2) / (float) gs;
