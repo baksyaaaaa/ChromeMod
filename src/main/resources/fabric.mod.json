@@ -8,6 +8,7 @@
     "Baksya"
   ],
   "license": "All-Rights-Reserved",
+  "icon": "assets/chromeclient/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [

@@ -186,7 +186,13 @@ public final class ChromeTitleScreen extends Screen {
 
         if (!model3d(g)) profile(g);
         // logo and name in the middle
-        sprAt(g, MenuSprites.LOGO, 937f - dw(MenuSprites.LOGO) / 2f, 386f - dh(MenuSprites.LOGO) / 2f, 1);   // centred on where the old logo square was
+        {   // the glassy logo, centred on where the old one was
+            float lw = 150f * f;
+            g.pose().pushMatrix();
+            g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
+            Logo.draw(g, rx(937f - 75f, 1), (386f - 75f) * f, lw);
+            g.pose().popMatrix();
+        }
         sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
 
         for (Item it : items) {
@@ -235,7 +241,10 @@ public final class ChromeTitleScreen extends Screen {
         }
 
         // bottom corners
-        spr(g, MenuSprites.LOGO_S, (45f - dw(MenuSprites.LOGO_S) / 2f) * f, (1021f - dh(MenuSprites.LOGO_S) / 2f) * f);
+        g.pose().pushMatrix();
+        g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
+        Logo.draw(g, (45f - 15f) * f, (1021f - 15f) * f, 30f * f);
+        g.pose().popMatrix();
         spr(g, MenuSprites.T_FOOT, 60f * f, 1012f * f);
         String ver = FabricLoader.getInstance().getModContainer("chromeclient")
                 .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("");

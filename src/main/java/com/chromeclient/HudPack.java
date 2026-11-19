@@ -300,17 +300,9 @@ public final class HudPack {
         // ---- watermark ----
         if (mark.on) {
             String s = "Chrome Client";
-            panel(g, mc, mark, f.width(s) + 26, 18, (gg, ff, ww, hh) -> {
-                gg.pose().pushMatrix();
-                gg.pose().translate(5, 2);
-                gg.pose().scale(0.5f, 0.5f);
-                for (int pass = 0; pass < 3; pass++)
-                    gg.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
-                            net.minecraft.resources.Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png"),
-                            0, 0, (float) MenuSprites.LOGO_S[0], (float) MenuSprites.LOGO_S[1], MenuSprites.LOGO_S[2], MenuSprites.LOGO_S[3],
-                            MenuSprites.ATLAS_W, MenuSprites.ATLAS_H);
-                gg.pose().popMatrix();
-                Ui.text(gg, ff, s, 21, 5, Ui.TEXT);
+            panel(g, mc, mark, f.width(s) + 30, 18, (gg, ff, ww, hh) -> {
+                Logo.draw(gg, 3, 0, 18);
+                Ui.text(gg, ff, s, 24, 5, Ui.TEXT);
             });
         }
     }

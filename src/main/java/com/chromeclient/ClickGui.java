@@ -243,17 +243,9 @@ public class ClickGui extends Screen {
         Ui.glass(g, x, y, W, H);
 
         // ---- header: logo, tabs, close ----
-        g.pose().pushMatrix();
-        g.pose().translate(x + PAD + 1, y + 6);
-        g.pose().scale(0.5f, 0.5f);
-        for (int pass = 0; pass < 3; pass++)   // the sprite is see-through white; stacking it makes it solid on the light glass
-            g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED,
-                    net.minecraft.resources.Identifier.fromNamespaceAndPath(ChromeClientMod.MOD_ID, "textures/gui/menu_atlas.png"),
-                    0, 0, (float) MenuSprites.LOGO_S[0], (float) MenuSprites.LOGO_S[1], MenuSprites.LOGO_S[2], MenuSprites.LOGO_S[3],
-                    MenuSprites.ATLAS_W, MenuSprites.ATLAS_H);
-        g.pose().popMatrix();
-        g.drawString(font, Component.literal("Chrome Client").withStyle(ChatFormatting.BOLD), x + PAD + 16, y + 10, Ui.mul(Ui.TEXT), false);
-        int tx = x + PAD + 16 + font.width("Chrome Client") + 18;
+        Logo.draw(g, x + PAD - 1, y + 4, 17);
+        g.drawString(font, Component.literal("Chrome Client").withStyle(ChatFormatting.BOLD), x + PAD + 19, y + 10, Ui.mul(Ui.TEXT), false);
+        int tx = x + PAD + 19 + font.width("Chrome Client") + 18;
         float targetUnder = 0, underW = 0;
         for (int i = 0; i < TABS.length; i++) {
             int tw = font.width(TABS[i]) + 14;
