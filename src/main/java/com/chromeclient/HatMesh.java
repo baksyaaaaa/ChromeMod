@@ -56,9 +56,8 @@ public final class HatMesh {
                 for (int i = 0; i + 5 < dt.length; i += 6)
                     for (int k = 3; k < 6; k++) dt[i + k] = (byte) Math.min(255, Math.round((dt[i + k] & 255) * 1.3f + 18f));
             }
-            if (name.equals("hat_2")) matte(dt);   // cat ears: soft, even lighting instead of shiny highlights
             m = new HatMesh(p, dt, q);
-            m.flat = name.equals("hat_1") || name.equals("hat_2") || name.equals("hat_4");
+            m.flat = true;   // blocks: the face shading is baked into the colours, so the light never changes with your head
         } catch (Throwable t) {
             m = NONE;
         }
