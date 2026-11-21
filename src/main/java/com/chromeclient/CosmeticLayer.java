@@ -249,15 +249,16 @@ public final class CosmeticLayer extends RenderLayer {
                 }
                 if (wings > 0) {
                     final int w = wings;
-                    List<Piece> wl = featherWing(3000 + w, w, -1);
-                    List<Piece> wr = featherWing(4000 + w, w, 1);
                     float flap = 0.38f + 0.2f * (float) Math.sin(flapPhase);
-                    for (Piece p : wl) p.part().setRotation(0f, flap, 0f);
-                    for (Piece p : wr) p.part().setRotation(0f, -flap, 0f);
                     pose.pushPose();
                     pose.translate(0f, 0.2f, 0f);   // sits on the back, lower between the shoulder blades
-                    draw(pose, queue, light, wl);
-                    draw(pose, queue, light, wr);
+                    for (int side = -1; side <= 1; side += 2) {   // -1 = the wing on your right, +1 = the other one
+                        pose.pushPose();
+                        pose.translate(side * 1.5f / 16f, 2.5f / 16f, 2.6f / 16f);   // the shoulder hinge
+                        pose.mulPose(com.mojang.math.Axis.YP.rotation(-side * flap));
+                        HatMesh.load("wing_" + w + (side < 0 ? "_R" : "_L")).draw(pose, queue, light);
+                        pose.popPose();
+                    }
                     pose.popPose();
                 }
                 pose.popPose();
