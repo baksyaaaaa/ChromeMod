@@ -243,7 +243,7 @@ public final class ChromeTitleScreen extends Screen {
         // bottom corners
         g.pose().pushMatrix();
         g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
-        Logo.draw(g, (45f - 15f) * f, (1021f - 15f) * f, 30f * f);
+        Logo.drawC(g, (45f - 15f) * f, (1021f - 15f) * f, 30f * f);
         g.pose().popMatrix();
         spr(g, MenuSprites.T_FOOT, 60f * f, 1012f * f);
         String ver = FabricLoader.getInstance().getModContainer("chromeclient")

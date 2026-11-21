@@ -243,7 +243,7 @@ public class ClickGui extends Screen {
         Ui.glass(g, x, y, W, H);
 
         // ---- header: logo, tabs, close ----
-        Logo.draw(g, x + PAD - 1, y + 4, 17);
+        Logo.drawC(g, x + PAD - 1, y + 5, 16);
         g.drawString(font, Component.literal("Chrome Client").withStyle(ChatFormatting.BOLD), x + PAD + 19, y + 10, Ui.mul(Ui.TEXT), false);
         int tx = x + PAD + 19 + font.width("Chrome Client") + 18;
         float targetUnder = 0, underW = 0;

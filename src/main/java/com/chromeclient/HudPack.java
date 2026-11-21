@@ -301,7 +301,7 @@ public final class HudPack {
         if (mark.on) {
             String s = "Chrome Client";
             panel(g, mc, mark, f.width(s) + 30, 18, (gg, ff, ww, hh) -> {
-                Logo.draw(gg, 3, 0, 18);
+                Logo.drawC(gg, 3, 1, 16);
                 Ui.text(gg, ff, s, 24, 5, Ui.TEXT);
             });
         }
