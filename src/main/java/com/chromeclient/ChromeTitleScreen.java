@@ -187,10 +187,10 @@ public final class ChromeTitleScreen extends Screen {
         if (!model3d(g)) profile(g);
         // logo and name in the middle
         {   // the glassy logo, centred on where the old one was
-            float lw = 150f * f;
+            float lw = 112f * f;
             g.pose().pushMatrix();
             g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
-            Logo.draw(g, rx(937f - 75f, 1), (386f - 75f) * f, lw);
+            Logo.draw(g, rx(937f - 56f, 1), (362f - 56f) * f, lw);
             g.pose().popMatrix();
         }
         sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
