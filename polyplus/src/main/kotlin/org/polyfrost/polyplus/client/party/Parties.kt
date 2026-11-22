@@ -3,7 +3,6 @@ package org.polyfrost.polyplus.client.party
 import org.apache.logging.log4j.LogManager
 import org.polyfrost.oneconfig.api.event.v1.eventHandler
 import org.polyfrost.oneconfig.api.event.v1.events.TickEvent
-import org.polyfrost.oneconfig.api.hud.v1.HudManager
 import org.polyfrost.polyplus.PolyPlusConstants
 import org.polyfrost.polyplus.client.PolyPlusClient
 import org.polyfrost.polyplus.client.network.eos.EosLogThrottle
