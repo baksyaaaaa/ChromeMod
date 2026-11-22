@@ -80,6 +80,10 @@ jobs:
           for PAT in 'client/gui/[A-Za-z]+' 'client/gui/screens/[A-Za-z]+' 'client/gui/components/[A-Za-z]+' 'client/Minecraft' 'client/KeyMapping' 'client/Options' 'client/player/[A-Za-z]+' 'client/renderer/[A-Za-z]+' 'client/model/[A-Za-z/]+' 'client/multiplayer/[A-Za-z]+' 'client/input/[A-Za-z]+' 'client/MouseHandler' 'client/KeyboardHandler' 'com/mojang/blaze3d/platform/[A-Za-z]+' 'client/gui/render/[A-Za-z/]+'; do
             unzip -Z1 "$CL" | grep -E "^net/minecraft/$PAT\.class$|^$PAT\.class$" | sed 's/\.class$//; s#/#.#g'
           done | sort -u | head -900 | xargs javap -public -cp "$CL" > explore/signatures.txt 2>explore/javap-err.txt || true
+          unzip -Z1 "$CL" | grep -E '^(net/minecraft|com/mojang)/.*\.class$' | grep -v '\$[0-9]' | sed 's/\.class$//; s#/#.#g' | xargs -n 400 javap -protected -cp "$CL" > explore/all-signatures.txt 2>/dev/null || true
+          for F in $(find ~/.gradle -name "fabric-*.jar" -size +5k ! -name "*sources*" 2>/dev/null); do
+            unzip -Z1 "$F" | grep -E '/api/.*\.class$' | grep -v '\$[0-9]' | sed 's/\.class$//; s#/#.#g' | xargs -n 300 javap -protected -cp "$F:$CL" 2>/dev/null
+          done > explore/fabric-signatures.txt || true
           wc -c explore/*
           git config user.name ci; git config user.email ci@example.com
           git checkout -q --orphan explore26 && git rm -rfq --cached . >/dev/null 2>&1 || true
