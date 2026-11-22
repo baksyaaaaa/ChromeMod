@@ -477,86 +477,97 @@ public final class ChromeTitleScreen extends Screen {
         g.fill(Math.round(x), Math.round(y), Math.round(x + w), Math.round(y + h), c);
     }
 
-    /** a blocky stone-brick spawn hub in the style of the old McPvP spawn: castle wall, arched gates, torches, brick plaza */
+    private static int hash(int x, int y) {
+        int h = x * 73856093 ^ y * 19349663;
+        h ^= h >>> 13; h *= 0x5bd1e995; h ^= h >>> 15;
+        return h & 255;
+    }
+
+    private static int shade(int c, int d) {
+        int r = Math.max(0, Math.min(255, ((c >> 16) & 255) + d)), g = Math.max(0, Math.min(255, ((c >> 8) & 255) + d)),
+                b = Math.max(0, Math.min(255, (c & 255) + d));
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+
+    /** colour of one block of the spawn, seen from above; (x, z) are block offsets from the plaza centre */
+    private static int spawnBlock(int x, int z, int roadZ, float t) {
+        int n = hash(x, z);
+        double r = Math.sqrt((double) x * x + (double) z * z);
+        double ang = Math.atan2(z, x);
+        boolean roadV = Math.abs(x) <= 2 && z > 0 && z <= roadZ + 2;
+        boolean roadH = Math.abs(z - roadZ) <= 2;
+        boolean axis = Math.abs(x) <= 2 || Math.abs(z) <= 2;
+        // fountain
+        if (r < 3.2) {
+            if (r > 2.2) return (x + z) % 2 == 0 ? 0xFFF2D36B : 0xFFE0B94A;          // glowstone rim
+            double w = Math.sin(t * 2 + r * 2 + ang * 2) * 12;
+            return shade(0xFF3F76E4, (int) w - (n >> 5));
+        }
+        if (r < 4.3) return shade(0xFFE8E6E0, -(n >> 4));                               // quartz ring
+        // plaza floor: stone-brick checker with a gold star spoke pattern
+        if (r < 11.5) {
+            boolean spoke = Math.abs(x) == Math.abs(z) || x == 0 || z == 0;
+            if (spoke && r > 5) return shade(0xFFD9B84A, -(n >> 4));
+            int base = ((x + z) & 1) == 0 ? 0xFF9A9AA0 : 0xFF8A8A91;
+            if (r > 8.5 && r < 9.5) base = 0xFF55555C;                                  // dark ring
+            return shade(base, -(n >> 4));
+        }
+        // surrounding wall with gates on the four axes
+        if (r < 14) {
+            if (Math.abs(x) <= 2 || Math.abs(z) <= 2) {
+                if (r < 12.5) return shade(0xFF4A4A52, 0);                              // gate pillars shadow
+                int[] pc = {0xFFE8523A, 0xFF4F8DF7, 0xFF5BD97A, 0xFFB46BF0};
+                if (r < 13.5 && Math.abs(Math.abs(x) <= 2 ? x : z) <= 1) {
+                    int k = Math.abs(x) <= 2 ? (z > 0 ? 0 : 1) : (x > 0 ? 2 : 3);
+                    double gl = 0.85 + 0.15 * Math.sin(t * 3 + k);
+                    int c = pc[k];
+                    return 0xFF000000 | (((int) (((c >> 16) & 255) * gl)) << 16) | (((int) (((c >> 8) & 255) * gl)) << 8) | (int) ((c & 255) * gl);
+                }
+                return shade(0xFF8E8E94, 0);
+            }
+            boolean lamp = r > 12.3 && r < 13.2 && ((x + z) % 6 == 0);
+            if (lamp) return 0xFFFFD25A;
+            boolean crenel = ((x + z) & 1) == 0;
+            return shade(crenel ? 0xFF7C7C82 : 0xFF6A6A70, -(n >> 4));
+        }
+        // roads
+        if (roadV || roadH) return shade(((x + z) & 1) == 0 ? 0xFFA09A8C : 0xFF8F897C, -(n >> 4));
+        if (roadV || roadH) return 0xFF8F897C;
+        // grass with the odd tree
+        int gr = 0xFF5FA34A;
+        gr = shade(gr, (n >> 3) - 16);
+        if (n > 244 && r > 16) return 0xFF2F6B2E;                                       // tree crown seen from above
+        if (n > 238 && r > 16) return 0xFF3E8A3A;
+        if (n < 6) return 0xFFE8D860;                                                   // flowers
+        return gr;
+    }
+
+    /** the spawn seen from above: a round stone plaza with a fountain, a wall with four glowing gates, roads and grass */
     private void drawSpawn(GuiGraphics g, float f, float zoom, float t) {
         int W = minecraft.getWindow().getWidth(), H = minecraft.getWindow().getHeight();
-        float cx = W / 2f, hor = 860f * f;
+        float sc = 1f + 0.22f * zoom;
+        float b = 30f * f * sc, bh = b * 0.66f;                    // block size, squashed because we look down at an angle
+        float feetY = (880f + 70f * zoom) * f, cx = W / 2f;
+        int roadZ = 19;
+        // the plaza centre sits so the east-west road passes through the skin's feet, zoom pivots on the feet
+        float oy0 = feetY - roadZ * 30f * f * 0.66f;
+        float ox = cx + (cx - cx) * sc, oy = feetY + (oy0 - feetY) * sc;
         g.pose().pushMatrix();
         g.pose().scale(1f / (float) gs, 1f / (float) gs);
-        // sky
-        for (int i = 0; i < 24; i++) {
-            float k = i / 23f;
-            int r = (int) (96 + 100 * k), gr = (int) (160 + 62 * k), b = (int) (232 + 12 * k);
-            fl(g, 0, hor * i / 24f, W, hor / 24f + 1, 0xFF000000 | (r << 16) | (gr << 8) | b);
+        int i0 = (int) Math.floor(-ox / b) - 1, i1 = (int) Math.ceil((W - ox) / b) + 1;
+        int j0 = (int) Math.floor(-oy / bh) - 1, j1 = (int) Math.ceil((H - oy) / bh) + 1;
+        for (int j = j0; j <= j1; j++) {
+            int run = i0, rc = spawnBlock(i0, j, roadZ, t);
+            for (int i = i0 + 1; i <= i1 + 1; i++) {
+                int c = i <= i1 ? spawnBlock(i, j, roadZ, t) : 0;
+                if (c != rc || i > i1) {
+                    fl(g, ox + (run - 0.5f) * b, oy + (j - 0.5f) * bh, (i - run) * b + 1, bh + 1, rc);
+                    run = i; rc = c;
+                }
+            }
         }
-        // blocky clouds
-        for (int i = 0; i < 5; i++) {
-            float x = ((i * 520f + t * 14f) % 2400f) - 250f;
-            float y = (110f + (i * 97) % 220) * f;
-            fl(g, cx - 937f * f + x * f, y, 220f * f, 26f * f, 0xCCFFFFFF);
-            fl(g, cx - 937f * f + x * f + 40f * f, y - 20f * f, 120f * f, 22f * f, 0xCCFFFFFF);
-        }
-        // the camera pushes in on the wall
-        g.pose().translate(cx, hor);
-        float sc = 1f + 0.10f * zoom;
-        g.pose().scale(sc, sc);
-        g.pose().translate(-cx, -hor);
-        // castle wall
-        float wx = cx - 620f * f, ww = 1240f * f, wt = hor - 360f * f;
-        fl(g, wx, wt, ww, 360f * f, 0xFF7A7A7E);
-        for (int r = 0; r < 18; r++) {           // brick rows
-            float ry = wt + r * 20f * f;
-            fl(g, wx, ry, ww, Math.max(1, 2f * f), 0xFF5E5E63);
-            for (float bx = (r % 2) * 30f; bx < 1240f; bx += 60f) fl(g, wx + bx * f, ry, Math.max(1, 2f * f), 20f * f, 0xFF5E5E63);
-        }
-        // battlements
-        for (int i = 0; i < 20; i++) fl(g, wx + i * 62f * f, wt - 26f * f, 36f * f, 26f * f, 0xFF86868B);
-        fl(g, wx, wt, ww, 6f * f, 0xFF9A9AA0);
-        // central tower
-        float tx = cx - 130f * f, tw = 260f * f, tt = wt - 170f * f;
-        fl(g, tx, tt, tw, 170f * f + 1, 0xFF808085);
-        for (int r = 0; r < 9; r++) fl(g, tx, tt + r * 20f * f, tw, Math.max(1, 2f * f), 0xFF5E5E63);
-        for (int i = 0; i < 5; i++) fl(g, tx + i * 56f * f - 4f * f, tt - 24f * f, 36f * f, 24f * f, 0xFF8E8E93);
-        fl(g, cx - 18f * f, tt + 40f * f, 36f * f, 60f * f, 0xFF1B1B22);    // tower window
-        fl(g, cx - 18f * f, tt + 40f * f, 36f * f, 6f * f, 0xFFFFC857);
-        // three arched gates (kits / factions / games)
-        float[] gx = {-420f, -70f, 280f};
-        int[] gc = {0xFFE8523A, 0xFF4F8DF7, 0xFF5BD97A};
-        for (int i = 0; i < 3; i++) {
-            float x = cx + gx[i] * f, w = 140f * f, y = hor - 210f * f;
-            fl(g, x - 10f * f, y - 10f * f, w + 20f * f, 220f * f, 0xFF4A4A50);          // frame
-            fl(g, x, y + 30f * f, w, 180f * f, 0xFF121218);                              // door
-            fl(g, x + 20f * f, y, w - 40f * f, 30f * f, 0xFF121218);                     // arch top
-            fl(g, x + 6f * f, y + 14f * f, 14f * f, 16f * f, 0xFF121218);
-            fl(g, x + w - 20f * f, y + 14f * f, 14f * f, 16f * f, 0xFF121218);
-            fl(g, x + w / 2f - 30f * f, y - 40f * f, 60f * f, 20f * f, gc[i]);           // banner above the gate
-            fl(g, x + w / 2f - 30f * f, y - 20f * f, 60f * f, 4f * f, 0x66000000);
-        }
-        // torches with a flicker
-        float[] tp = {-520f, -240f, 120f, 420f, 560f};
-        for (float tpx : tp) {
-            float x = cx + tpx * f, y = hor - 250f * f;
-            float fk = (float) Math.sin(t * 8f + tpx) * 2f * f;
-            fl(g, x, y + 14f * f, 8f * f, 32f * f, 0xFF6B4A2B);
-            fl(g, x - 3f * f, y - fk, 14f * f, 16f * f + fk, 0xFFFFB02E);
-            fl(g, x, y + 4f * f - fk, 8f * f, 8f * f, 0xFFFFE680);
-        }
-        g.pose().popMatrix();
-        g.pose().pushMatrix();
-        g.pose().scale(1f / (float) gs, 1f / (float) gs);
-        // plaza floor, brick tiles that get bigger toward the camera
-        fl(g, 0, hor, W, H - hor, 0xFF8C8C92);
-        for (int r = 0; r < 14; r++) {
-            float k = r / 13f, y = hor + (H - hor) * k * k;
-            fl(g, 0, y, W, Math.max(1, 2f * f), 0xFF6B6B72);
-            float step = (70f + 260f * k) * f;
-            float off = (r % 2) * step / 2f;
-            for (float x = cx % step - step + off; x < W; x += step)
-                fl(g, x, y, Math.max(1, 2f * f), (H - hor) * ((r + 1f) / 13f) * ((r + 1f) / 13f) - (H - hor) * k * k + 2f, 0xFF6B6B72);
-        }
-        // darker cobble path through the middle
-        fl(g, cx - 120f * f, hor, 240f * f, H - hor, 0x22000000);
-        fl(g, 0, hor, W, 8f * f, 0xFFA8A8AE);     // lit edge where the wall meets the plaza
+        // light vignette so the skin and the servers stand out
+        fl(g, 0, 0, W, H, 0x14000000);
         g.pose().popMatrix();
     }
 
@@ -606,7 +617,7 @@ public final class ChromeTitleScreen extends Screen {
             int x0 = Math.round((cx - side * f / 2f) / (float) gs), x1 = Math.round((cx + side * f / 2f) / (float) gs);
             int ya = Math.round((cy - side * f / 2f) / (float) gs), yb = Math.round((cy + side * f / 2f) / (float) gs);
             float turn = 78f + (24f - 78f) * ease((t - walkEnd) / 0.4f);   // profile while walking, then turns toward the servers
-            g.submitSkinRenderState(mdl, tex, 0.97f * (yb - ya) / 2.125f, -3f, turn, -0.0625f, x0, ya, x1, yb);
+            g.submitSkinRenderState(mdl, tex, 0.97f * (yb - ya) / 2.125f, -28f, turn, -0.0625f, x0, ya, x1, yb);
             // heading and hint next to the server list
             if (sceneP > 0f) {
                 int a = (int) (255 * sceneP);
