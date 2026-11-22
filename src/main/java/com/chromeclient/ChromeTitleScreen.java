@@ -457,8 +457,9 @@ public final class ChromeTitleScreen extends Screen {
         return Math.max(0f, Math.min(1f, t));
     }
 
-    /** turns the limbs of the model like a walk cycle; amount 0 = standing, 1 = full stride */
-    private void pose(net.minecraft.client.model.player.PlayerModel m, float phase, float amount) {
+    /** turns the limbs of the model like a walk cycle; amount 0 = standing, 1 = full stride.
+     *  wave 0..1 raises the right arm and waves it (hello, once the skin has stopped) */
+    private void pose(net.minecraft.client.model.player.PlayerModel m, float phase, float amount, float wave, float t) {
         try {
             net.minecraft.client.model.geom.ModelPart root = m.root();
             float sw = (float) Math.sin(phase) * amount;
@@ -466,32 +467,18 @@ public final class ChromeTitleScreen extends Screen {
                     rl = root.getChild("right_leg"), ll = root.getChild("left_leg");
             ra.xRot = -sw * 0.85f; la.xRot = sw * 0.85f;
             rl.xRot = sw * 1.0f; ll.xRot = -sw * 1.0f;
+            la.zRot = 0f;
+            ra.zRot = 0f;
+            if (wave > 0f) {                                     // arm swings up, waggles, then comes back down
+                ra.xRot = ra.xRot * (1f - wave) + (-2.65f) * wave;
+                ra.zRot = wave * (-0.12f + 0.38f * (float) Math.sin(t * 10f));
+            }
             root.getChild("right_sleeve").xRot = ra.xRot; root.getChild("left_sleeve").xRot = la.xRot;
+            root.getChild("right_sleeve").zRot = ra.zRot; root.getChild("left_sleeve").zRot = la.zRot;
             root.getChild("right_pants").xRot = rl.xRot; root.getChild("left_pants").xRot = ll.xRot;
         } catch (Throwable ignored) {
             // parts not found: the model just stands
         }
-    }
-
-    private static void fl(GuiGraphics g, float x, float y, float w, float h, int c) {
-        g.fill(Math.round(x), Math.round(y), Math.round(x + w), Math.round(y + h), c);
-    }
-
-    private static int hash(int x, int y) {
-        int h = x * 73856093 ^ y * 19349663;
-        h ^= h >>> 13; h *= 0x5bd1e995; h ^= h >>> 15;
-        return h & 255;
-    }
-
-    private static int shade(int c, int d) {
-        int r = Math.max(0, Math.min(255, ((c >> 16) & 255) + d)), g = Math.max(0, Math.min(255, ((c >> 8) & 255) + d)),
-                b = Math.max(0, Math.min(255, (c & 255) + d));
-        return 0xFF000000 | (r << 16) | (g << 8) | b;
-    }
-
-    /** rectangle in design units; x is measured from the middle of the screen */
-    private void dr(GuiGraphics g, float f, float cx, float x, float y, float w, float h, int c) {
-        fl(g, cx + x * f, y * f, w * f, h * f, c);
     }
 
     private static final net.minecraft.resources.Identifier SPAWN_TEX =
@@ -586,7 +573,8 @@ public final class ChromeTitleScreen extends Screen {
             float zoom = ease((t - zoomStart) / (zoomEnd - zoomStart));
             sceneP = ease((t - 3.7f) / 0.9f);
             float phase = t * 9f;
-            pose(mdl, phase, t < 3.0f ? amount : 0f);
+            float wv = clamp01((t - 3.0f) / 0.35f) * (1f - clamp01((t - 4.6f) / 0.4f));   // a wave once it has stopped
+            pose(mdl, phase, t < 3.0f ? amount : 0f, wv, t);
             float[] cam = spawnCam(zoom, t);
             float S = cam[0];
             // feet position in the picture: walks in from the left along the plaza, then steps up onto the steps and stops
