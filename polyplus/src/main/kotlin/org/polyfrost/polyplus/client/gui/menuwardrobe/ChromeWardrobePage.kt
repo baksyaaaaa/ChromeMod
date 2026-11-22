@@ -87,14 +87,14 @@ private object ChromeCosmetics {
 }
 
 @Composable
-internal fun ChromeWardrobePage(onBack: () -> Unit) {
+internal fun ChromeWardrobePage(onBack: () -> Unit, embedded: Boolean = false) {
     var cat by remember { mutableIntStateOf(0) }
     var picked by remember { mutableIntStateOf(0) }   // changes whenever something is equipped, so the list redraws
     val rotation = remember { PreviewRotation(FRONT_YAW) }
     DisposableEffect(Unit) { onDispose { ChromeCosmeticsBridge.hat = -1; ChromeCosmeticsBridge.cape = -1; ChromeCosmeticsBridge.wings = -1; ChromeCosmeticsBridge.pushLobby() } }
     Box(Modifier.fillMaxSize()) {
-      org.polyfrost.polyplus.client.gui.lobbyshell.PageScrim()
-      Box(centerColumn()) {
+      if (!embedded) org.polyfrost.polyplus.client.gui.lobbyshell.PageScrim()
+      Box(if (embedded) Modifier.fillMaxSize().padding(28.dp) else centerColumn()) {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 BackButton(onBack)

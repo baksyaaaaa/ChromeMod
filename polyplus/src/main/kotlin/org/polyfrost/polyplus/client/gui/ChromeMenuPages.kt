@@ -41,11 +41,22 @@ import org.polyfrost.oneconfig.api.ui.v1.theme.OneConfigTheme
 internal object ChromeMenu {
     val tabs = listOf("HUD", "Render", "Misc", "Music")
 
+    /** the Chrome Client mod is installed (the pages show up even if reading its settings fails, with the reason on the page) */
+    val installed: Boolean by lazy { runCatching { Class.forName("com.chromeclient.ChromeMenuApi") }.isSuccess }
+
+    @Volatile
+    var error: String? = null
+
     @Suppress("UNCHECKED_CAST")
     val modules: List<Map<String, Any?>> by lazy {
         runCatching {
             Class.forName("com.chromeclient.ChromeMenuApi").getMethod("modules").invoke(null) as List<Map<String, Any?>>
-        }.getOrDefault(emptyList())
+        }.getOrElse {
+            val cause = it.cause ?: it
+            error = cause.toString()
+            org.apache.logging.log4j.LogManager.getLogger("polyplus/chrome-menu").error("Could not read Chrome Client's settings", cause)
+            emptyList()
+        }
     }
 
     val available: Boolean get() = modules.isNotEmpty()
@@ -63,7 +74,7 @@ internal fun ChromeModulesPage(tab: String) {
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Chrome Client - $tab")
         if (mods.isEmpty()) {
-            Text("Chrome Client's settings were not found. Install the Chrome Client mod to see them here.", color = OneConfigTheme.current.mutedText)
+            Text(ChromeMenu.error?.let { "Chrome Client's settings could not be read: $it" } ?: "Chrome Client's settings were not found. Update the Chrome Client mod to see them here.", color = OneConfigTheme.current.mutedText)
             return@Column
         }
         LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(14.dp)) {

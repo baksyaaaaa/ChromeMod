@@ -89,8 +89,11 @@ public class ChromeClientMod implements ClientModInitializer {
 
     private static boolean oneMenu() {
         if (oneMenu == null) {
-            try { Class.forName("org.polyfrost.polyplus.client.gui.PolyPlusOneConfigIntegration"); oneMenu = true; }
-            catch (Throwable t) { oneMenu = false; }
+            // only stand down when the other menu really can show these settings, so they are never lost
+            try {
+                Class.forName("org.polyfrost.polyplus.client.gui.PolyPlusOneConfigIntegration");
+                oneMenu = !ChromeMenuApi.modules().isEmpty();
+            } catch (Throwable t) { oneMenu = false; }
         }
         return oneMenu;
     }

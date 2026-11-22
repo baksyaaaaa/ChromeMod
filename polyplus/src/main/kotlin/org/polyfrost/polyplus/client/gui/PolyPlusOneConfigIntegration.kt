@@ -48,7 +48,7 @@ object PolyPlusOneConfigIntegration {
 
         @Composable
         override fun Content() = ProvidePopupSounds(false) {
-            org.polyfrost.polyplus.client.gui.menuwardrobe.ChromeWardrobePage(onBack = { ClientPlatform.currentScreen()?.onClose() })
+            org.polyfrost.polyplus.client.gui.menuwardrobe.ChromeWardrobePage(onBack = { ClientPlatform.currentScreen()?.onClose() }, embedded = true)
         }
     }
 
@@ -97,7 +97,7 @@ object PolyPlusOneConfigIntegration {
         icon,
         oneClientGroup,
     ) {
-        override val showInSidebar: Boolean get() = sectionShown.value && ChromeMenu.available
+        override val showInSidebar: Boolean get() = sectionShown.value && ChromeMenu.installed
 
         @Composable
         override fun Content() = ChromeModulesPage(tab)
