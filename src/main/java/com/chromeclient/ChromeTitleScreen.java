@@ -670,10 +670,10 @@ public final class ChromeTitleScreen extends Screen {
             pose(mdl, phase, t < 3.0f ? amount : 0f);
             // design coordinates, measured from the middle of the screen
             float cxD = Math.max(-260f, -260f + (680f + 260f) * (1f - (1f - walk) * (1f - walk) * (1f - walk) * 0.35f) * 1f);
-            cxD = -260f + (680f + 260f) * ease(walk * 0.6f + walk * walk * 0.4f);
+            cxD = -260f + (680f + 260f) * ease(walk * 0.6f + walk * walk * 0.4f);   // ends at 680 (design), then 865 with the zoom
             float hD = 520f + (700f - 520f) * zoom;                      // body height
-            float feetD = 880f + (950f - 880f) * zoom;
-            cxD += (590f - 680f) * zoom;                                  // slides left while zooming
+            float feetD = 1000f + (930f - 1000f) * ease((t - 2.2f) / 0.8f) + 46f * zoom;   // walks along the gravel, then steps up onto the wooden steps
+            cxD += (865f - 680f) * zoom;                                  // slides left while zooming
             float bob = (float) Math.abs(Math.sin(phase)) * 7f * amount * (t < 3.0f ? 1f : 0f);
             float side = hD / 0.9f;                                       // the box the model is fitted in
             float cx = rx(cxD, 1), cy = (feetD - hD / 2f - bob) * f;
