@@ -66,16 +66,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p explore
-          MCJAR=$(find ~/.gradle -name "*.jar" -iname "*minecraft*" -size +10M 2>/dev/null | head -5)
-          echo "$MCJAR" > explore/jars.txt
-          for J in $MCJAR; do unzip -Z1 "$J" | grep '\.class$' | sed 's/\.class$//' > "explore/classes-$(basename $J).txt"; done
+          ls -la ~/.gradle/caches/fabric-loom/26.3/ > explore/jars.txt 2>&1 || true
+          find ~/.gradle -iname "*lwjgl*" -name "*.jar" | head -20 >> explore/jars.txt
+          find ~/.gradle -name "*.jar" -path "*fabric*" ! -name "*sources*" | head -80 >> explore/jars.txt
+          gradle dependencies --configuration compileClasspath --no-daemon -q > explore/deps.txt 2>&1 || true
+          CL=$(ls ~/.gradle/caches/fabric-loom/26.3/*client*.jar ~/.gradle/caches/fabric-loom/26.3/*merged*.jar 2>/dev/null | head -1)
+          echo "CLIENT=$CL" >> explore/jars.txt
+          unzip -Z1 "$CL" | grep '\.class$' | sed 's/\.class$//' > explore/classes.txt
           find ~/.gradle -name "fabric-*.jar" -size +5k 2>/dev/null | grep -v sources | while read F; do
             echo "== $F"; unzip -Z1 "$F" | grep '\.class$' | grep '/api/' | sed 's/\.class$//'
           done > explore/fabric-api-classes.txt
-          CP=$(echo "$MCJAR" | tr '\n' ':')
-          for J in $MCJAR; do
-            unzip -Z1 "$J" | grep -E '^net/minecraft/client/(gui/[A-Za-z]+|gui/screens/[A-Za-z]+|gui/components/[A-Za-z]+|Minecraft|KeyMapping|Options|player/[A-Za-z]+|renderer/[A-Za-z]+|model/[A-Za-z/]+|multiplayer/[A-Za-z]+|resources/[A-Za-z]+|sounds/[A-Za-z]+)\.class$' | sed 's/\.class$//; s#/#.#g' | head -400 | xargs javap -public -cp "$J" 2>/dev/null
-          done > explore/signatures.txt || true
+          for PAT in 'client/gui/[A-Za-z]+' 'client/gui/screens/[A-Za-z]+' 'client/gui/components/[A-Za-z]+' 'client/Minecraft' 'client/KeyMapping' 'client/Options' 'client/player/[A-Za-z]+' 'client/renderer/[A-Za-z]+' 'client/model/[A-Za-z/]+' 'client/multiplayer/[A-Za-z]+' 'client/input/[A-Za-z]+' 'client/MouseHandler' 'client/KeyboardHandler' 'com/mojang/blaze3d/platform/[A-Za-z]+' 'client/gui/render/[A-Za-z/]+'; do
+            unzip -Z1 "$CL" | grep -E "^net/minecraft/$PAT\.class$|^$PAT\.class$" | sed 's/\.class$//; s#/#.#g'
+          done | sort -u | head -900 | xargs javap -public -cp "$CL" > explore/signatures.txt 2>explore/javap-err.txt || true
           wc -c explore/*
           git config user.name ci; git config user.email ci@example.com
           git checkout -q --orphan explore26 && git rm -rfq --cached . >/dev/null 2>&1 || true
