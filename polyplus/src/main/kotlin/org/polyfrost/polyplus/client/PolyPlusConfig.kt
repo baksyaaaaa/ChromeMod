@@ -32,7 +32,7 @@ import org.polyfrost.polyplus.privacy.LauncherEnvironment
 import java.nio.file.Files
 import java.nio.file.Path
 
-object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConstants.NAME} (Chrome Client)", Category.OTHER) {
+object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConstants.NAME}", Category.OTHER) {
     @Transient
     private val LOGGER = LogManager.getLogger()
 
@@ -304,11 +304,7 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
     var showChatEmoji = true
 
     @JvmStatic
-    @Switch(
-        title = "Disable Narrator While Muted",
-        description = "Skip the narrator entirely while Master or Voice/Speech volume is 0% to prevent lagspikes.",
-    )
-    var disableNarratorWhileMuted = true
+        var disableNarratorWhileMuted = true
 
     @JvmStatic
     @Switch(
@@ -318,118 +314,39 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
     var autoRefreshSession = true
 
     @JvmStatic
-    @Switch(
-        title = "Enable Party Voice",
-        description = "Talk with your party. Changing this needs a restart.",
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceEnabled = true
+        var voiceEnabled = false
 
     @JvmStatic
-    @Switch(
-        title = "Join Party Voice Automatically",
-        description = "Join voice as soon as you join a party.",
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceAutoJoin = false
+        var voiceAutoJoin = false
 
     @JvmStatic
-    @Dropdown(
-        title = "Input Mode",
-        description = "Send your voice when you speak, or only while you hold a key.",
-        options = ["Voice activity", "Push to talk"],
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceInputMode: VoiceInputMode = VoiceInputMode.VOICE_ACTIVITY
+        var voiceInputMode: VoiceInputMode = VoiceInputMode.VOICE_ACTIVITY
 
-    @Keybind(
-        title = "Push to Talk",
-        description = "Hold to talk when Input Mode is Push to talk.",
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voicePushToTalkKeybind = OneConfigKeybind(intArrayOf(InputConstants.KEY_V), null, KeyModifiers.NONE, 0L) { state ->
+        var voicePushToTalkKeybind = OneConfigKeybind(intArrayOf(InputConstants.KEY_V), null, KeyModifiers.NONE, 0L) { state ->
         PartyVoice.onPushToTalk(state)
         true
     }
 
     @JvmStatic
-    @Slider(
-        title = "Voice Activity Threshold",
-        description = "How loud you need to be before your voice is sent.",
-        min = 0f,
-        max = 100f,
-        step = 1f,
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceActivityThreshold = 50f
+        var voiceActivityThreshold = 50f
 
     @JvmStatic
-    @Slider(
-        title = "Input Volume",
-        description = "Microphone volume, in percent.",
-        min = 0f,
-        max = 200f,
-        step = 5f,
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceInputVolume = 100f
+        var voiceInputVolume = 100f
 
     @JvmStatic
-    @Slider(
-        title = "Output Volume",
-        description = "Party voice volume, in percent.",
-        min = 0f,
-        max = 200f,
-        step = 5f,
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceOutputVolume = 100f
+        var voiceOutputVolume = 100f
 
     @JvmStatic
-    @Slider(
-        title = "Proximity Range",
-        description = "In proximity mode, how far away in blocks you can still hear a party member.",
-        min = 16f,
-        max = 128f,
-        step = 1f,
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceProximityRange = 48f
+        var voiceProximityRange = 48f
 
     @JvmStatic
-    @Switch(
-        title = "Use Java Sound for Voice",
-        description = "Use Java's own audio for peer-to-peer voice instead of OpenAL. Try this if your microphone or speaker doesn't work.",
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceJavaSound = false
+        var voiceJavaSound = false
 
     @JvmStatic
-    @Switch(
-        title = "Try EOS Voice on Linux (Experimental)",
-        description = "Try Epic's voice rooms on Linux. If they fail, voice falls back to peer-to-peer. Changing this needs a restart.",
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceLinuxRtc = false
+        var voiceLinuxRtc = false
 
     @JvmStatic
-    @Switch(
-        title = "Hide My IP in Voice",
-        description = "Send peer-to-peer voice through Epic relays so party members never see your IP.",
-        category = "Multiplayer",
-        subcategory = "Voice",
-    )
-    var voiceHideIp = true
+        var voiceHideIp = true
 
     @JvmStatic @Include
     var voiceInputDevice = ""
@@ -488,48 +405,28 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
         true
     }
 
-    @Keybind(
-        title = "Toggle Mute",
-        subcategory = "Keybinds",
-        description = "Mute or unmute your microphone in party voice",
-    )
-    var toggleMuteKeybind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L) { state ->
+        var toggleMuteKeybind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L) { state ->
         if (state) {
             PartyVoice.onToggleMuteKey()
         }
         true
     }
 
-    @Keybind(
-        title = "Toggle Deafen",
-        subcategory = "Keybinds",
-        description = "Deafen or undeafen yourself in party voice",
-    )
-    var toggleDeafenKeybind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L) { state ->
+        var toggleDeafenKeybind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L) { state ->
         if (state) {
             PartyVoice.onToggleDeafenKey()
         }
         true
     }
 
-    @Keybind(
-        title = "Join/Leave Voice",
-        subcategory = "Keybinds",
-        description = "Join or leave party voice",
-    )
-    var joinLeaveVoiceKeybind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L) { state ->
+        var joinLeaveVoiceKeybind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L) { state ->
         if (state) {
             PartyVoice.onJoinLeaveKey()
         }
         true
     }
 
-    @Keybind(
-        title = "Ping",
-        subcategory = "Keybinds",
-        description = "Tap to ping what you're looking at. Hold to choose a ping.",
-    )
-    var pingKeybind = OneConfigKeybind(null, intArrayOf(InputConstants.MOUSE_BUTTON_MIDDLE), KeyModifiers.NONE, 0L) { state ->
+        var pingKeybind = OneConfigKeybind(null, intArrayOf(InputConstants.MOUSE_BUTTON_MIDDLE), KeyModifiers.NONE, 0L) { state ->
         PingInput.onKeybindState(state)
         true
     }

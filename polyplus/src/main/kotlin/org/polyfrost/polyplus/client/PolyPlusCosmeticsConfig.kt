@@ -14,7 +14,7 @@ import java.util.UUID
 
 object PolyPlusCosmeticsConfig : Config(
     "${PolyPlusConstants.ID}-cosmetics.json",
-    "Cosmetics (Chrome Client)",
+    "Cosmetics",
     Category.OTHER,
 ) {
     @Transient

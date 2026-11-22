@@ -13,7 +13,7 @@ import org.polyfrost.polyplus.client.gui.widgets.WidgetMigration
 
 object PolyPlusPauseConfig : Config(
     "${PolyPlusConstants.ID}-pause.json",
-    "Pause Screen (Chrome Client)",
+    "Pause Screen",
     Category.OTHER,
 ) {
     @Transient

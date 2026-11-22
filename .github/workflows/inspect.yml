@@ -11,7 +11,7 @@ jobs:
           curl -sfL -o i.jar "https://repo.polyfrost.org/releases/org/polyfrost/oneconfig/internal/1.9.0/internal-1.9.0.jar"
           mkdir x && cd x && unzip -qo ../i.jar
           javap -p -c -constants -cp . org.polyfrost.oneconfig.internal.OneConfigConfig > /tmp/c.txt
-          echo "=== DEFAULT KEYS in order ==="
-          grep -nE "putstatic.*(Keybind|keybind)|Keys.getKey|HUD_ACTION_MODS|bipush|iconst_[0-9]$" /tmp/c.txt | sed -n '/1182/,$p' | grep -E "putstatic|getKey" | head -70
-          echo "=== openEditor callers ==="
-          for c in org.polyfrost.oneconfig.internal.ui.shell.ShellKt; do javap -p -c -cp . $c | grep -n -B12 "openEditor" | head -80; done
+          echo "=== DEFAULT KEYS ==="
+          awk 'NR>=1175 && NR<=1500' /tmp/c.txt | grep -E "putstatic|getKey|getstatic.*HUD_|iconst_|bipush" | cut -c1-160
+          echo "=== ShellKt openEditor ==="
+          javap -p -c -cp . org.polyfrost.oneconfig.internal.ui.shell.ShellKt | grep -n -B14 "openEditor" | cut -c1-170 | head -90

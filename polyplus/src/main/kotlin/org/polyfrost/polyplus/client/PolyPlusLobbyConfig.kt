@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
 
 object PolyPlusLobbyConfig : Config(
     "${PolyPlusConstants.ID}-lobby.json",
-    "Lobby (Chrome Client)",
+    "Lobby",
     Category.OTHER,
 ) {
     @Transient

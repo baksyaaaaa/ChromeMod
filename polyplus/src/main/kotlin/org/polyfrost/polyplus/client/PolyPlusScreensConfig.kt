@@ -7,7 +7,7 @@ import org.polyfrost.polyplus.PolyPlusConstants
 
 object PolyPlusScreensConfig : Config(
     "${PolyPlusConstants.ID}-screens.json",
-    "Screens (Chrome Client)",
+    "Screens",
     Category.OTHER,
 ) {
     @JvmStatic

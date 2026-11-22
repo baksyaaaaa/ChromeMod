@@ -24,7 +24,7 @@ private const val MAX_CUSTOM_MAIN_MENU_FPS_LIMIT = 260f
 
 object PolyPlusMainMenuConfig : Config(
     "${PolyPlusConstants.ID}-mainmenu.json",
-    "Main Menu (Chrome Client)",
+    "Main Menu",
     Category.OTHER,
 ) {
     @Transient
