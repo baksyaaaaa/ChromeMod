@@ -67,7 +67,8 @@ public class ChromeClientMod implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (menuKey.consumeClick()) {
-                if (client.player != null && client.screen == null) client.setScreen(new ClickGui(hud));
+                // with the PolyPlus menu mod installed, Right Shift opens its (OneConfig) menu, which holds all of these settings
+                if (client.player != null && client.screen == null && !oneMenu()) client.setScreen(new ClickGui(hud));
             }
             while (musicKey.consumeClick()) {
                 if (client.player != null && client.screen == null && YtBridge.installed()) client.setScreen(new MusicScreen(null));
@@ -82,6 +83,16 @@ public class ChromeClientMod implements ClientModInitializer {
 
         // hand the FOV back before the game saves its options
         ClientLifecycleEvents.CLIENT_STOPPING.register(this::stopZoom);
+    }
+
+    private static Boolean oneMenu;
+
+    private static boolean oneMenu() {
+        if (oneMenu == null) {
+            try { Class.forName("org.polyfrost.polyplus.client.gui.PolyPlusOneConfigIntegration"); oneMenu = true; }
+            catch (Throwable t) { oneMenu = false; }
+        }
+        return oneMenu;
     }
 
     /** Lets the vanilla HUD pieces be moved and resized: each is drawn shifted and scaled around its default spot. */

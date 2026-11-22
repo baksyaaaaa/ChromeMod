@@ -19,10 +19,10 @@ import org.polyfrost.polyplus.client.gui.gamesocial.SocialWindowState
 import org.polyfrost.polyplus.client.social.SocialOverlay
 
 class SocialOverlayScreen(previousScreen: Screen?) : OverlayScreen(previousScreen) {
-    private val window = SocialWindowState(this, SocialOverlay.consumeAutoHostCurrentWorld())
-
     init {
-        if (SocialOverlay.consumeOpenVoice()) window.showVoice()
+        // Chrome Client: friends and direct messages replace the Polyfrost social window; these flags are not used any more
+        SocialOverlay.consumeAutoHostCurrentWorld()
+        SocialOverlay.consumeOpenVoice()
     }
 
     //? if > 1.8.9 {
@@ -32,17 +32,12 @@ class SocialOverlayScreen(previousScreen: Screen?) : OverlayScreen(previousScree
     *///?}
 
     override fun handleKeyPressed(key: Int, modifiers: Int): Boolean {
-        val handled = when (key) {
-            InputConstants.KEY_ESCAPE -> window.escape()
-            InputConstants.KEY_RETURN, InputConstants.KEY_NUMPADENTER -> window.enter()
-            else -> false
-        }
-        return handled || super.handleKeyPressed(key, modifiers)
+        return super.handleKeyPressed(key, modifiers)
     }
 
     @Composable
     override fun content(onClose: () -> Unit) {
-        SocialWindow(window, onClose)
+        org.polyfrost.polyplus.client.gui.lobbysocial.ChromeChatPage(onBack = onClose)
     }
 }
 

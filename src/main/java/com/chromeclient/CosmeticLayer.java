@@ -185,12 +185,23 @@ public final class CosmeticLayer extends RenderLayer {
         pvHat = hat; pvCape = cape; pvWings = wings;
     }
 
+    // The lobby's big character (the menu mod's 3D scene has its own little world with no player in it): the avatar with this
+    // entity id is you, so it wears your picks, or the item you point at in the wardrobe.
+    private static volatile int lobbyId = Integer.MIN_VALUE;
+    private static volatile int lobHat = -1, lobCape = -1, lobWings = -1;
+
+    public static void setLobby(int id, int hat, int cape, int wings) {
+        lobbyId = id;
+        lobHat = hat; lobCape = cape; lobWings = wings;
+    }
+
     @Override
     public void submit(PoseStack pose, SubmitNodeCollector queue, int light, EntityRenderState state, float yRot, float xRot) {
         try {
             Minecraft mc = Minecraft.getInstance();
-            final boolean preview = previewing;
             if (!(state instanceof AvatarRenderState av)) return;
+            final boolean lobby = mc.player == null && av.id == lobbyId;
+            final boolean preview = previewing || lobby;
             if (!preview && (mc.player == null || mc.level == null)) return;
             var self = preview ? null : mc.level.getEntity(av.id);
             if (self != null && self.isInvisible()) return;   // invisible players show nothing of theirs
@@ -198,9 +209,11 @@ public final class CosmeticLayer extends RenderLayer {
             int hat, cape, wings;
             double speed;
             if (preview) {
-                hat = pvHat >= 0 ? pvHat : Cosmetics.chosen[0];
-                cape = pvCape >= 0 ? pvCape : Cosmetics.chosen[1];
-                wings = pvWings >= 0 ? pvWings : Cosmetics.chosen[2];
+                int oh = lobby ? lobHat : pvHat, oc = lobby ? lobCape : pvCape, ow = lobby ? lobWings : pvWings;
+                hat = oh >= 0 ? oh : Cosmetics.chosen[0];
+                cape = oc >= 0 ? oc : Cosmetics.chosen[1];
+                wings = ow >= 0 ? ow : Cosmetics.chosen[2];
+                light = 0xF000F0;   // a menu figure has no world light: draw the pieces fully lit so they are not dark
             } else if (local) {
                 hat = Cosmetics.chosen[0]; cape = Cosmetics.chosen[1]; wings = Cosmetics.chosen[2];
             } else {   // another player using the mod: what the service says they wear

@@ -23,6 +23,25 @@ object ChromeCosmeticsBridge {
         }.getOrNull()
     }
 
+    private val lobbyMethod: Method? by lazy {
+        runCatching {
+            Class.forName("com.chromeclient.CosmeticLayer").getMethod("setLobby", Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE)
+        }.getOrNull()
+    }
+
+    /** the big character in the lobby is the avatar with this entity id (MIN_VALUE = none); it wears the saved picks */
+    fun lobbyAvatar(id: Int) {
+        lobbyId = id
+        pushLobby()
+    }
+
+    private var lobbyId = Int.MIN_VALUE
+
+    /** sends the item being pointed at to the lobby character */
+    fun pushLobby() {
+        runCatching { lobbyMethod?.invoke(null, lobbyId, hat, cape, wings) }
+    }
+
     fun begin() {
         runCatching { method?.invoke(null, true, hat, cape, wings) }
     }

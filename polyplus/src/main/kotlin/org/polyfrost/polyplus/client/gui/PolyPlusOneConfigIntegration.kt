@@ -47,7 +47,9 @@ object PolyPlusOneConfigIntegration {
         override val order: Int get() = 150
 
         @Composable
-        override fun Content() = ProvidePopupSounds(false) { PolyPlusCosmeticsScreen() }
+        override fun Content() = ProvidePopupSounds(false) {
+            org.polyfrost.polyplus.client.gui.menuwardrobe.ChromeWardrobePage(onBack = { ClientPlatform.currentScreen()?.onClose() })
+        }
     }
 
     private val oneClientGroup = PageGroup.create(
@@ -88,12 +90,33 @@ object PolyPlusOneConfigIntegration {
         OneClientPageSpec("screens", "-screens", "Screens", "cog"),
     ).mapIndexed { index, spec -> OneClientConfigPage(spec, index, oneClientGroup) }
 
+    /** Chrome Client's own HUD / Render / Misc / Music settings, so Right Shift opens one menu for both mods */
+    private class ChromeModsPage(val tab: String, override val order: Int, icon: String) : OneConfigPage(
+        "polyplus:chrome/${tab.lowercase()}",
+        PageText.translatable("polyplus.page.chrome.${tab.lowercase()}", tab),
+        icon,
+        oneClientGroup,
+    ) {
+        override val showInSidebar: Boolean get() = sectionShown.value && ChromeMenu.available
+
+        @Composable
+        override fun Content() = ChromeModulesPage(tab)
+    }
+
+    private val chromeModsPages: List<OneConfigPage> = listOf(
+        ChromeModsPage("HUD", 10, "layers"),
+        ChromeModsPage("Render", 11, "cog"),
+        ChromeModsPage("Misc", 12, "settings"),
+        ChromeModsPage("Music", 13, SOCIAL_ASSETS + "pause-circle.svg"),
+    )
+
     private val generalPage = oneClientPages.first()
     private val screensPage = oneClientPages.last()
 
     fun register() {
         if (OneConfigPages.byId(wardrobePage.id) == null) OneConfigPages.register(wardrobePage)
         oneClientPages.forEach { OneConfigPages.registerIfAbsent(it) }
+        chromeModsPages.forEach { OneConfigPages.registerIfAbsent(it) }
         ModCardIcons.register { modId, defaultIcon -> modCardIcon(modId, defaultIcon) }
         ModSortModes.register(DefaultModOrder.recommendedMode)
         ChangelogSources.register(ModpackChangelog)

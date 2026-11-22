@@ -1349,6 +1349,7 @@ object LobbyScene {
         /*val avatar = LobbyAvatar(level, localProfile, localProfile.name, true, slot) { localSkin.getNow(null) ?: PlayerSkin(DefaultSkinUtils.getDefaultSkin(localProfile.id)) }
         *///?}
         enter(level, listener, avatar, FIRST_AVATAR_ID)
+        org.polyfrost.polyplus.client.ChromeCosmeticsBridge.lobbyAvatar(FIRST_AVATAR_ID)
         val avatars = mutableListOf(avatar)
         (cast.party.zip(stage.slots.drop(1)) + cast.background.zip(stage.background)).forEach { (friend, friendSlot) ->
             avatars += friendAvatar(level, friend, friendSlot).also {
@@ -2549,6 +2550,7 @@ object LobbyScene {
         runCatching { LobbyHologram.reset() }
         runCatching { LobbyFraming.reset() }
         runCatching { LobbyWardrobe.reset() }
+        runCatching { org.polyfrost.polyplus.client.ChromeCosmeticsBridge.lobbyAvatar(Int.MIN_VALUE) }
         runCatching { LobbyHerobrine.stop() }
         runCatching { LobbyAntics.reset() }
         runCatching { LobbyGrab.reset() }

@@ -213,6 +213,47 @@ public class ClickGui extends Screen {
         effOpts.add(slider("Amount", () -> Cosmetics.effectAmount, v -> Cosmetics.effectAmount = v.floatValue(), 0.1, 1, "%.1f"));
     }
 
+    /**
+     * The modules of every tab except Cosmetics, as plain maps and java.util.function objects, so the menu mod's OneConfig pages can
+     * show and change them without knowing these classes: this is how the Right Shift menu is one menu when both mods are installed.
+     */
+    public static java.util.List<java.util.Map<String, Object>> describe(Hud hud) {
+        ClickGui g = new ClickGui(hud);
+        java.util.List<java.util.Map<String, Object>> out = new ArrayList<>();
+        for (int t = 0; t < TABS.length; t++) {
+            if (t == COS) continue;
+            for (Mod m : g.tabs.get(t)) {
+                java.util.Map<String, Object> mm = new java.util.HashMap<>();
+                mm.put("tab", TABS[t]);
+                mm.put("name", m.name);
+                mm.put("desc", m.desc);
+                if (m.on != null) { mm.put("on", m.on); mm.put("setOn", m.set); }
+                java.util.List<java.util.Map<String, Object>> opts = new ArrayList<>();
+                for (Opt o : m.opts) {
+                    java.util.Map<String, Object> om = new java.util.HashMap<>();
+                    om.put("kind", o.k.name());
+                    om.put("label", o.labelS != null ? o.labelS : (Supplier<String>) () -> o.label);
+                    om.put("vis", o.vis);
+                    switch (o.k) {
+                        case TOGGLE -> { om.put("getB", o.getB); om.put("setB", o.setB); }
+                        case SLIDER -> { om.put("getD", o.getD); om.put("setD", o.setD); om.put("min", o.min); om.put("max", o.max); om.put("fmt", o.fmt); }
+                        case CHOICE -> { om.put("choices", o.choices); om.put("getI", o.getI); om.put("setI", o.setI); }
+                        case SWATCH -> { om.put("colors", o.colors); om.put("getI", o.getI); om.put("setI", o.setI); }
+                        case ACTION -> om.put("act", (Runnable) () -> {
+                            o.act.run();
+                            if (g.later != null) { Runnable r = g.later; g.later = null; r.run(); }   // opening another screen
+                        });
+                        default -> { }
+                    }
+                    opts.add(om);
+                }
+                mm.put("opts", opts);
+                out.add(mm);
+            }
+        }
+        return out;
+    }
+
     // ---------------------------------------------------------------- layout
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {

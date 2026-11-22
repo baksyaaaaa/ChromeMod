@@ -59,6 +59,7 @@ private fun showOnFigure(cat: Int, index: Int) {
         1 -> ChromeCosmeticsBridge.cape = index
         2 -> ChromeCosmeticsBridge.wings = index
     }
+    ChromeCosmeticsBridge.pushLobby()
 }
 
 private object ChromeCosmetics {
@@ -90,8 +91,10 @@ internal fun ChromeWardrobePage(onBack: () -> Unit) {
     var cat by remember { mutableIntStateOf(0) }
     var picked by remember { mutableIntStateOf(0) }   // changes whenever something is equipped, so the list redraws
     val rotation = remember { PreviewRotation(FRONT_YAW) }
-    DisposableEffect(Unit) { onDispose { ChromeCosmeticsBridge.hat = -1; ChromeCosmeticsBridge.cape = -1; ChromeCosmeticsBridge.wings = -1 } }
-    Box(centerColumn()) {
+    DisposableEffect(Unit) { onDispose { ChromeCosmeticsBridge.hat = -1; ChromeCosmeticsBridge.cape = -1; ChromeCosmeticsBridge.wings = -1; ChromeCosmeticsBridge.pushLobby() } }
+    Box(Modifier.fillMaxSize()) {
+      org.polyfrost.polyplus.client.gui.lobbyshell.PageScrim()
+      Box(centerColumn()) {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 BackButton(onBack)
@@ -155,6 +158,7 @@ internal fun ChromeWardrobePage(onBack: () -> Unit) {
                         }
                     },
                 ) {
+                  if (!org.polyfrost.polyplus.client.lobby.LobbyScene.showing()) {
                     PlayerPreview(
                         Modifier.fillMaxSize(),
                         source = PlayerPreviewSource.LocalLive,
@@ -171,9 +175,11 @@ internal fun ChromeWardrobePage(onBack: () -> Unit) {
                             fill = Vector3f(-0.8f, -0.2f, 0.2f).normalize(),
                         ),
                     )
+                  }
                 }
             }
             if (picked < 0) Text("")   // reads the counter so the list above redraws after a pick
         }
+      }
     }
 }
