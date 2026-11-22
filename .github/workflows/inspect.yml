@@ -13,9 +13,9 @@ jobs:
           ls -la i.jar
           mkdir x && cd x && unzip -qo ../i.jar
           javap -p -c -constants -cp . org.polyfrost.oneconfig.internal.OneConfigConfig > /tmp/c.txt
-          echo "=== initialize/clinit: keybind defaults ==="
-          grep -nE "minimalMenuKeybind|oneConfigKeybind|openingBehavior|timeBeforeReset|OneConfigKeybind.\"<init>\"|newarray|KeyModifiers|sipush  *[0-9]+|bipush  *[0-9]+" /tmp/c.txt | head -80
-          echo "=== who opens the HUD editor ==="
-          grep -rl -a "openEditor" --include=*.class . | head
-          echo "=== openingBehavior use ==="
-          grep -n "openingBehavior\|timeBeforeReset\|keybindClosesGui" /tmp/c.txt | head -30
+          echo "=== KEYBIND DEFAULTS ==="
+          sed -n 1175,1215p /tmp/c.txt
+          echo "=== OPENING BEHAVIOR ==="
+          sed -n 510,560p /tmp/c.txt
+          echo "=== ctor of OneConfigKeybind ==="
+          javap -p -cp . org.polyfrost.oneconfig.api.ui.v1.keybind.OneConfigKeybind 2>&1 | head -30 || true
