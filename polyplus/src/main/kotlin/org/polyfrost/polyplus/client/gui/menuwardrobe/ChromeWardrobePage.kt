@@ -93,7 +93,7 @@ internal fun ChromeWardrobePage(onBack: () -> Unit, embedded: Boolean = false) {
     val rotation = remember { PreviewRotation(FRONT_YAW) }
     DisposableEffect(Unit) { onDispose { ChromeCosmeticsBridge.hat = -1; ChromeCosmeticsBridge.cape = -1; ChromeCosmeticsBridge.wings = -1; ChromeCosmeticsBridge.pushLobby() } }
     Box(Modifier.fillMaxSize()) {
-      if (!embedded) org.polyfrost.polyplus.client.gui.lobbyshell.PageScrim()
+      // no scrim: the scene behind the wardrobe stays as bright as it is
       Box(if (embedded) Modifier.fillMaxSize().padding(28.dp) else centerColumn()) {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
