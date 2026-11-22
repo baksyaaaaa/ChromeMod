@@ -54,7 +54,7 @@ private object ChromeCosmetics {
     fun choose(cat: Int, index: Int) {
         if (cls == null) return
         chosenArray()[cat] = index
-        runCatching { cls.getMethod("save").invoke(null) }
+        runCatching { cls!!.getMethod("save").invoke(null) }
     }
 }
 
