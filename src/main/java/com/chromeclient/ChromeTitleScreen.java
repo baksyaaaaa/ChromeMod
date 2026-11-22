@@ -481,6 +481,10 @@ public final class ChromeTitleScreen extends Screen {
         }
     }
 
+    private static void fl(GuiGraphics g, float x, float y, float w, float h, int c) {
+        g.fill(Math.round(x), Math.round(y), Math.round(x + w), Math.round(y + h), c);
+    }
+
     private static final net.minecraft.resources.Identifier SPAWN_TEX =
             net.minecraft.resources.Identifier.fromNamespaceAndPath("chromeclient", "textures/gui/spawn.png");
 
