@@ -85,11 +85,12 @@ public final class HatMesh {
     public void draw(PoseStack pose, SubmitNodeCollector queue, int light) {
         if (quads.length == 0) return;
         final boolean pv = preview;
+        final float gain = pv ? 1.6f : 1f;   // the menu lights are dimmer than the world's: brighten the colours there
         queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(WHITE), (p, vc) -> {
             for (int i = 0; i < quads.length; i++) {
                 int v = quads[i];
                 vc.addVertex(p, pos[v * 3] / 16f, pos[v * 3 + 1] / 16f, pos[v * 3 + 2] / 16f)
-                        .setColor(data[v * 6 + 3] & 255, data[v * 6 + 4] & 255, data[v * 6 + 5] & 255, 255)
+                        .setColor(Math.min(255, Math.round((data[v * 6 + 3] & 255) * gain)), Math.min(255, Math.round((data[v * 6 + 4] & 255) * gain)), Math.min(255, Math.round((data[v * 6 + 5] & 255) * gain)), 255)
                         .setUv(0.5f, 0.5f)
                         .setOverlay(OverlayTexture.NO_OVERLAY)
                         .setLight(light)
