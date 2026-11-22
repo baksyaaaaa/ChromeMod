@@ -605,6 +605,11 @@ object PlayerPreviewRenderer {
 
     //? if >= 1.21.10 {
     private fun submitPreviewFrame(mc: Minecraft, state: AvatarRenderState, source: PlayerPreviewSource, pose: PoseStack, yawDeg: Float) {
+        // the Chrome Client cosmetics are drawn on every preview figure (see ChromeCosmeticsBridge)
+        org.polyfrost.polyplus.client.ChromeCosmeticsBridge.around { submitPreviewFrameInner(mc, state, source, pose, yawDeg) }
+    }
+
+    private fun submitPreviewFrameInner(mc: Minecraft, state: AvatarRenderState, source: PlayerPreviewSource, pose: PoseStack, yawDeg: Float) {
         val camera = CameraRenderState().apply {
             orientation = Quaternionf().rotateY(Math.PI.toFloat())
             pos = Vec3.ZERO

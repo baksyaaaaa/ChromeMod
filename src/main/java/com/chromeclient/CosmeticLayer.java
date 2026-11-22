@@ -174,17 +174,34 @@ public final class CosmeticLayer extends RenderLayer {
         }
     }
 
+    // A menu preview (the Chrome Client wardrobe / main menu character) switches this on while it draws its figure: then the
+    // figure wears your saved picks (or the item you point at) even though there is no world and no player.
+    private static volatile boolean previewing;
+    private static volatile int pvHat = -1, pvCape = -1, pvWings = -1;
+
+    /** called by the menu mod around drawing a preview figure; -1 = use the saved pick for that slot */
+    public static void setPreview(boolean on, int hat, int cape, int wings) {
+        previewing = on;
+        pvHat = hat; pvCape = cape; pvWings = wings;
+    }
+
     @Override
     public void submit(PoseStack pose, SubmitNodeCollector queue, int light, EntityRenderState state, float yRot, float xRot) {
         try {
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player == null || mc.level == null || !(state instanceof AvatarRenderState av)) return;
-            var self = mc.level.getEntity(av.id);
+            final boolean preview = previewing;
+            if (!(state instanceof AvatarRenderState av)) return;
+            if (!preview && (mc.player == null || mc.level == null)) return;
+            var self = preview ? null : mc.level.getEntity(av.id);
             if (self != null && self.isInvisible()) return;   // invisible players show nothing of theirs
-            boolean local = av.id == mc.player.getId();
+            boolean local = preview || av.id == mc.player.getId();
             int hat, cape, wings;
             double speed;
-            if (local) {
+            if (preview) {
+                hat = pvHat >= 0 ? pvHat : Cosmetics.chosen[0];
+                cape = pvCape >= 0 ? pvCape : Cosmetics.chosen[1];
+                wings = pvWings >= 0 ? pvWings : Cosmetics.chosen[2];
+            } else if (local) {
                 hat = Cosmetics.chosen[0]; cape = Cosmetics.chosen[1]; wings = Cosmetics.chosen[2];
             } else {   // another player using the mod: what the service says they wear
                 if (!CosmeticSync.on() || !(mc.level.getEntity(av.id) instanceof net.minecraft.world.entity.player.Player other)) return;
@@ -203,7 +220,7 @@ public final class CosmeticLayer extends RenderLayer {
             long nanos = System.nanoTime();
             if (lastNanos != 0 && nanos != lastNanos) {
                 float dt = Math.min(0.1f, (nanos - lastNanos) / 1e9f);
-                float target = (float) mc.player.getDeltaMovement().horizontalDistance();
+                float target = mc.player == null ? 0f : (float) mc.player.getDeltaMovement().horizontalDistance();
                 smoothSpeed += (target - smoothSpeed) * Math.min(1f, dt * 6f);
                 flapPhase += dt * (2.4f + smoothSpeed * 9f);      // phase adds up, so a changing speed never makes it jump
                 clock += dt;
@@ -228,7 +245,7 @@ public final class CosmeticLayer extends RenderLayer {
             if (cape > 0 || wings > 0) {
                 pose.pushPose();
                 pm.body.translateAndRotate(pose);
-                boolean elytraOn = cape > 0 && mc.level.getEntity(av.id) instanceof LivingEntity wearer && wearer.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA);
+                boolean elytraOn = cape > 0 && !preview && mc.level.getEntity(av.id) instanceof LivingEntity wearer && wearer.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA);
                 if (elytraOn) {   // the cape's pattern on the elytra, like the game does for normal capes
                     ModelPart root = elytra(cape);
                     poseElytra(root, av);
