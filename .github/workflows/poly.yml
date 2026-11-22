@@ -36,7 +36,8 @@ jobs:
         run: ./gradlew ":${{ matrix.mc }}-fabric:build" -x test -x detekt -x checkstyleMain -x checkstyleTest --stacktrace 2>&1 | tee ../poly-build.log
       - name: Show the errors
         if: failure()
-        run: grep -E "^e: |error:|FAILED|What went wrong" -A3 ../poly-build.log | head -120
+        run: |
+          grep -E "^e: |error:|FAILED|What went wrong" -A3 ../poly-build.log | head -120
       - name: Find the jar
         id: jar
         run: |
