@@ -53,6 +53,21 @@ import org.polyfrost.polyplus.client.gui.lobbyshell.centerColumn
 private const val FRONT_YAW = 180f - 16f
 
 /** shows item [index] of category [cat] on the character (-1 = back to what is equipped) */
+private var hoveredCat = -1
+private var hoveredIndex = -1
+
+/** the pointer entered / left an item: moving from one item to the next can report "entered the new one" BEFORE "left the old one",
+ *  so a leave only clears the figure when it is for the item that is still being shown (otherwise it flickered back to the equipped one) */
+private fun hover(cat: Int, index: Int, entered: Boolean) {
+    if (entered) {
+        hoveredCat = cat; hoveredIndex = index
+        showOnFigure(cat, index)
+    } else if (hoveredCat == cat && hoveredIndex == index) {
+        hoveredCat = -1; hoveredIndex = -1
+        showOnFigure(cat, -1)
+    }
+}
+
 private fun showOnFigure(cat: Int, index: Int) {
     when (cat) {
         0 -> ChromeCosmeticsBridge.hat = index
@@ -128,8 +143,8 @@ internal fun ChromeWardrobePage(onBack: () -> Unit, embedded: Boolean = false) {
                                             awaitPointerEventScope {
                                                 while (true) {
                                                     when (awaitPointerEvent().type) {
-                                                        PointerEventType.Enter -> showOnFigure(cat, index)
-                                                        PointerEventType.Exit -> showOnFigure(cat, -1)
+                                                        PointerEventType.Enter -> hover(cat, index, true)
+                                                        PointerEventType.Exit -> hover(cat, index, false)
                                                         else -> Unit
                                                     }
                                                 }
