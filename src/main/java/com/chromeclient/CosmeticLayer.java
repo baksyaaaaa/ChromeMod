@@ -221,7 +221,7 @@ public final class CosmeticLayer extends RenderLayer {
                 if (other.distanceToSqr(mc.player) > 48.0 * 48.0) return;   // too far to see: don't draw (saves frames in crowds)
                 CosmeticSync.Remote r = CosmeticSync.get(other.getUUID());
                 if (r == null) return;
-                hat = r.hat(); cape = r.cape(); wings = r.wings();
+                hat = Extras.seeHats ? r.hat() : 0; cape = Extras.seeCapes ? r.cape() : 0; wings = Extras.seeWings ? r.wings() : 0;
             }
             if (!(getParentModel() instanceof PlayerModel pm)) {
                 if (!logged) { logged = true; LOG.info("layer reached a player but model is {}", getParentModel().getClass().getName()); }

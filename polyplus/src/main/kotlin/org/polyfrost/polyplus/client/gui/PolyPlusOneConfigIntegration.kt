@@ -82,7 +82,6 @@ object PolyPlusOneConfigIntegration {
 
     private val oneClientPages: List<OneConfigPage> = listOf(
         OneClientPageSpec("general", "", "General", "settings"),
-        OneClientPageSpec("cosmetics", "-cosmetics", "Cosmetics", "assets/polyplus/ico/stars.svg"),
         OneClientPageSpec("lobby", "-lobby", "Lobby", SOCIAL_ASSETS + "minecraft-block.svg"),
         OneClientPageSpec("mainmenu", "-mainmenu", "Main menu", "layers"),
         OneClientPageSpec("pause", "-pause", "Pause screen", SOCIAL_ASSETS + "pause-circle.svg"),

@@ -180,6 +180,10 @@ public class ClickGui extends Screen {
         List<Mod> misc = new ArrayList<>();
         misc.add(new Mod("Menu theme", "Colours of this menu and the panels.", null, null)
                 .add(choice("Theme", Ui.THEMES, () -> Extras.uiTheme, i -> { Extras.uiTheme = i; Ui.setTheme(i); })));
+        misc.add(new Mod("Other players' cosmetics", "Choose whose hats, capes and wings you see. Off = only your own.", null, null)
+                .add(toggle("See other players' hats", () -> Extras.seeHats, v -> Extras.seeHats = v))
+                .add(toggle("See other players' capes", () -> Extras.seeCapes, v -> Extras.seeCapes = v))
+                .add(toggle("See other players' wings", () -> Extras.seeWings, v -> Extras.seeWings = v)));
         misc.add(new Mod("Auto sprint", "Sprints for you while you walk forward.", () -> c.autoSprint, v -> c.autoSprint = v));
         misc.add(new Mod("Buddy", "A little copy of a skin that follows you.", Buddy::enabled, Buddy::setEnabled)
                 .add(slider("Size", Buddy::size, v -> Buddy.setSize(v.floatValue()), 0.2, 1.5, "%.2f"))
