@@ -60,12 +60,26 @@ jobs:
       - name: Build
         run: set -o pipefail; gradle build --no-daemon --stacktrace 2>&1 | tee build.log
 
-      - name: Collect the Minecraft and Fabric API jars (to read the 26.x names)
+      - name: Dump the 26.x class names and signatures into a branch (to read them)
         if: always() && matrix.newer
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p explore
-          find ~/.gradle -name "*.jar" \( -iname "*minecraft*26*" -o -iname "fabric-api-*" -o -iname "fabric-rendering-v1*" -o -iname "fabric-key-mapping*" -o -iname "fabric-command-api*" -o -iname "fabric-lifecycle*" -o -iname "fabric-screen-api*" -o -iname "fabric-resource-loader*" \) -size +20k 2>/dev/null | head -40 | while read f; do cp "$f" explore/; done
-          ls -la explore
+          MCJAR=$(find ~/.gradle -name "*.jar" -iname "*minecraft*" -size +10M 2>/dev/null | head -5)
+          echo "$MCJAR" > explore/jars.txt
+          for J in $MCJAR; do unzip -Z1 "$J" | grep '\.class$' | sed 's/\.class$//' > "explore/classes-$(basename $J).txt"; done
+          find ~/.gradle -name "fabric-*.jar" -size +5k 2>/dev/null | grep -v sources | while read F; do
+            echo "== $F"; unzip -Z1 "$F" | grep '\.class$' | grep '/api/' | sed 's/\.class$//'
+          done > explore/fabric-api-classes.txt
+          CP=$(echo "$MCJAR" | tr '\n' ':')
+          for J in $MCJAR; do
+            unzip -Z1 "$J" | grep -E '^net/minecraft/client/(gui/[A-Za-z]+|gui/screens/[A-Za-z]+|gui/components/[A-Za-z]+|Minecraft|KeyMapping|Options|player/[A-Za-z]+|renderer/[A-Za-z]+|model/[A-Za-z/]+|multiplayer/[A-Za-z]+|resources/[A-Za-z]+|sounds/[A-Za-z]+)\.class$' | sed 's/\.class$//; s#/#.#g' | head -400 | xargs javap -public -cp "$J" 2>/dev/null
+          done > explore/signatures.txt || true
+          wc -c explore/*
+          git config user.name ci; git config user.email ci@example.com
+          git checkout -q --orphan explore26 && git rm -rfq --cached . >/dev/null 2>&1 || true
+          git add -f explore && git commit -qm "26.x names" && git push -f -q origin explore26 || true
 
       - name: Show the cause
         if: failure()
@@ -83,7 +97,6 @@ jobs:
             build/libs/*.jar
             !build/libs/*-sources.jar
             build.log
-            explore/*.jar
 
       - name: Publish the jar as a GitHub Release (the launcher downloads it from here)
         if: success() && github.ref == 'refs/heads/main'
