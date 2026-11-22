@@ -66,7 +66,8 @@ private object ChromeCosmetics {
 
     /** the flat coloured boxes of hat / cape / wings number [index] (see Cosmetics.java in the Chrome Client mod) */
     fun boxes(cat: Int, index: Int): List<Box> {
-        if (cls == null || index <= 0) return emptyList()
+        val owner = cls ?: return emptyList()
+        if (index <= 0) return emptyList()
         val method = when (cat) {
             0 -> "hatBoxes"
             1 -> "capeBoxes"
@@ -75,7 +76,7 @@ private object ChromeCosmetics {
         }
         return boxCache.getOrPut("$method:$index") {
             runCatching {
-                (cls.getMethod(method, Int::class.javaPrimitiveType).invoke(null, index) as List<*>).map { b ->
+                (owner.getMethod(method, Int::class.javaPrimitiveType).invoke(null, index) as List<*>).map { b ->
                     val c = b!!.javaClass
                     Box(
                         c.getMethod("x").invoke(b) as Int, c.getMethod("y").invoke(b) as Int,

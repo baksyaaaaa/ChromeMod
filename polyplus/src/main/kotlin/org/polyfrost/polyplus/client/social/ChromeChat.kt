@@ -39,6 +39,23 @@ object ChromeChat {
     var signedIn by mutableStateOf(false)
         private set
 
+    class Friend(val uuid: String, val name: String, val online: Boolean, val unread: Int)
+    class Person(val uuid: String, val name: String)
+
+    var friends by mutableStateOf<List<Friend>>(emptyList())
+        private set
+    var incoming by mutableStateOf<List<Person>>(emptyList())
+        private set
+    var outgoing by mutableStateOf<List<Person>>(emptyList())
+        private set
+
+    /** the friend whose messages are open (a uuid), or null for the room everyone is in */
+    var selected by mutableStateOf<String?>(null)
+        private set
+    var dmLines by mutableStateOf<List<Line>>(emptyList())
+        private set
+    private var dmLast = 0L
+
     private var token: String? = null
     private var lastId = 0L
 
@@ -106,8 +123,54 @@ object ChromeChat {
         lines = (lines + added).takeLast(KEEP)
     }
 
+    fun select(uuid: String?) {
+        selected = uuid
+        dmLines = emptyList()
+        dmLast = 0L
+    }
+
+    private fun people(array: com.google.gson.JsonArray?): List<Person> =
+        array?.map { Person(it.asJsonObject.get("u").asString, it.asJsonObject.get("n").asString) } ?: emptyList()
+
+    private fun refreshState() {
+        val (code, json) = call("GET", "/social/state")
+        if (code == 401) {
+            token = null
+            signedIn = false
+            return
+        }
+        if (json == null || code != 200) return
+        friends = json.getAsJsonArray("friends")?.map {
+            val o = it.asJsonObject
+            Friend(o.get("u").asString, o.get("n").asString, o.get("online").asBoolean, o.get("unread").asInt)
+        } ?: emptyList()
+        incoming = people(json.getAsJsonArray("incoming"))
+        outgoing = people(json.getAsJsonArray("outgoing"))
+        if (selected != null && friends.none { it.uuid == selected }) select(null)   // removed from their list
+    }
+
+    private fun pollDm() {
+        val who = selected ?: return
+        val (code, json) = call("GET", "/social/dm/get?u=$who&after=$dmLast")
+        if (code == 401) {
+            token = null
+            signedIn = false
+            return
+        }
+        if (selected != who || json == null) return   // you switched while it loaded
+        val messages = json.getAsJsonArray("messages") ?: return
+        if (messages.size() == 0) return
+        val added = messages.map {
+            val o = it.asJsonObject
+            Line(o.get("id").asLong, o.get("n").asString, o.get("m").asString)
+        }
+        dmLast = maxOf(dmLast, added.maxOf { it.id })
+        dmLines = (dmLines + added).takeLast(KEEP)
+    }
+
     /** keeps the room up to date while the Social tab is open (cancel the coroutine to stop) */
     suspend fun run() {
+        var round = 0
         while (currentCoroutineContext().isActive) {
             try {
                 withContext(Dispatchers.IO) {
@@ -115,8 +178,13 @@ object ChromeChat {
                         status = "Signing in to the chat..."
                         logIn()
                     }
-                    if (token != null) poll()
+                    if (token != null) {
+                        poll()
+                        if (token != null) pollDm()
+                        if (token != null && round % 2 == 0) refreshState()
+                    }
                 }
+                round++
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
@@ -126,15 +194,56 @@ object ChromeChat {
         }
     }
 
-    suspend fun send(text: String) {
+    private suspend fun act(path: String, body: JsonObject, done: String? = null) {
         try {
             withContext(Dispatchers.IO) {
-                val body = JsonObject().apply { addProperty("text", text) }
-                val (code, json) = call("POST", "/chat/send", body)
+                val (code, json) = call("POST", path, body)
+                when (code) {
+                    200 -> {
+                        status = done ?: ""
+                        refreshState()
+                    }
+                    401 -> {
+                        token = null
+                        signedIn = false
+                    }
+                    429 -> status = "Slow down a little."
+                    else -> status = json?.get("error")?.asString ?: "That did not work."
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            status = "Can't reach the chat right now."
+        }
+    }
+
+    private fun obj(vararg pairs: Pair<String, String>) = JsonObject().apply { pairs.forEach { addProperty(it.first, it.second) } }
+
+    suspend fun addFriend(name: String) = act("/social/request", obj("name" to name.trim()), "Friend request sent to ${name.trim()}.")
+
+    suspend fun accept(uuid: String) = act("/social/accept", obj("u" to uuid), "")
+
+    suspend fun decline(uuid: String) = act("/social/decline", obj("u" to uuid), "")
+
+    suspend fun cancel(uuid: String) = act("/social/cancel", obj("u" to uuid), "")
+
+    suspend fun remove(uuid: String) {
+        act("/social/remove", obj("u" to uuid), "")
+        if (selected == uuid) select(null)
+    }
+
+    /** writes to the open conversation: the friend's messages, or the room */
+    suspend fun send(text: String) {
+        val who = selected
+        try {
+            withContext(Dispatchers.IO) {
+                val body = if (who == null) obj("text" to text) else obj("u" to who, "text" to text)
+                val (code, json) = call("POST", if (who == null) "/chat/send" else "/social/dm/send", body)
                 when (code) {
                     200 -> {
                         status = ""
-                        poll()
+                        if (who == null) poll() else pollDm()
                     }
                     401 -> {
                         token = null
