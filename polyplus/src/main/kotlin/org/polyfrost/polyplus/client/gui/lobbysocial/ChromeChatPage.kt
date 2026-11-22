@@ -31,7 +31,7 @@ import org.polyfrost.polyplus.client.gui.lobbyshell.centerColumn
 import org.polyfrost.polyplus.client.social.ChromeChat
 
 /**
- * The Social tab: the room everyone using Chrome Client is in, plus friends and direct messages.
+ * The Social tab: friends and direct messages.
  * All of it runs through the Chrome Client cosmetics service (see ChromeChat).
  */
 @Composable
@@ -45,7 +45,7 @@ internal fun ChromeChatPage(onBack: () -> Unit) {
         Column(centerColumn(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 BackButton(onBack)
-                PageTitle(if (friend != null) friend.name else "Chrome Client chat")
+                PageTitle(if (friend != null) friend.name else "Friends")
                 if (friend != null) {
                     TextButton(text = "Remove friend", onClick = { scope.launch { ChromeChat.remove(friend.uuid) } }, modifier = Modifier.height(34.dp))
                 }
@@ -53,12 +53,6 @@ internal fun ChromeChatPage(onBack: () -> Unit) {
             Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                 // left: the room, your friends, requests
                 Column(Modifier.width(280.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(
-                        text = "Everyone",
-                        onClick = { ChromeChat.select(null) },
-                        style = if (selected == null) ControlStyle.Primary else ControlStyle.Secondary,
-                        modifier = Modifier.fillMaxWidth().height(36.dp),
-                    )
                     LazyColumn(Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         item { Text("Friends (${ChromeChat.friends.size})", color = OneConfigTheme.current.mutedText) }
                         if (ChromeChat.friends.isEmpty()) item { Text("Add someone below.", color = OneConfigTheme.current.mutedText) }
@@ -104,12 +98,15 @@ internal fun ChromeChatPage(onBack: () -> Unit) {
                     if (ChromeChat.status.isNotEmpty()) {
                         Text(ChromeChat.status, color = OneConfigTheme.current.mutedText)
                     }
-                    val lines = if (selected == null) ChromeChat.lines else ChromeChat.dmLines
-                    ChatLines(lines.map { ChatLine(it.name, it.text) }, Modifier.weight(1f).fillMaxWidth())
-                    MessageComposer(
-                        placeholder = if (friend == null) "Message everyone using Chrome Client..." else "Message ${friend.name}...",
-                        disabledReason = if (ChromeChat.signedIn) null else "Signing in...",
-                    ) { text -> scope.launch { ChromeChat.send(text) } }
+                    if (friend == null) {
+                        Text("Pick a friend to message, or add someone with their username.", color = OneConfigTheme.current.mutedText)
+                    } else {
+                        ChatLines(ChromeChat.dmLines.map { ChatLine(it.name, it.text) }, Modifier.weight(1f).fillMaxWidth())
+                        MessageComposer(
+                            placeholder = "Message ${friend.name}...",
+                            disabledReason = if (ChromeChat.signedIn) null else "Signing in...",
+                        ) { text -> scope.launch { ChromeChat.send(text) } }
+                    }
                 }
             }
         }

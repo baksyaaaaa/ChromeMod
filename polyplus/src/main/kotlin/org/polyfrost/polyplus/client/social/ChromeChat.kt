@@ -19,7 +19,7 @@ import java.net.http.HttpResponse
 import java.time.Duration
 
 /**
- * The Social tab's chat room. Messages go through the Chrome Client cosmetics service (the Cosmetics repo, server.js),
+ * The Social tab's friends and direct messages. Everything goes through the Chrome Client cosmetics service (the Cosmetics repo, server.js),
  * not through Polyfrost's servers. You sign in with Mojang's own check: the game's session joins a one-time id the
  * service made up, and the service asks Mojang whether that really happened - so nobody can write as somebody else.
  */
@@ -29,11 +29,8 @@ object ChromeChat {
 
     class Line(val id: Long, val name: String, val text: String)
 
-    var lines by mutableStateOf<List<Line>>(emptyList())
-        private set
-
     /** what to tell the player above the box ("" = everything is fine) */
-    var status by mutableStateOf("Connecting to the Chrome Client chat...")
+    var status by mutableStateOf("Connecting to Chrome Client friends...")
         private set
 
     var signedIn by mutableStateOf(false)
@@ -49,7 +46,7 @@ object ChromeChat {
     var outgoing by mutableStateOf<List<Person>>(emptyList())
         private set
 
-    /** the friend whose messages are open (a uuid), or null for the room everyone is in */
+    /** the friend whose messages are open (a uuid), or null when none is open */
     var selected by mutableStateOf<String?>(null)
         private set
     var dmLines by mutableStateOf<List<Line>>(emptyList())
@@ -104,23 +101,6 @@ object ChromeChat {
         signedIn = true
         status = ""
         return true
-    }
-
-    private fun poll() {
-        val (code, json) = call("GET", "/chat/get?after=$lastId")
-        if (code == 401) {
-            token = null
-            signedIn = false
-            return
-        }
-        val messages = json?.getAsJsonArray("messages") ?: return
-        if (messages.size() == 0) return
-        val added = messages.map {
-            val o = it.asJsonObject
-            Line(o.get("id").asLong, o.get("n").asString, o.get("m").asString)
-        }
-        lastId = maxOf(lastId, added.maxOf { it.id })
-        lines = (lines + added).takeLast(KEEP)
     }
 
     fun select(uuid: String?) {
@@ -179,8 +159,7 @@ object ChromeChat {
                         logIn()
                     }
                     if (token != null) {
-                        poll()
-                        if (token != null) pollDm()
+                        pollDm()
                         if (token != null && round % 2 == 0) refreshState()
                     }
                 }
@@ -233,17 +212,16 @@ object ChromeChat {
         if (selected == uuid) select(null)
     }
 
-    /** writes to the open conversation: the friend's messages, or the room */
+    /** writes to the open conversation (a friend's messages) */
     suspend fun send(text: String) {
-        val who = selected
+        val who = selected ?: return
         try {
             withContext(Dispatchers.IO) {
-                val body = if (who == null) obj("text" to text) else obj("u" to who, "text" to text)
-                val (code, json) = call("POST", if (who == null) "/chat/send" else "/social/dm/send", body)
+                val (code, json) = call("POST", "/social/dm/send", obj("u" to who, "text" to text))
                 when (code) {
                     200 -> {
                         status = ""
-                        if (who == null) poll() else pollDm()
+                        pollDm()
                     }
                     401 -> {
                         token = null
