@@ -189,17 +189,6 @@ public class ClickGui extends Screen {
 
         // ---- Music ----
         List<Mod> music = new ArrayList<>();
-        music.add(new Mod("World lyrics", "Big glowing words around you, in time with the song.", () -> Extras.lyrics, v -> Extras.lyrics = v)
-                .add(slider("Distance", () -> Extras.lyricsDistance, v -> Extras.lyricsDistance = v.floatValue(), 3, 20, "%.1f"))
-                .add(slider("Size", () -> Extras.lyricsSize, v -> Extras.lyricsSize = v.floatValue(), 0.5, 3, "%.1f"))
-                .add(slider("Turn away", () -> Extras.lyricsTilt, v -> Extras.lyricsTilt = v.floatValue(), 0, 1, "%.1f"))
-                .add(choice("Colors", Lyrics.PALETTE_NAMES, () -> Extras.lyricsPalette, i -> Extras.lyricsPalette = i))
-                .add(slider("Scatter", () -> Extras.lyricsScatter, v -> Extras.lyricsScatter = v.floatValue(), 0, 1, "%.1f"))
-                .add(slider("Sync offset", () -> Extras.lyricsSync, v -> Extras.lyricsSync = (float) (Math.round(v * 10) / 10.0), -3, 3, "%+.1f s"))
-                .add(toggle("Glow", () -> Extras.lyricsGlow, v -> Extras.lyricsGlow = v))
-                .add(slider("Glow strength", () -> Extras.lyricsGlowStrength, v -> Extras.lyricsGlowStrength = v.floatValue(), 0, 1, "%.1f"))
-                .add(toggle("Shadow", () -> Extras.lyricsShadow, v -> Extras.lyricsShadow = v))
-                .add(toggle("Now singing pill", () -> Extras.lyricsPill, v -> Extras.lyricsPill = v)));
         music.add(new Mod("YT Music", "Player drop-down. Needs the YT Music mod.", null, null)
                 .add(text(() -> YtBridge.installed() ? "YT Music mod found. Key: J" : "YT Music mod not installed"))
                 .add(action(() -> "Open player", () -> { if (YtBridge.installed()) later = () -> { Config.save(); Extras.save(); Minecraft.getInstance().setScreen(new MusicScreen(this)); }; }))

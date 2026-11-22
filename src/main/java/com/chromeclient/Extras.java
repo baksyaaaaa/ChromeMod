@@ -25,7 +25,7 @@ public final class Extras {
     public static int lyricsPalette = 0;          // flowing gradient colours
     public static boolean topPill = false;          // clock / name / FPS / ping pill at the top centre
     public static int uiTheme = 0;                 // menu theme (see Ui.THEMES)
-    public static boolean lyricsPill = true;       // the "now singing" pill at the top
+    public static boolean lyricsPill = false;       // the "now singing" pill at the top
 
     private static Path file() {
         return FabricLoader.getInstance().getConfigDir().resolve("chrome-extras.json");
@@ -37,7 +37,7 @@ public final class Extras {
             if (!Files.isRegularFile(f)) return;
             JsonObject o = JsonParser.parseString(Files.readString(f)).getAsJsonObject();
             if (o.has("freelook")) freelook = o.get("freelook").getAsBoolean();
-            if (o.has("lyrics")) lyrics = o.get("lyrics").getAsBoolean();
+            lyrics = false;   // world lyrics were removed
             if (o.has("lyricsDistance")) lyricsDistance = o.get("lyricsDistance").getAsFloat();
             if (o.has("lyricsSize")) lyricsSize = o.get("lyricsSize").getAsFloat();
             if (o.has("lyricsScatter")) lyricsScatter = o.get("lyricsScatter").getAsFloat();
@@ -49,7 +49,7 @@ public final class Extras {
             if (o.has("hideYtBar")) hideYtBar = o.get("hideYtBar").getAsBoolean();
             if (o.has("lyricsTilt")) lyricsTilt = o.get("lyricsTilt").getAsFloat();
             if (o.has("lyricsPalette")) lyricsPalette = o.get("lyricsPalette").getAsInt();
-            if (o.has("lyricsPill")) lyricsPill = o.get("lyricsPill").getAsBoolean();
+            lyricsPill = false;
             if (o.has("uiTheme")) { uiTheme = o.get("uiTheme").getAsInt(); Ui.setTheme(uiTheme); }
         } catch (Exception ignored) {
             // defaults
