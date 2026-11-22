@@ -7,7 +7,10 @@
   "authors": [
     "Baksya"
   ],
-  "license": "All-Rights-Reserved",
+  "contributors": [
+    "Polyfrost (main menu lobby, GPL-3.0: https://github.com/Polyfrost/PolyPlus)"
+  ],
+  "license": "GPL-3.0-only",
   "icon": "assets/chromeclient/icon.png",
   "environment": "client",
   "entrypoints": {
