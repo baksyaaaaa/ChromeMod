@@ -200,8 +200,9 @@ public final class CosmeticLayer extends RenderLayer {
         try {
             Minecraft mc = Minecraft.getInstance();
             if (!(state instanceof AvatarRenderState av)) return;
-            final boolean lobby = mc.player == null && av.id == lobbyId;
+            final boolean lobby = av.id == lobbyId;   // the lobby scene swaps in its own player, so mc.player is NOT null there
             final boolean preview = previewing || lobby;
+            HatMesh.preview = preview;
             if (!preview && (mc.player == null || mc.level == null)) return;
             var self = preview ? null : mc.level.getEntity(av.id);
             if (self != null && self.isInvisible()) return;   // invisible players show nothing of theirs

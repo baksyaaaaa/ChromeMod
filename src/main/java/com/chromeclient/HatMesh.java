@@ -23,6 +23,8 @@ public final class HatMesh {
     private final float[] pos;      // x,y,z per vertex
     private final byte[] data;      // nx,ny,nz,r,g,b per vertex
     private final short[] quads;    // 4 indices per quad
+    /** set by the cosmetics layer while it draws a menu figure: the menu's lights come from the front, so face the pieces to the camera */
+    public static volatile boolean preview;
     private boolean flat;           // lit the same from every direction (cat ears)
 
     private HatMesh(float[] pos, byte[] data, short[] quads) {
@@ -82,6 +84,7 @@ public final class HatMesh {
     /** draws the model in the current pose (the pose is already at the head) */
     public void draw(PoseStack pose, SubmitNodeCollector queue, int light) {
         if (quads.length == 0) return;
+        final boolean pv = preview;
         queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(WHITE), (p, vc) -> {
             for (int i = 0; i < quads.length; i++) {
                 int v = quads[i];
@@ -91,7 +94,8 @@ public final class HatMesh {
                         .setOverlay(OverlayTexture.NO_OVERLAY)
                         .setLight(light)
                         ;
-                if (flat) vc.setNormal(0f, 1f, 0f);   // fixed normal that does not follow the head, so looking up/down never changes the lighting
+                if (pv) vc.setNormal(p, 0f, 0f, 1f);   // menu figure: lit from the front like the body next to it
+                else if (flat) vc.setNormal(0f, 1f, 0f);   // fixed normal that does not follow the head, so looking up/down never changes the lighting
                 else vc.setNormal(p, data[v * 6] / 127f, data[v * 6 + 1] / 127f, data[v * 6 + 2] / 127f);
             }
         });
