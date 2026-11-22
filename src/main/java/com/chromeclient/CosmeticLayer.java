@@ -276,7 +276,17 @@ public final class CosmeticLayer extends RenderLayer {
                 if (cape > 0 && !elytraOn) {
                     List<Piece> cp = clothCape(2000 + cape, cape);
                     for (Piece p : cp) vanillaCape(p.part(), av);
-                    draw(pose, queue, light, cp);
+                    // the cape is lit evenly, like the back of your body: one fixed normal for all of it
+                    org.joml.Vector3f bn = pose.last().transformNormal(0f, 0f, 1f, new org.joml.Vector3f());
+                    for (Piece p : cp) {
+                        final ModelPart part = p.part();
+                        final int tint = p.tint();
+                        queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(p.tex()), (pp, vc) -> {
+                            PoseStack ps = new PoseStack();
+                            ps.last().set(pp);
+                            part.render(ps, new FixedNormal(vc, bn.x, bn.y, bn.z), light, OverlayTexture.NO_OVERLAY, tint);
+                        });
+                    }
                 }
                 if (wings > 0) {
                     final int w = wings;
