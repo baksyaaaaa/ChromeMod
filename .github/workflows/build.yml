@@ -41,6 +41,7 @@ jobs:
           sed -i "s/^archives_base_name=.*/archives_base_name=chrome-client-${{ matrix.mc }}/" gradle.properties
           if [ "${{ matrix.newer }}" = "true" ]; then
             cp build-26.gradle build.gradle
+            python3 port26.py
             sed -i 's/"minecraft": "[^"]*"/"minecraft": ">=26.1"/; s/"java": "[^"]*"/"java": ">=25"/' src/main/resources/fabric.mod.json
           else
             sed -i 's/"minecraft": "[^"]*"/"minecraft": ">=1.21.11 <1.22"/' src/main/resources/fabric.mod.json
