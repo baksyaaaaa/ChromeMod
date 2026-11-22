@@ -10,7 +10,8 @@
     "LivingRendererMixin",
     "HandTransformMixin",
     "LowFireMixin",
-    "SignTextMixin"
+    "SignTextMixin",
+    "PearlPlaceMixin"
   ],
   "injectors": {
     "defaultRequire": 0
