@@ -240,7 +240,6 @@ public final class CosmeticLayer extends RenderLayer {
             }
             lastNanos = nanos;
             if (hat == 0 && cape == 0 && wings == 0) return;
-            light = 0xF000F0;   // always fully lit: pieces must never turn dark with the surroundings
             float t = clock % 6000f;
             speed = local ? smoothSpeed : otherSpeed(mc, av.id);
 

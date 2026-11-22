@@ -34,7 +34,7 @@ enum class LobbyTime(private val label: String) {
 
         fun clock(captured: Long): Long = Math.floorMod(
             PartyScene.followedClock() ?: when (PolyPlusLobbyConfig.lobbyTime) {
-                CAPTURED -> captured
+                CAPTURED -> DAY_CLOCK   // never the dark night the scene was captured in
                 THEME -> if (lightTheme()) DAY_CLOCK else NIGHT_CLOCK
                 REAL -> realClock()
                 DAY -> DAY_CLOCK

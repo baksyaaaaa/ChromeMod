@@ -228,7 +228,7 @@ object LobbySky {
         val pack = bridge.packActive()
         val model = if (pack) bridge.depthModel() else NATIVE_DEPTH
         val quality = if (reducedEffects) 1f else 0f
-        val vignette = if (PolyPlusLobbyConfig.lobbyVignette) 1f else 0f
+        val vignette = if (PolyPlusLobbyConfig.lobbyVignette && false) 1f else 0f
         if (model == NATIVE_DEPTH || model == DepthModel.UNKNOWN) {
             data.putFloat(vignette).putFloat(quality).putFloat(NEAR).putFloat(depthFar)
         } else {

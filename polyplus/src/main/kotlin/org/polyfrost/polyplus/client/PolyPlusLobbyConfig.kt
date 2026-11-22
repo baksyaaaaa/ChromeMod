@@ -50,14 +50,14 @@ object PolyPlusLobbyConfig : Config(
         description = "Choose the time of day in the lobby scene.",
         options = ["As captured", "Match theme", "Real time", "Day", "Sunset", "Night"],
     )
-    var lobbyTime: LobbyTime = LobbyTime.CAPTURED
+    var lobbyTime: LobbyTime = LobbyTime.DAY
 
     @JvmStatic
     @Switch(
         title = "Vignette",
         description = "Darken the edges of the lobby background.",
     )
-    var lobbyVignette = true
+    var lobbyVignette = false
 
     @JvmStatic
     @Dropdown(
