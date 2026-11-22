@@ -88,7 +88,7 @@ private fun moodBrush(mood: SceneMood): Brush =
     Brush.verticalGradient(mood.fadeStart to Color(mood.top), 1f to Color(mood.bottom))
 
 internal fun sceneTileLine(entry: LobbySceneEntry): String {
-    if (entry.bundled) return "Polyfrost"
+    if (entry.bundled) return "Chrome"
     val world = LobbySceneStore.worldName(entry).trim()
     val sameName = world.isBlank() || world.equals(entry.label.trim(), ignoreCase = true)
     val where = if (sameName) scenePlace(entry).ifBlank { world } else world

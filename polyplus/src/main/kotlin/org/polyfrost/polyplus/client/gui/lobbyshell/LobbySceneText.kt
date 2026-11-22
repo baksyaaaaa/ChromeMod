@@ -57,7 +57,7 @@ internal fun sceneLook(entry: LobbySceneEntry): String =
 internal fun sceneFacts(entry: LobbySceneEntry): List<Pair<String, String>> {
     val place = scenePlace(entry).ifBlank { MISSING_FACT }
     val time = sceneTime(entry) ?: MISSING_FACT
-    if (entry.bundled) return listOf("From" to "Polyfrost", "Place" to place, "Time" to time)
+    if (entry.bundled) return listOf("From" to "Chrome", "Place" to place, "Time" to time)
     val source = when (entry.origin) {
         LobbySceneEntry.ORIGIN_SERVER -> "Server"
         LobbySceneEntry.ORIGIN_WORLD -> "World"

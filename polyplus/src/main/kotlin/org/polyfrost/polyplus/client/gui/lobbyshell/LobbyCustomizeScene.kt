@@ -97,7 +97,7 @@ internal fun SceneSection(lobby: LobbyShell, state: CustomizeState) {
         val own = ownTiles(selected)
         val bundled = LobbySceneStore.bundledScenes
         if (own.isEmpty()) PanelHint("Spots you capture show up here") else SceneTileGrid(own, selected, !following)
-        SceneGroupLabel("Polyfrost scenes")
+        SceneGroupLabel("Chrome scenes")
         SceneTileGrid(bundled, selected, !following)
     }
     DrillRow("image-01", "See all", plural(LobbySceneStore.captures.size + LobbySceneStore.bundledScenes.size, "scene"), { state.open(CustomizePage.AllScenes) })
@@ -303,7 +303,7 @@ private fun ServerSceneRow(lobby: LobbyShell, entry: ServerEntry, options: List<
 }
 
 private fun tilePlace(entry: LobbySceneEntry): String =
-    scenePlace(entry).ifBlank { if (entry.bundled) "Polyfrost" else LobbySceneStore.worldName(entry) }
+    scenePlace(entry).ifBlank { if (entry.bundled) "Chrome" else LobbySceneStore.worldName(entry) }
 
 @Composable
 private fun AgeChip(text: String) {

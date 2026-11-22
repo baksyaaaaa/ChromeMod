@@ -260,7 +260,7 @@ object LobbySceneStore {
 
     fun worldName(entry: LobbySceneEntry): String = when {
         entry.worldName.isNotBlank() -> entry.worldName
-        entry.bundled -> "Polyfrost"
+        entry.bundled -> "Chrome"
         !entry.renamed && entry.label.isNotBlank() -> entry.label
         else -> entry.world.substringAfter(':')
     }

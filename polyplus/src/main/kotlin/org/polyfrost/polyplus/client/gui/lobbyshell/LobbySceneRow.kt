@@ -147,7 +147,7 @@ private fun SceneCardHeader(
     val theme = OneConfigTheme.current
     val problem = entry?.let(::sceneProblem)
     val title = entry?.label ?: "Automatic"
-    val detail = problem ?: entry?.let(::sceneLine)?.ifBlank { null } ?: if (entry == null) "Best recent scene" else "Polyfrost"
+    val detail = problem ?: entry?.let(::sceneLine)?.ifBlank { null } ?: if (entry == null) "Best recent scene" else "Chrome"
     val age = entry?.takeUnless { it.bundled }?.let { sceneAge(it.capturedAt) }
     val checked = header.checked
     val turn by animateFloatAsState(if (header.open) 0f else 180f, Motion.finiteSpec(tween(SCENE_FADE_MILLIS)))
@@ -283,7 +283,7 @@ private fun automaticFacts(): List<Pair<String, String>> {
     val showing = LobbyScene.currentId?.let { id -> (LobbySceneStore.captures + LobbySceneStore.bundledScenes).firstOrNull { it.id == id }?.label }
     return listOf(
         "Picks" to "Best recent scene",
-        "Choosing from" to if (usable == 0) "Polyfrost scenes" else plural(usable, "capture"),
+        "Choosing from" to if (usable == 0) "Chrome scenes" else plural(usable, "capture"),
         "Showing now" to (showing ?: MISSING_FACT),
     )
 }

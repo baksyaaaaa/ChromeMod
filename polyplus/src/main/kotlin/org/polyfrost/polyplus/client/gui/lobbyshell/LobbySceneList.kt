@@ -69,7 +69,7 @@ internal fun sceneItems(captures: List<LobbySceneEntry>, query: SceneQuery): Lis
             add(SceneItem.Header("header:captures", "Your captures"))
             add(SceneItem.NoCaptures)
         }
-        section("bundled", "Polyfrost scenes", bundled)
+        section("bundled", "Chrome scenes", bundled)
     }
 }
 
