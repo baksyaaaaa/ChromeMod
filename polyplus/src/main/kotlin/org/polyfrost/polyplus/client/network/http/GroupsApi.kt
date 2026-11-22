@@ -1,0 +1,76 @@
+package org.polyfrost.polyplus.client.network.http
+
+import org.polyfrost.polyplus.libs.ktor.client.request.parameter
+import org.polyfrost.polyplus.libs.ktor.client.request.setBody
+import org.polyfrost.polyplus.libs.ktor.http.ContentType
+import org.polyfrost.polyplus.libs.ktor.http.contentType
+import org.polyfrost.polyplus.client.PolyPlusClient
+import org.polyfrost.polyplus.client.PolyPlusConfig
+import org.polyfrost.polyplus.client.network.http.responses.CreateGroupRequest
+import org.polyfrost.polyplus.client.network.http.responses.EditGroupMessageRequest
+import org.polyfrost.polyplus.client.network.http.responses.GroupMessage
+import org.polyfrost.polyplus.client.network.http.responses.GroupSummary
+import org.polyfrost.polyplus.client.network.http.responses.SendGroupMessageRequest
+import org.polyfrost.polyplus.client.social.ChatIdentity.applyActAs
+import org.polyfrost.polyplus.client.utils.runSuspendCatching
+
+object GroupsApi {
+    suspend fun listPage(cursor: String?): Result<CursorPage<GroupSummary>> =
+        PolyPlusClient.HTTP.pageAuthorized("${PolyPlusConfig.apiUrl}/v1/groups", cursor) { applyActAs() }
+
+    suspend fun delegations(): Result<List<String>> =
+        PolyPlusClient.HTTP.getBodyAuthorized("${PolyPlusConfig.apiUrl}/groups/delegations")
+
+    suspend fun openDirectMessage(player: String): Result<GroupSummary> =
+        PolyPlusClient.HTTP.postBodyAuthorized("${PolyPlusConfig.apiUrl}/groups/dm/$player")
+
+    suspend fun createGroup(name: String, members: List<String>): Result<GroupSummary> =
+        PolyPlusClient.HTTP.postBodyAuthorized("${PolyPlusConfig.apiUrl}/groups") {
+            contentType(ContentType.Application.Json)
+            setBody(CreateGroupRequest(name, members))
+        }
+
+    suspend fun addMember(groupId: Int, player: String): Result<Unit> = runSuspendCatching {
+        PolyPlusClient.HTTP.postAuthorized("${PolyPlusConfig.apiUrl}/groups/$groupId/members/$player")
+        Unit
+    }
+
+    suspend fun removeMember(groupId: Int, player: String): Result<Unit> = runSuspendCatching {
+        PolyPlusClient.HTTP.deleteAuthorized("${PolyPlusConfig.apiUrl}/groups/$groupId/members/$player")
+        Unit
+    }
+
+    suspend fun messages(groupId: Int, before: Long? = null, limit: Long? = null): Result<List<GroupMessage>> =
+        PolyPlusClient.HTTP.getBodyAuthorized("${PolyPlusConfig.apiUrl}/groups/$groupId/messages") {
+            applyActAs()
+            if (before != null) parameter("before", before)
+            if (limit != null) parameter("limit", limit)
+        }
+
+    suspend fun sendMessage(groupId: Int, content: String, idempotencyKey: String? = null): Result<GroupMessage> =
+        PolyPlusClient.HTTP.postBodyAuthorized("${PolyPlusConfig.apiUrl}/groups/$groupId/messages") {
+            applyActAs()
+            contentType(ContentType.Application.Json)
+            setBody(SendGroupMessageRequest(content, idempotencyKey))
+        }
+
+    suspend fun editMessage(groupId: Int, messageId: Long, content: String): Result<GroupMessage> =
+        PolyPlusClient.HTTP.patchBodyAuthorized("${PolyPlusConfig.apiUrl}/groups/$groupId/messages/$messageId") {
+            applyActAs()
+            contentType(ContentType.Application.Json)
+            setBody(EditGroupMessageRequest(content))
+        }
+
+    suspend fun deleteMessage(groupId: Int, messageId: Long): Result<Unit> = runSuspendCatching {
+        PolyPlusClient.HTTP.deleteAuthorized("${PolyPlusConfig.apiUrl}/groups/$groupId/messages/$messageId") { applyActAs() }
+        Unit
+    }
+
+    suspend fun markRead(groupId: Int, messageId: Long): Result<Unit> = runSuspendCatching {
+        PolyPlusClient.HTTP.postAuthorized("${PolyPlusConfig.apiUrl}/groups/$groupId/read/$messageId") { applyActAs() }
+        Unit
+    }
+
+    suspend fun claim(groupId: Int): Result<GroupSummary> =
+        PolyPlusClient.HTTP.postBodyAuthorized("${PolyPlusConfig.apiUrl}/groups/$groupId/claim") { applyActAs() }
+}

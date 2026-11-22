@@ -1,0 +1,362 @@
+package org.polyfrost.polyplus.client.network.websocket
+
+import org.polyfrost.polyplus.libs.ktor.client.plugins.timeout
+import org.polyfrost.polyplus.libs.ktor.client.plugins.websocket.DefaultClientWebSocketSession
+import org.polyfrost.polyplus.libs.ktor.client.plugins.websocket.webSocket
+import org.polyfrost.polyplus.libs.ktor.client.request.bearerAuth
+import org.polyfrost.polyplus.libs.ktor.websocket.CloseReason
+import org.polyfrost.polyplus.libs.ktor.websocket.Frame
+import org.polyfrost.polyplus.libs.ktor.websocket.readText
+import org.polyfrost.polyplus.libs.coroutines.cancel
+import org.polyfrost.polyplus.libs.coroutines.withTimeoutOrNull
+import org.apache.logging.log4j.LogManager
+import org.polyfrost.oneconfig.api.event.v1.EventManager
+import org.polyfrost.oneconfig.api.notifications.v1.Notifications
+import org.polyfrost.polyplus.client.PolyPlusClient
+import org.polyfrost.polyplus.client.PolyPlusConfig
+import org.polyfrost.polyplus.client.network.http.PolyAuthorization
+import org.polyfrost.polyplus.client.network.reconnectDelay
+import org.polyfrost.polyplus.client.ping.PartyPings
+import org.polyfrost.polyplus.client.status.StatusPage
+import org.polyfrost.polyplus.client.utils.runSuspendCatching
+import org.polyfrost.polyplus.events.WebSocketMessage
+import org.polyfrost.polyplus.privacy.PrivacyConsent
+import java.io.IOException
+import java.nio.channels.UnresolvedAddressException
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.serializer
+
+object PolyConnection {
+    private val LOGGER = LogManager.getLogger()
+
+    private const val TRANSIENT_FAILURES_BEFORE_NOTIFYING = 3
+
+    private const val NOTIFY_AFTER_OUTAGE_MS = 15_000L
+
+    private val HANDSHAKE_STATUS = Regex("expected status code 101 but was (\\d{3})")
+
+    private const val MAX_UNKNOWN_TYPES = 64
+
+    private val closeListeners = CopyOnWriteArrayList<() -> Unit>()
+
+    private val unknownPacketTypes = ConcurrentHashMap.newKeySet<String>()
+
+    private var connectionCallback: (() -> Unit)? = null
+    @Volatile
+    private var job: Job? = null
+    @Volatile
+    private var session: DefaultClientWebSocketSession? = null
+    private val _outgoing = Channel<String>(Channel.Factory.UNLIMITED)
+
+    @Volatile
+    private var closing = false
+
+    @Volatile
+    private var disconnectNotified = false
+
+    @Volatile
+    private var disconnectedSinceMs = 0L
+
+    @Volatile
+    private var handshakeSucceeded = false
+
+    val isConnected: Boolean
+        get() = session != null
+
+    fun initialize(callback: (() -> Unit)? = null) {
+        this.connectionCallback = callback
+        start()
+    }
+
+    fun applyConsent() {
+        if (PrivacyConsent.allowsOnlineServices()) {
+            if (job == null) start()
+        } else {
+            close()
+        }
+    }
+
+    fun reconnect() {
+        close()
+        start()
+    }
+
+    fun onClosed(listener: () -> Unit) {
+        closeListeners.add(listener)
+    }
+
+    fun close() {
+        closing = true
+        disconnectNotified = false
+        disconnectedSinceMs = 0L
+        val wasRunning = job != null
+        synchronized(this) {
+            job?.cancel()
+            job = null
+            session?.cancel()
+            session = null
+            drainOutgoing()
+        }
+        if (wasRunning) {
+            closeListeners.forEach { listener ->
+                runCatching(listener).onFailure { LOGGER.error("WebSocket close listener failed", it) }
+            }
+        }
+    }
+
+    private fun drainOutgoing() {
+        while (_outgoing.tryReceive().isSuccess) Unit
+    }
+
+    fun sendMessage(message: String): Result<Unit> {
+        if (!PrivacyConsent.allowsOnlineServices()) {
+            return Result.failure(IllegalStateException("PolyPlus online features are disabled"))
+        }
+
+        if (session == null) {
+            return Result.failure(IllegalStateException("WebSocket is not connected"))
+        }
+
+        val result = _outgoing.trySend(message)
+        if (result.isFailure) {
+            val error = result.exceptionOrNull()
+            if (error != null) {
+                LOGGER.error("Failed to enqueue WebSocket message", error)
+            }
+            return Result.failure(error ?: IllegalStateException("WebSocket outgoing queue rejected message"))
+        }
+        return Result.success(Unit)
+    }
+
+    fun sendPacket(packet: ServerboundPacket): Result<Unit> {
+        return sendMessage(packet.string())
+    }
+
+    private fun start() {
+        if (!PrivacyConsent.allowsOnlineServices()) {
+            LOGGER.info("PolyPlus WebSocket disabled: the Terms of Service and Privacy Policy were not accepted.")
+            return
+        }
+
+        synchronized(this) {
+            job?.cancel()
+            session?.cancel()
+            session = null
+            closing = false
+            job = launchLoop()
+        }
+    }
+
+    private fun launchLoop(): Job {
+        return PolyPlusClient.SCOPE.launch {
+            val self = currentCoroutineContext()[Job]
+            var attempt = 0
+            var tokenRefreshed = false
+            var transientFailures = 0
+            while (isActive) {
+                handshakeSucceeded = false
+                try {
+                    val reason = connectOnce()
+                    if (closing || !isActive) break
+                    LOGGER.warn("PolyPlus WebSocket closed: {}", reason)
+                    notifyDisconnected(null)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: PolyAuthorization.SessionRejectedException) {
+                    if (closing || !isActive) break
+                    while (isActive && PolyAuthorization.isSessionRejected()) delay(5_000L)
+                    attempt = 0
+                    tokenRefreshed = false
+                    continue
+                } catch (e: Exception) {
+                    if (closing || !isActive) break
+                    if (isAuthFailure(e)) {
+                        if (tokenRefreshed) {
+                            LOGGER.warn("PolyPlus WebSocket still rejected (401) after a token refresh.")
+                        } else {
+                            LOGGER.warn("PolyPlus WebSocket authentication failed (401); refreshing token before retry.")
+                            tokenRefreshed = true
+                            runSuspendCatching { PolyAuthorization.reset() }
+                        }
+                        notifyDisconnected(null)
+                    } else if (isTransientHandshakeFailure(e)) {
+                        transientFailures++
+                        LOGGER.debug("PolyPlus WebSocket handshake failed ({}); retrying.", e.message)
+                        if (transientFailures >= TRANSIENT_FAILURES_BEFORE_NOTIFYING) {
+                            notifyDisconnected(null)
+                        }
+                    } else {
+                        LOGGER.error("PolyPlus WebSocket connection failed", e)
+                        notifyDisconnected(e)
+                    }
+                } finally {
+                    synchronized(this@PolyConnection) {
+                        if (job === self) {
+                            session = null
+                            drainOutgoing()
+                        }
+                    }
+                }
+
+                if (handshakeSucceeded) {
+                    attempt = 0
+                    tokenRefreshed = false
+                    transientFailures = 0
+                }
+
+                attempt++
+                val backoff = reconnectDelay(attempt)
+                LOGGER.info("Reconnecting to PolyPlus WebSocket in {} ms (attempt {}).", backoff, attempt)
+                delay(backoff)
+            }
+        }
+    }
+
+    private suspend fun connectOnce(): CloseReason? {
+        val apiUrl = PolyPlusConfig.apiUrl.toString()
+            .replace("http", "ws")
+            .removeSuffix("/")
+        val token = PolyAuthorization.current()
+        val owner = currentCoroutineContext()[Job]
+        var reason: CloseReason? = null
+        PolyPlusClient.HTTP.webSocket("${apiUrl}/websocket", request = {
+            bearerAuth(token)
+            timeout { socketTimeoutMillis = 60_000 }
+        }) {
+            val published = synchronized(this@PolyConnection) {
+                if (owner?.isActive == false) return@synchronized false
+                drainOutgoing()
+                session = this
+                true
+            }
+            if (!published) return@webSocket
+            handshakeSucceeded = true
+            notifyReconnected()
+
+            coroutineScope {
+                val sender = launch {
+                    for (message in _outgoing) {
+                        try {
+                            send(Frame.Text(message))
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            LOGGER.error("Failed to send WebSocket message", e)
+                        }
+                    }
+                }
+
+                connectionCallback?.invoke()
+                for (frame in incoming) {
+                    val text = (frame as? Frame.Text)?.readText() ?: continue
+                    process(text)
+                }
+
+                sender.cancel()
+            }
+            synchronized(this@PolyConnection) {
+                if (session === this) session = null
+            }
+            reason = withTimeoutOrNull(1_000) { closeReason.await() }
+        }
+        return reason
+    }
+
+    private fun isAuthFailure(error: Throwable): Boolean {
+        return generateSequence(error) { it.cause }.any { cause ->
+            val message = cause.message ?: return@any false
+            message.contains("401") || message.contains("Unauthorized", ignoreCase = true)
+        }
+    }
+
+    internal fun isTransientHandshakeFailure(error: Throwable): Boolean {
+        var cause: Throwable? = error
+        while (cause != null) {
+            val status = cause.message
+                ?.let { HANDSHAKE_STATUS.find(it) }
+                ?.groupValues?.getOrNull(1)
+                ?.toIntOrNull()
+            if (status != null && status >= 500) return true
+            if (cause is IOException || cause is UnresolvedAddressException) return true
+            val next = cause.cause
+            if (next === cause) break
+            cause = next
+        }
+        return false
+    }
+
+    private fun notifyDisconnected(error: Exception?) {
+        if (disconnectNotified) return
+        val now = System.currentTimeMillis()
+        if (disconnectedSinceMs == 0L) disconnectedSinceMs = now
+        if (!outageIsWorthNotifying(disconnectedSinceMs, now)) return
+        disconnectNotified = true
+        val reason = error?.message?.let { ": $it" } ?: "."
+        runCatching {
+            Notifications.error("PolyPlus", "Lost connection to PolyPlus$reason Reconnecting...${StatusPage.disconnectHint()}")
+        }.onFailure { LOGGER.error("Failed to show disconnect notification", it) }
+    }
+
+    internal fun outageIsWorthNotifying(since: Long, now: Long): Boolean {
+        return now - since >= NOTIFY_AFTER_OUTAGE_MS
+    }
+
+    private fun notifyReconnected() {
+        disconnectedSinceMs = 0L
+        if (!disconnectNotified) return
+        disconnectNotified = false
+        runCatching {
+            Notifications.success("PolyPlus", "Reconnected to PolyPlus.")
+        }.onFailure { LOGGER.error("Failed to show reconnect notification", it) }
+    }
+
+    private fun process(message: String) {
+        try {
+            val packet = PolyPlusClient.JSON.decodeFromString<ClientboundPacket>(message)
+            if (packet is ClientboundPacket.Error && !PartyPings.handleError(packet)) {
+                LOGGER.error("Error packet received: ${packet.message}")
+            }
+            if (packet is ClientboundPacket.PartyPing || packet is ClientboundPacket.PartyPingCleared || packet is ClientboundPacket.PartyPingReply) {
+                PartyPings.handle(packet)
+            }
+
+            EventManager.INSTANCE.post(WebSocketMessage(packet))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: SerializationException) {
+            val type = packetType(message)
+            if (type != null && e.message?.contains("subclass", ignoreCase = true) == true) {
+                if (unknownPacketTypes.size < MAX_UNKNOWN_TYPES && unknownPacketTypes.add(type)) {
+                    LOGGER.warn("Ignoring unknown WebSocket packet type '{}'", type)
+                } else {
+                    LOGGER.debug("Ignoring unknown WebSocket packet type '{}'", type)
+                }
+                return
+            }
+            LOGGER.error("Failed to process WebSocket message: $message", e)
+        } catch (e: Exception) {
+            LOGGER.error("Failed to process WebSocket message: $message", e)
+        }
+    }
+
+    private fun packetType(message: String): String? = runCatching {
+        PolyPlusClient.JSON.parseToJsonElement(message).jsonObject["type"]?.jsonPrimitive?.contentOrNull
+    }.getOrNull()?.filterNot { it.isISOControl() }?.take(64)
+
+    private inline fun <reified T : ServerboundPacket> T.string(): String {
+        return PolyPlusClient.JSON.encodeToString(ServerboundPacket.serializer(), this)
+    }
+}

@@ -1,0 +1,132 @@
+package org.polyfrost.polyplus.client.launcher
+
+import net.minecraft.client.Minecraft
+import org.apache.logging.log4j.LogManager
+import org.polyfrost.polyplus.client.PolyPlusClient
+import org.polyfrost.polyplus.client.utils.ClientPlatform
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.time.Instant
+import java.util.UUID
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+object LauncherAccountStore {
+    private val LOGGER = LogManager.getLogger("PolyPlus/Accounts")
+    private const val AUTH_FILE = "auth.json"
+    private const val MAX_WALK_UP = 5
+
+    private const val EXPIRY_GRACE_SECONDS = 60L
+
+    @Serializable
+    data class StoredAccount(
+        val id: String,
+        val username: String,
+        @SerialName("access_token") val accessToken: String = "",
+        @SerialName("refresh_token") val refreshToken: String = "",
+        val expires: String = "",
+        val kind: String = "microsoft",
+    )
+
+    @Serializable
+    data class CredentialsStore(
+        val users: Map<String, StoredAccount> = emptyMap(),
+        @SerialName("default_user") val defaultUser: String? = null,
+    )
+
+    fun load(): CredentialsStore {
+        val file = authFile() ?: return CredentialsStore()
+        return runCatching {
+            PolyPlusClient.JSON.decodeFromString(CredentialsStore.serializer(), file.readText())
+        }.getOrElse {
+            LOGGER.warn("Failed to read launcher auth file at {}", file, it)
+            CredentialsStore()
+        }
+    }
+
+    fun save(store: CredentialsStore) {
+        val file = authFileForWrite() ?: run {
+            LOGGER.warn("No writable launcher directory found; cannot save accounts")
+            return
+        }
+        runCatching {
+            file.parentFile?.mkdirs()
+            val tmp = File(file.parentFile, "$AUTH_FILE.tmp")
+            tmp.writeText(PolyPlusClient.JSON.encodeToString(CredentialsStore.serializer(), store))
+            runCatching {
+                Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.ATOMIC_MOVE)
+            }.getOrElse {
+                Files.move(tmp.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            }
+        }.onFailure { LOGGER.warn("Failed to write launcher auth file at {}", file, it) }
+    }
+
+    fun isMicrosoft(account: StoredAccount): Boolean = account.kind.equals("microsoft", ignoreCase = true)
+
+    fun isExpired(expires: String): Boolean {
+        val at = runCatching { Instant.parse(expires) }.getOrNull() ?: return false
+        return at.isBefore(Instant.now().plusSeconds(EXPIRY_GRACE_SECONDS))
+    }
+
+    fun isRefreshable(account: StoredAccount): Boolean = isMicrosoft(account) && account.refreshToken.isNotBlank()
+
+    fun parseUuid(value: String): UUID? = runCatching { UUID.fromString(value) }.getOrNull()
+
+    fun offlineUuid(username: String): UUID =
+        UUID.nameUUIDFromBytes("OfflinePlayer:$username".toByteArray(Charsets.UTF_8))
+
+    private fun authFile(): File? {
+        walkUpForAuth()?.let { return it }
+        for (dir in platformLauncherDirs()) {
+            val candidate = File(dir, AUTH_FILE)
+            if (candidate.isFile) return candidate
+        }
+        return null
+    }
+
+    private fun authFileForWrite(): File? =
+        authFile() ?: platformLauncherDirs().firstOrNull()?.let { File(it, AUTH_FILE) }
+
+    private fun walkUpForAuth(): File? {
+        //? if > 1.8.9 {
+        var dir: File? = Minecraft.getInstance().gameDirectory.absoluteFile
+        //?} else {
+        /*var dir: File? = Minecraft.getInstance().gameDir.absoluteFile
+        *///?}
+        var depth = 0
+        while (dir != null && depth <= MAX_WALK_UP) {
+            val candidate = File(dir, AUTH_FILE)
+            if (candidate.isFile) return candidate
+            dir = dir.parentFile
+            depth++
+        }
+        return null
+    }
+
+    private fun platformLauncherDirs(): List<File> {
+        val home = File(System.getProperty("user.home") ?: return emptyList())
+        return listOf("OneClient", "OneClient-dev").map { app ->
+            val legacy = legacyLauncherDir(home, app)
+            if (File(legacy, "settings.json").isFile) legacy else File(dataDir(home), "Polyfrost/$app")
+        }
+    }
+
+    private fun dataDir(home: File): File = when {
+        ClientPlatform.isWindows -> System.getenv("APPDATA")?.let(::File) ?: File(home, "AppData/Roaming")
+        ClientPlatform.isMac -> File(home, "Library/Application Support")
+        else -> xdgDataHome(home)
+    }
+
+    private fun legacyLauncherDir(home: File, app: String): File = when {
+        ClientPlatform.isWindows -> File(
+            System.getenv("LOCALAPPDATA")?.let(::File) ?: File(home, "AppData/Local"),
+            "Polyfrost/$app/data",
+        )
+        ClientPlatform.isMac -> File(home, "Library/Application Support/org.Polyfrost.$app")
+        else -> File(xdgDataHome(home), app.lowercase())
+    }
+
+    private fun xdgDataHome(home: File): File =
+        System.getenv("XDG_DATA_HOME")?.takeIf { it.isNotBlank() }?.let(::File) ?: File(home, ".local/share")
+}

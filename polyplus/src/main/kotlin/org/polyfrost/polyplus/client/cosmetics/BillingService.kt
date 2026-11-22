@@ -1,0 +1,72 @@
+package org.polyfrost.polyplus.client.cosmetics
+
+import org.polyfrost.polyplus.libs.ktor.client.plugins.ClientRequestException
+import org.polyfrost.polyplus.libs.ktor.client.request.setBody
+import org.polyfrost.polyplus.libs.ktor.http.ContentType
+import org.polyfrost.polyplus.libs.ktor.http.HttpStatusCode
+import org.polyfrost.polyplus.libs.ktor.http.contentType
+import org.apache.logging.log4j.LogManager
+import org.polyfrost.polyplus.client.PolyPlusClient
+import org.polyfrost.polyplus.client.PolyPlusConfig
+import org.polyfrost.polyplus.client.network.http.getBodyAuthorized
+import org.polyfrost.polyplus.client.network.http.postBodyAuthorized
+import org.polyfrost.polyplus.client.network.http.responses.CreateCheckoutRequest
+import org.polyfrost.polyplus.client.network.http.responses.CreateCheckoutResponse
+import org.polyfrost.polyplus.client.network.http.responses.TransactionInfo
+import org.polyfrost.polyplus.client.network.http.responses.TransactionsResponse
+import org.polyfrost.polyplus.client.utils.ClientPlatform
+
+object BillingService {
+    private val LOGGER = LogManager.getLogger()
+
+    class AlreadyOwnedException(message: String) : Exception(message)
+
+    enum class CheckoutOutcome { Opened, Completed }
+
+    suspend fun createCheckout(productIds: List<String>): Result<CreateCheckoutResponse> {
+        val products = productIds.filter { it.isNotBlank() }
+        if (products.isEmpty()) {
+            return Result.failure(IllegalArgumentException("Nothing to check out"))
+        }
+        val player = ClientPlatform.localPlayerUuid().toString()
+        val result = PolyPlusClient.HTTP.postBodyAuthorized<CreateCheckoutResponse>(
+            "${PolyPlusConfig.apiUrl}/v1/checkout/create",
+        ) {
+            contentType(ContentType.Application.Json)
+            setBody(CreateCheckoutRequest(player = player, products = products))
+        }
+
+        val error = result.exceptionOrNull() ?: return result
+        alreadyOwned(error)?.let { message ->
+            LOGGER.info("Checkout refused by the backend: {}", message)
+            return Result.failure(AlreadyOwnedException(message))
+        }
+        LOGGER.error("Failed to create checkout", error)
+        return result
+    }
+
+    private fun alreadyOwned(error: Throwable): String? {
+        val conflict = error as? ClientRequestException ?: return null
+        if (conflict.response.status != HttpStatusCode.Conflict) return null
+        return conflict.message.substringAfter("Text: \"", "").substringBeforeLast('"')
+            .takeIf { it.isNotBlank() }
+            ?: "You already own this item."
+    }
+
+    suspend fun checkoutAndOpen(productIds: List<String>): Result<CheckoutOutcome> =
+        createCheckout(productIds).map { response ->
+            if (response.completed) {
+                PolyPlusClient.refreshCosmetics()
+                CheckoutOutcome.Completed
+            } else {
+                ClientPlatform.openUri(response.url)
+                CheckoutOutcome.Opened
+            }
+        }
+
+    suspend fun fetchTransactions(): Result<List<TransactionInfo>> =
+        PolyPlusClient.HTTP
+            .getBodyAuthorized<TransactionsResponse>("${PolyPlusConfig.apiUrl}/transactions/player")
+            .map { it.transactions.sortedByDescending { tx -> tx.id } }
+            .onFailure { LOGGER.error("Failed to fetch transactions", it) }
+}

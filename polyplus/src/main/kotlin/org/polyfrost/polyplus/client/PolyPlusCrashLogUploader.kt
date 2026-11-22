@@ -1,0 +1,341 @@
+package org.polyfrost.polyplus.client
+
+import net.fabricmc.loader.api.FabricLoader
+import org.polyfrost.polyplus.libs.sentry.Attachment
+import org.polyfrost.polyplus.libs.sentry.Hint
+import org.polyfrost.polyplus.libs.sentry.IHub
+import org.polyfrost.polyplus.libs.sentry.SentryEvent
+import org.polyfrost.polyplus.libs.sentry.protocol.Mechanism
+import org.polyfrost.polyplus.libs.sentry.protocol.Message
+import org.polyfrost.polyplus.libs.sentry.protocol.SentryException
+import org.polyfrost.polyplus.libs.sentry.protocol.SentryStackFrame
+import org.polyfrost.polyplus.libs.sentry.protocol.SentryStackTrace
+import org.polyfrost.polyplus.privacy.PrivacyConsent
+import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.abs
+
+object PolyPlusCrashLogUploader {
+    private const val MAX_ATTACHMENT_BYTES = 512 * 1024
+    private const val MAX_UPLOADS_PER_RUN = 5
+    private const val MAX_AGE_MS = 30L * 24 * 60 * 60 * 1000
+    private const val UPLOADED_HISTORY = 200
+    private const val LIVE_HISTORY = 20
+    private const val IGNORED_HISTORY = 20
+
+    private const val LIVE_MATCH_WINDOW_MS = 900_000L
+
+    private const val SIDE_EFFECT_WINDOW_MS = 10_000L
+
+    private val ran = AtomicBoolean(false)
+    private val stateLock = Any()
+    private val lastIgnoredCrash = AtomicLong(0)
+
+    private val gameDir: File get() = FabricLoader.getInstance().gameDir.toFile()
+    internal val stateDir: File get() = File(gameDir, "polyplus/sentry")
+    private val uploadedFile: File get() = File(stateDir, "uploaded.txt")
+    private val handledCrashFile: File get() = File(stateDir, "live-captures.txt")
+    private val ignoredCrashFile: File get() = File(stateDir, "ignored-crashes.txt")
+
+    private data class HandledCrash(val at: Long, val throwableClass: String, val topFrame: String)
+
+    fun recordHandledCrash(throwable: Throwable) {
+        runCatching {
+            val top = throwable.stackTrace.firstOrNull()
+            val frame = if (top != null) "${top.className}.${top.methodName}" else ""
+            val line = "${System.currentTimeMillis()}\t${throwable.javaClass.name}\t$frame"
+            synchronized(stateLock) {
+                stateDir.mkdirs()
+                val stamps = readLines(handledCrashFile) + line
+                handledCrashFile.writeText(stamps.takeLast(LIVE_HISTORY).joinToString("\n"))
+            }
+        }
+    }
+
+    fun recordIgnoredCrash(throwable: Throwable) {
+        recordHandledCrash(throwable)
+        val at = System.currentTimeMillis()
+        lastIgnoredCrash.set(at)
+        runCatching {
+            synchronized(stateLock) {
+                stateDir.mkdirs()
+                val stamps = readLines(ignoredCrashFile) + at.toString()
+                ignoredCrashFile.writeText(stamps.takeLast(IGNORED_HISTORY).joinToString("\n"))
+            }
+        }
+    }
+
+    fun isSideEffectOfIgnoredCrash(at: Long): Boolean =
+        isSideEffectOfIgnoredCrash(listOf(lastIgnoredCrash.get()), at)
+
+    private fun isSideEffectOfIgnoredCrash(ignored: List<Long>, at: Long): Boolean =
+        ignored.any { it > 0 && at - it in 0..SIDE_EFFECT_WINDOW_MS }
+
+    fun uploadPending() {
+        if (!PrivacyConsent.allowsOnlineServices()) return
+        if (!ran.compareAndSet(false, true)) return
+        runCatching { scanAndUpload() }
+    }
+
+    private fun scanAndUpload() {
+        PolyPlusSentry.initialize()
+        val hub = PolyPlusSentry.activeHub() ?: return
+
+        val candidates = collectCandidates()
+        if (candidates.isEmpty()) return
+
+        synchronized(stateLock) {
+            stateDir.mkdirs()
+            val firstRun = !uploadedFile.exists()
+            val uploaded = readLines(uploadedFile).toMutableSet()
+
+            if (firstRun) {
+                writeUploaded(candidates.map(::keyOf))
+                return
+            }
+
+            val handled = readLines(handledCrashFile).mapNotNull(::parseHandledCrash)
+            val ignoredCrashes = readLines(ignoredCrashFile).mapNotNull { it.trim().toLongOrNull() }
+            val now = System.currentTimeMillis()
+            var sent = 0
+
+            for (file in candidates.sortedByDescending { it.lastModified() }) {
+                val key = keyOf(file)
+                if (key in uploaded) continue
+                uploaded += key
+
+                if (now - file.lastModified() > MAX_AGE_MS) continue
+                if (sent >= MAX_UPLOADS_PER_RUN) continue
+
+                val isJvmFatal = file.name.startsWith("hs_err_pid")
+                val body = prepare(file, isJvmFatal) ?: continue
+                val summary = summarize(body, isJvmFatal)
+                if (isJvmFatal) {
+                    if (NATIVE_OUT_OF_MEMORY.containsMatchIn(body)) continue
+                } else {
+                    if (PolyPlusSentry.isIgnoredCrashReport(summary, body)) continue
+                    if (isSideEffectOfIgnoredCrash(ignoredCrashes, file.lastModified())) continue
+                }
+
+                val fingerprint = fingerprint(body, isJvmFatal)
+                if (!isJvmFatal && alreadyHandledLive(handled, fingerprint, file.lastModified())) continue
+
+                if (send(hub, file, body, summary, fingerprint, isJvmFatal)) sent++
+            }
+
+            writeUploaded(uploaded)
+        }
+
+        hub.flush(10_000)
+    }
+
+    private fun collectCandidates(): List<File> {
+        val crashReports = File(gameDir, "crash-reports")
+            .listFiles { f: File -> f.isFile && f.name.endsWith(".txt") }
+            ?.toList()
+            .orEmpty()
+
+        val jvmFatal = gameDir
+            .listFiles { f: File -> f.isFile && f.name.startsWith("hs_err_pid") && f.name.endsWith(".log") }
+            ?.toList()
+            .orEmpty()
+
+        return crashReports + jvmFatal
+    }
+
+    private fun parseHandledCrash(line: String): HandledCrash? {
+        val parts = line.split('\t')
+        val at = parts.getOrNull(0)?.trim()?.toLongOrNull() ?: return null
+        return HandledCrash(at, parts.getOrNull(1).orEmpty().trim(), parts.getOrNull(2).orEmpty().trim())
+    }
+
+    private fun alreadyHandledLive(
+        handled: List<HandledCrash>,
+        fingerprint: List<String>,
+        fileTime: Long,
+    ): Boolean {
+        val throwableClass = fingerprint.getOrNull(1).orEmpty()
+        val topFrame = fingerprint.getOrNull(2).orEmpty()
+        if (throwableClass.isEmpty() || topFrame.isEmpty()) return false
+        return handled.any {
+            it.throwableClass == throwableClass &&
+                it.topFrame == topFrame &&
+                abs(it.at - fileTime) <= LIVE_MATCH_WINDOW_MS
+        }
+    }
+
+    private fun prepare(file: File, isJvmFatal: Boolean): String? = runCatching {
+        val raw = file.readText()
+        scrub(if (isJvmFatal) trimJvmFatalLog(raw) else raw).take(MAX_ATTACHMENT_BYTES)
+    }.getOrNull()
+
+    private fun send(
+        hub: IHub,
+        file: File,
+        body: String,
+        summary: String,
+        fingerprint: List<String>,
+        isJvmFatal: Boolean,
+    ): Boolean = runCatching {
+        // Anything reaching here went unreported while the game was alive so it was a hard crash
+        val kind = CrashKind.HARD_CRASH
+
+        val event = SentryEvent().apply {
+            message = Message().apply { formatted = "[${kind.label}] $summary" }
+            fingerprints = fingerprint
+            exceptions = listOf(syntheticException(body, isJvmFatal))
+            markCrashKind(kind)
+            setTag("mechanism", if (isJvmFatal) "jvm_fatal_log" else "crash_report_file")
+            setTag("source", "postmortem")
+            setExtra("crash_file", file.name)
+            setExtra("crash_file_time", file.lastModified())
+        }
+
+        val hint = Hint().apply {
+            addAttachment(Attachment(body.toByteArray(Charsets.UTF_8), file.name, "text/plain"))
+        }
+
+        hub.captureEvent(event, hint)
+        true
+    }.getOrDefault(false)
+
+    private val NATIVE_OUT_OF_MEMORY = Regex("(?m)^#.*(?:Out of Memory Error|insufficient memory)")
+
+    private fun trimJvmFatalLog(text: String): String {
+        val cut = text.indexOf("---------------  P R O C E S S")
+        return if (cut > 0) text.substring(0, cut) else text
+    }
+
+    private val REDACTED_ARGS = Regex(
+        "(--(?:accessToken|session|clientId|xuid|userProperties|password|uuid))([\\s=]+)\\S+",
+        RegexOption.IGNORE_CASE,
+    )
+    private val JWT = Regex("eyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]+")
+    private val COMMAND_LINE = Regex("(?m)^Command Line:.*$")
+
+    private fun scrub(text: String): String {
+        var out = text
+        out = COMMAND_LINE.replace(out, "Command Line: <redacted>")
+        out = REDACTED_ARGS.replace(out) { "${it.groupValues[1]}${it.groupValues[2]}<redacted>" }
+        out = JWT.replace(out, "<redacted-token>")
+        val home = System.getProperty("user.home")
+        if (!home.isNullOrBlank() && home.length > 3) out = out.replace(home, "~")
+        return out
+    }
+
+    private fun summarize(body: String, isJvmFatal: Boolean): String {
+        if (isJvmFatal) {
+            val signal = valueAfter(body, "#  ", contains = "at pc=") ?: "unknown fault"
+            val frame = valueAfter(body, "# Problematic frame:") ?: "unknown frame"
+            return "JVM fatal error: ${signal.trim()} in ${frame.removePrefix("#").trim()}"
+        }
+        val description = valueAfter(body, "Description:") ?: "Minecraft crash"
+        val throwable = THROWABLE_LINE.find(body)?.value?.trim()
+        return if (throwable != null) "$description: $throwable" else description
+    }
+
+    private fun fingerprint(body: String, isJvmFatal: Boolean): List<String> {
+        if (isJvmFatal) {
+            val signal = valueAfter(body, "#  ", contains = "at pc=")
+                ?.substringBefore(" (")?.trim()?.removePrefix("#")?.trim()
+            val frame = valueAfter(body, "# Problematic frame:")
+                ?.substringAfter('[', "")?.substringBefore('+')?.substringBefore(']')?.trim()
+            return listOf("jvm-fatal", signal.orEmpty(), frame.orEmpty())
+        }
+        val throwable = THROWABLE_LINE.find(body)?.value?.substringBefore(':')?.trim()
+        val frame = TOP_FRAME.find(body)?.groupValues?.getOrNull(1)
+            ?.substringAfter("//")?.substringBefore('(')?.trim()
+        return listOf("mc-crash-report", throwable.orEmpty(), frame.orEmpty())
+    }
+
+    private val THROWABLE_LINE = Regex("(?m)^[\\w.$]+(?:Exception|Error|Throwable)(?::.*)?$")
+    private val TOP_FRAME = Regex("(?m)^\\s+at (\\S+)")
+
+    private const val MAX_FRAMES = 250
+
+    private fun syntheticException(body: String, isJvmFatal: Boolean): SentryException {
+        if (isJvmFatal) {
+            return SentryException().apply {
+                setType("JvmFatalError")
+                setValue(summarize(body, true))
+                setMechanism(crashMechanism("jvm_fatal_log"))
+            }
+        }
+
+        val header = THROWABLE_LINE.find(body)?.value?.trim()
+        val qualified = header?.substringBefore(':')?.trim().orEmpty()
+        return SentryException().apply {
+            setType(qualified.substringAfterLast('.').ifEmpty { "MinecraftCrash" })
+            setModule(qualified.substringBeforeLast('.', "").takeIf { it.isNotEmpty() })
+            setValue(
+                header?.substringAfter(':', "")?.trim()?.takeIf { it.isNotEmpty() }
+                    ?: valueAfter(body, "Description:"),
+            )
+            setMechanism(crashMechanism("crash_report_file"))
+            parseFrames(body).takeIf { it.isNotEmpty() }?.let {
+                setStacktrace(SentryStackTrace(it).apply { setSnapshot(false) })
+            }
+        }
+    }
+
+    private fun crashMechanism(type: String): Mechanism = Mechanism().apply {
+        setType(type)
+        setHandled(false)
+        setSynthetic(true)
+    }
+
+    private fun parseFrames(body: String): List<SentryStackFrame> {
+        val lines = body.lines()
+        val start = lines.indexOfFirst { THROWABLE_LINE.matches(it) }
+        if (start < 0) return emptyList()
+
+        val frames = ArrayList<SentryStackFrame>()
+        for (index in start + 1 until lines.size) {
+            val line = lines[index].trim()
+            when {
+                line.startsWith("at ") -> frames += stackFrame(line.removePrefix("at ").trim())
+                line.startsWith("...") -> Unit
+                line.isEmpty() && frames.isEmpty() -> Unit
+                else -> break
+            }
+            if (frames.size >= MAX_FRAMES) break
+        }
+        return frames.reversed()
+    }
+
+    private fun stackFrame(raw: String): SentryStackFrame {
+        val signature = raw.substringAfter("//") // strip Fabric classloader prefix
+        val qualified = signature.substringBefore('(')
+        val locator = signature.substringAfter('(', "").substringBefore(')')
+        return SentryStackFrame().apply {
+            setModule(qualified.substringBeforeLast('.', "").takeIf { it.isNotEmpty() })
+            setFunction(qualified.substringAfterLast('.').takeIf { it.isNotEmpty() })
+            setFilename(locator.substringBefore(':').takeIf { it.isNotEmpty() })
+            setLineno(locator.substringAfter(':', "").toIntOrNull())
+            setInApp(qualified.startsWith("org.polyfrost."))
+        }
+    }
+
+    /**
+     * Returns the text following the prefix on the first matching line
+     * (falls back to the line after it when the prefix is the whole line).
+     */
+    private fun valueAfter(text: String, prefix: String, contains: String = ""): String? {
+        val lines = text.lines()
+        val index = lines.indexOfFirst { it.startsWith(prefix) && contains in it }
+        if (index < 0) return null
+        val rest = lines[index].removePrefix(prefix).trim()
+        return rest.ifEmpty { lines.getOrNull(index + 1).orEmpty().trim() }.takeIf { it.isNotEmpty() }
+    }
+
+    private fun keyOf(file: File): String = "${file.name}:${file.lastModified()}"
+
+    private fun readLines(file: File): List<String> =
+        runCatching { if (file.isFile) file.readLines().filter { it.isNotBlank() } else emptyList() }
+            .getOrDefault(emptyList())
+
+    private fun writeUploaded(keys: Collection<String>) {
+        runCatching { uploadedFile.writeText(keys.toList().takeLast(UPLOADED_HISTORY).joinToString("\n")) }
+    }
+}

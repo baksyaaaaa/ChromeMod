@@ -1,0 +1,280 @@
+package org.polyfrost.polyplus.client.network.http
+
+import org.polyfrost.polyplus.libs.ktor.client.plugins.ClientRequestException
+import org.polyfrost.polyplus.libs.ktor.client.plugins.expectSuccess
+import org.polyfrost.polyplus.libs.ktor.client.request.bearerAuth
+import org.polyfrost.polyplus.libs.ktor.client.request.parameter
+import org.polyfrost.polyplus.libs.ktor.client.request.post
+import org.polyfrost.polyplus.libs.ktor.client.request.put
+import org.polyfrost.polyplus.libs.ktor.client.request.setBody
+import org.polyfrost.polyplus.libs.ktor.http.ContentType
+import org.polyfrost.polyplus.libs.ktor.http.HttpStatusCode
+import org.polyfrost.polyplus.libs.ktor.http.contentType
+import com.mojang.authlib.exceptions.InvalidCredentialsException
+import kotlinx.serialization.Serializable
+import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.metadata.ModOrigin
+import net.minecraft.client.Minecraft
+import org.apache.logging.log4j.LogManager
+import org.polyfrost.polyplus.BackendUrl
+import org.polyfrost.polyplus.PolyPlusConstants
+import org.polyfrost.polyplus.client.PolyPlusClient
+import org.polyfrost.polyplus.client.PolyPlusConfig
+import org.polyfrost.polyplus.client.cosmetics.outfits.SkinLibrary
+import org.polyfrost.polyplus.client.host.HostWorldManager
+import org.polyfrost.polyplus.client.network.http.responses.AuthResponse
+import org.polyfrost.polyplus.client.privacy.OnlineServicesDisabledException
+import org.polyfrost.polyplus.client.utils.runSuspendCatching
+import org.polyfrost.polyplus.privacy.PrivacyConsent
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+
+@OptIn(ExperimentalAtomicApi::class)
+object PolyAuthorization {
+    private val LOGGER = LogManager.getLogger()
+    private val LOCK = Mutex()
+
+    private const val TOKEN_TTL_MS = 2 * 60 * 60 * 1000L
+    private const val REFRESH_MARGIN_MS = 5 * 60 * 1000L
+    private const val LOGIN_GATE_TIMEOUT_MS = 30 * 1000L
+    private const val JOIN_ATTEMPTS = 3
+
+    private var cachedResponse: AuthResponse? = null
+    private var cachedExpiresAtMs = 0L
+    private var cachedProfileId: UUID? = null
+    private var currentJob: Deferred<Authorized>? = null
+    private var currentJobProfileId: UUID? = null
+    private val modsReported = AtomicBoolean(false)
+
+    @Volatile
+    private var rejectedAccessToken: String? = null
+
+    class SessionRejectedException : Exception("Mojang rejected the current session")
+
+    fun isSessionRejected(): Boolean = rejectedAccessToken.let { it != null && it == localAccessToken() }
+
+    suspend fun current(): String {
+        requireOnlineServices()
+
+        val profileId = localProfileId()
+        val token = LOCK.withLock {
+            cachedResponse?.token?.takeIf {
+                System.currentTimeMillis() < cachedExpiresAtMs && cachedProfileId == profileId
+            }
+        }
+        return token ?: refresh()
+    }
+
+    suspend fun refresh(): String {
+        requireOnlineServices()
+
+        val profileId = localProfileId()
+        val job = LOCK.withLock {
+            currentJob?.takeIf { currentJobProfileId == profileId } ?: startAuthorization(profileId)
+        }
+        return job.await().response.token
+    }
+
+    suspend fun reset() {
+        LOCK.withLock {
+            cachedResponse = null
+            cachedExpiresAtMs = 0L
+            cachedProfileId = null
+            currentJob = null
+            currentJobProfileId = null
+        }
+    }
+
+    private fun requireOnlineServices() {
+        if (!PrivacyConsent.allowsOnlineServices()) {
+            throw OnlineServicesDisabledException("${PolyPlusConfig.apiUrl}/account/login")
+        }
+    }
+
+    private fun localProfileId(): UUID? =
+        runCatching { Minecraft.getInstance().user.profileId }.getOrNull()
+
+    private fun localAccessToken(): String? = runCatching {
+        //? if > 1.8.9 {
+        Minecraft.getInstance().user.accessToken
+        //?} else {
+        /*Minecraft.getInstance().session.accessToken
+        *///?}
+    }.getOrNull()
+
+    // Must be called with LOCK held
+    private fun startAuthorization(profileId: UUID?): Deferred<Authorized> {
+        lateinit var job: Deferred<Authorized>
+        job = PolyPlusClient.SCOPE.async(start = CoroutineStart.LAZY) {
+            try {
+                authorize().also {
+                    LOCK.withLock {
+                        cachedResponse = it.response
+                        cachedProfileId = it.profileId
+                        cachedExpiresAtMs = System.currentTimeMillis() + TOKEN_TTL_MS - REFRESH_MARGIN_MS
+                    }
+                }
+            } finally {
+                withContext(NonCancellable) {
+                    LOCK.withLock {
+                        if (currentJob === job) {
+                            currentJob = null
+                            currentJobProfileId = null
+                        }
+                    }
+                }
+            }
+        }
+        currentJob = job
+        currentJobProfileId = profileId
+        job.start()
+        return job
+    }
+
+    private suspend fun authorize(): Authorized = withSessionJoinRetry { joined ->
+        val user = Minecraft.getInstance().user
+        val profileId = user.profileId
+        val playerName = user.name
+        val serverId = generateServerId()
+        if (PolyPlusConfig.apiUrl != BackendUrl.LOCAL) {
+            //? if > 1.8.9 {
+            val accessToken = user.accessToken.orEmpty()
+            //?} else {
+            /*val accessToken = localAccessToken().orEmpty()
+            *///?}
+            if (accessToken == rejectedAccessToken) throw SessionRejectedException()
+            if (authorizeSessionService(serverId, profileId, accessToken)) joined()
+        }
+        try {
+            login(serverId, profileId, playerName)
+        } catch (rejected: ClientRequestException) {
+            if (rejected.response.status != HttpStatusCode.Unauthorized) throw rejected
+            throw SessionVerificationException(rejected)
+        }
+    }
+
+    internal class SessionVerificationException(override val cause: Throwable) : Exception(cause)
+
+    internal suspend fun <T> withSessionJoinRetry(block: suspend (joined: () -> Unit) -> T): T {
+        val deadline = System.currentTimeMillis() + LOGIN_GATE_TIMEOUT_MS
+        var attempt = 0
+        while (true) {
+            attempt++
+            var joined = false
+            var generation = 0
+            try {
+                val remaining = (deadline - System.currentTimeMillis()).coerceAtLeast(0L)
+                return MinecraftLoginGate.whileNotLoggingIn(remaining) {
+                    generation = MinecraftLoginGate.failOpenGeneration
+                    block { joined = true }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (refused: SessionVerificationException) {
+                if (!joined ||
+                    MinecraftLoginGate.failOpenGeneration == generation ||
+                    attempt >= JOIN_ATTEMPTS ||
+                    System.currentTimeMillis() >= deadline
+                ) {
+                    throw refused.cause
+                }
+                LOGGER.warn("A login replaced the pending session-service join; retrying authorization", refused.cause)
+            }
+        }
+    }
+
+    private suspend fun login(serverId: String, profileId: UUID, playerName: String): Authorized {
+        val response = PolyPlusClient.HTTP
+            .post("${PolyPlusConfig.apiUrl}/account/login") {
+                expectSuccess = true
+                if (PolyPlusConfig.apiUrl == BackendUrl.LOCAL) {
+                    parameter("player", profileId.toString())
+                }
+                parameter("server_id", serverId)
+                parameter("username", playerName)
+                parameter("client_version", PolyPlusConstants.VERSION)
+                parameter("minecraft_version", minecraftVersion())
+                parameter("loader", LOADER)
+                parameter("os", System.getProperty("os.name") ?: "unknown")
+                parameter("os_version", System.getProperty("os.version") ?: "unknown")
+                parameter("java_version", System.getProperty("java.version") ?: "unknown")
+            }
+            .bodyOrThrow<AuthResponse>()
+        LOGGER.info("Successfully authorized as $playerName")
+        if (modsReported.compareAndSet(false, true)) {
+            PolyPlusClient.SCOPE.launch(Dispatchers.IO) { reportMods(response.token) }
+        }
+        SkinLibrary.onSignedIn(profileId)
+        return Authorized(profileId, response)
+    }
+
+    @Serializable
+    private class ModsReport(val mods: Map<String, String>)
+
+    private suspend fun reportMods(token: String) {
+        val mods = FabricLoader.getInstance().allMods
+            .filter { it.containingMod.isEmpty && it.origin.kind == ModOrigin.Kind.PATH }
+            .associate { it.metadata.id to it.metadata.version.friendlyString }
+        runSuspendCatching {
+            PolyPlusClient.HTTP.put("${PolyPlusConfig.apiUrl}/account/mods") {
+                expectSuccess = true
+                bearerAuth(token)
+                contentType(ContentType.Application.Json)
+                setBody(ModsReport(mods))
+            }
+        }.onFailure { LOGGER.warn("Failed to report installed mods", it) }
+    }
+
+    private const val LOADER =
+        //? if fabric || ornithe {
+        "fabric"
+    //?} else {
+    /*"neoforge"
+    *///?}
+
+    private fun minecraftVersion(): String =
+        runCatching { HostWorldManager.clientVersionName }.getOrDefault("unknown")
+
+    private fun generateServerId(): String {
+        val chars = ('a'..'z') + ('A'..'Z')
+        return (0..<32).joinToString("") { "${chars.random()}" }
+    }
+
+    private fun authorizeSessionService(serverId: String, profileId: UUID, accessToken: String): Boolean {
+        try {
+            //? if > 1.8.9 {
+            Minecraft.getInstance().
+                //?if >= 1.21.10 {
+             services().sessionService
+            //?} else {
+                /*minecraftSessionService
+            *///?}
+                .joinServer(profileId, accessToken, serverId)
+            //?} else {
+            /*val mc = Minecraft.getInstance()
+            mc.sessionService.joinServer(mc.session.profile, accessToken, serverId)
+            *///?}
+        } catch (_: InvalidCredentialsException) {
+            LOGGER.warn("Mojang rejected this session (offline account or expired token); PolyPlus sign-in waits for a new one")
+            rejectedAccessToken = accessToken
+            throw SessionRejectedException()
+        } catch (e: Exception) {
+            LOGGER.error("Failed to authenticate with Mojang", e)
+            return false
+        }
+        return true
+    }
+
+    private class Authorized(val profileId: UUID, val response: AuthResponse)
+}
