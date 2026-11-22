@@ -42,7 +42,7 @@ import org.polyfrost.oneconfig.api.ui.v1.theme.OneConfigTheme
  * Reached by reflection: without the mod these pages are hidden.
  */
 internal object ChromeMenu {
-    val tabs = listOf("HUD", "Render", "Misc", "Music")
+    val tabs = listOf("HUD", "Render", "Music")
 
     /** the Chrome Client mod is installed (the pages show up even if reading its settings fails, with the reason on the page) */
     val installed: Boolean by lazy { runCatching { Class.forName("com.chromeclient.ChromeMenuApi") }.isSuccess }

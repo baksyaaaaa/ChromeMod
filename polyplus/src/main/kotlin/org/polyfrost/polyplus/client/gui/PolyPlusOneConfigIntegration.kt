@@ -104,7 +104,6 @@ object PolyPlusOneConfigIntegration {
     private val chromeModsPages: List<OneConfigPage> = listOf(
         ChromeModsPage("HUD", 10, "layers"),
         ChromeModsPage("Render", 11, "cog"),
-        ChromeModsPage("Misc", 12, "settings"),
         ChromeModsPage("Music", 13, SOCIAL_ASSETS + "pause-circle.svg"),
     )
 

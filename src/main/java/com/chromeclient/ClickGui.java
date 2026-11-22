@@ -210,7 +210,7 @@ public class ClickGui extends Screen {
         ClickGui g = new ClickGui(hud);
         java.util.List<java.util.Map<String, Object>> out = new ArrayList<>();
         for (int t = 0; t < TABS.length; t++) {
-            if (t == COS) continue;
+            if (t == COS || TABS[t].equals("Misc")) continue;
             for (Mod m : g.tabs.get(t)) {
                 java.util.Map<String, Object> mm = new java.util.HashMap<>();
                 mm.put("tab", TABS[t]);
