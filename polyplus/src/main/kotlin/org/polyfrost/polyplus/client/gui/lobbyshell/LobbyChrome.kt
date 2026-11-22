@@ -313,7 +313,7 @@ private fun BoxScope.LobbyChrome(lobby: LobbyShell, screen: Screen, feed: LobbyF
         )
         LobbyPage.Replays -> ReplaysPage(lobby.activeReplay(), onBack = { lobby.show(LobbyPage.Home) }, onSelect = lobby::select, onWatch = lobby::watch)
         LobbyPage.Marketplace -> MarketplacePage(onBack = { lobby.show(LobbyPage.Home) }, onWardrobe = { lobby.show(LobbyPage.Wardrobe) })
-        LobbyPage.Social -> SocialPage { lobby.show(LobbyPage.Home) }
+        LobbyPage.Social -> org.polyfrost.polyplus.client.gui.lobbysocial.ChromeChatPage { lobby.show(LobbyPage.Home) }
         LobbyPage.Stats -> StatsPage(lobby) { lobby.show(LobbyPage.Home) }
         LobbyPage.News -> NewsPage { lobby.show(LobbyPage.Home) }
         LobbyPage.Settings -> SettingsLobbyPage(lobby)
