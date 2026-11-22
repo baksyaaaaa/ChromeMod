@@ -121,6 +121,19 @@ object PolyPlusOneConfigIntegration {
         ModSortModes.register(DefaultModOrder.recommendedMode)
         ChangelogSources.register(ModpackChangelog)
         OneConfigTheme.overrideLogo(BRAND_LOGO)
+        keepRightShiftSimple()
+    }
+
+    /**
+     * Right Shift opens the menu and nothing else: OneConfig's "remember last page" would bring back the page you were on
+     * (for example the HUD editor) the next time you press it, so it is switched off.
+     */
+    private fun keepRightShiftSimple() {
+        runCatching {
+            val cfg = Class.forName("org.polyfrost.oneconfig.internal.OneConfigConfig")
+            cfg.getField("rememberLastPage").setInt(null, 0)
+            cfg.getField("restoreHudEditor").setBoolean(null, false)
+        }
     }
 
     @JvmStatic
