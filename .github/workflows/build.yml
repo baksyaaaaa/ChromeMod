@@ -60,6 +60,13 @@ jobs:
       - name: Build
         run: set -o pipefail; gradle build --no-daemon --stacktrace 2>&1 | tee build.log
 
+      - name: Collect the Minecraft and Fabric API jars (to read the 26.x names)
+        if: always() && matrix.newer
+        run: |
+          mkdir -p explore
+          find ~/.gradle -name "*.jar" \( -iname "*minecraft*26*" -o -iname "fabric-api-*" -o -iname "fabric-rendering-v1*" -o -iname "fabric-key-mapping*" -o -iname "fabric-command-api*" -o -iname "fabric-lifecycle*" -o -iname "fabric-screen-api*" -o -iname "fabric-resource-loader*" \) -size +20k 2>/dev/null | head -40 | while read f; do cp "$f" explore/; done
+          ls -la explore
+
       - name: Show the cause
         if: failure()
         run: |
@@ -76,6 +83,7 @@ jobs:
             build/libs/*.jar
             !build/libs/*-sources.jar
             build.log
+            explore/*.jar
 
       - name: Publish the jar as a GitHub Release (the launcher downloads it from here)
         if: success() && github.ref == 'refs/heads/main'
