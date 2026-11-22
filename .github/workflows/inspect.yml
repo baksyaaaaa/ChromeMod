@@ -1,0 +1,20 @@
+name: Inspect OneConfig
+on:
+  push:
+    paths: [".github/workflows/inspect.yml"]
+jobs:
+  look:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and search
+        run: |
+          mkdir -p w && cd w
+          curl -sfL -o oc.jar "https://repo.polyfrost.org/releases/org/polyfrost/oneconfig/1.21.11-fabric/1.9.0/1.21.11-fabric-1.9.0.jar" || { echo "no jar"; curl -sI "https://repo.polyfrost.org/releases/org/polyfrost/oneconfig/1.21.11-fabric/1.9.0/" | head -3; exit 0; }
+          ls -la oc.jar
+          mkdir x && cd x && unzip -qo ../oc.jar
+          find . -name '*.jar' | head
+          for j in $(find . -name '*.jar'); do mkdir -p "n_$(basename $j)"; (cd "n_$(basename $j)" && unzip -qo "../$j"); done
+          echo "=== class names with Hud / Shift / HotKey ==="
+          find . -name '*.class' | grep -iE "hud.*(edit|key|bind)|doubletap|shift|hotkey|OpenKey|UiKeybind" | head -40
+          echo "=== strings: shift ==="
+          grep -rIl -aiE "double.?tap|doubleTap|KEY_RIGHT_SHIFT|RSHIFT" . 2>/dev/null | head -20
