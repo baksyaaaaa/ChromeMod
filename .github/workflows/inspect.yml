@@ -11,9 +11,6 @@ jobs:
           mkdir -p w && cd w
           curl -sfL -o oc.jar "https://repo.polyfrost.org/releases/org/polyfrost/oneconfig/1.21.11-fabric/1.9.0/1.21.11-fabric-1.9.0.jar"
           mkdir x && cd x && unzip -qo ../oc.jar
-          echo "=== classes referencing HudEditorUIScreen ==="
-          grep -rl -a "HudEditorUIScreen" --include=*.class . | grep -v "HudEditorUIScreen" | head -20
-          echo "=== OneConfigPrefs strings ==="
-          f=$(find . -name 'OneConfigPrefs.class' | head -1); echo "$f"; [ -n "$f" ] && javap -p -cp . "$(echo $f | sed 's#^\./##; s#\.class$##; s#/#.#g')" | head -60
-          echo "=== key related classes ==="
-          find . -name '*.class' | grep -iE "keybind|keyhandler|hotkey|openkey|UIKeys" | head -30
+          echo "=== OneConfig.class ==="
+          javap -p -c -constants -cp . org.polyfrost.oneconfig.internal.OneConfig > /tmp/oc.txt
+          grep -nE "Hud|Keybind|keybind|Key|key|Shift|Press|Double|\"" /tmp/oc.txt | head -120
