@@ -105,13 +105,13 @@ object OneClientServerApi {
 
     private fun handle(data: ByteArray) {
         val packet = runCatching { ServerApiProtocol.decode(data) }
-            .onFailure { LOGGER.warn("Ignoring malformed OneClient server API packet: {}", it.message) }
+            .onFailure { LOGGER.warn("Ignoring malformed Chrome Client server API packet: {}", it.message) }
             .getOrNull()
 
         when (packet) {
             is ServerApiProtocol.Welcome -> {
                 serverApiVersion = packet.serverApiVersion
-                LOGGER.info("Server supports the OneClient server API {} (protocol {})", packet.serverApiVersion, packet.protocolVersion)
+                LOGGER.info("Server supports the Chrome Client server API {} (protocol {})", packet.serverApiVersion, packet.protocolVersion)
             }
             is ServerApiProtocol.LobbyScenes -> {
                 scenePolicy = packet.policy

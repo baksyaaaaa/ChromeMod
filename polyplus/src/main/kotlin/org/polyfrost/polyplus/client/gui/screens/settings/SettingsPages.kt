@@ -32,7 +32,7 @@ internal enum class SettingsGroup { Game, OneClient }
 internal class SettingsOwner(val name: String, val icon: String?, val tinted: Boolean = true) {
     companion object {
         val Minecraft = SettingsOwner("Minecraft", MINECRAFT_ICON)
-        val OneClient = SettingsOwner("OneClient", null)
+        val OneClient = SettingsOwner("Chrome Client", null)
 
         fun mod(modId: String): SettingsOwner {
             val metadata = runCatching { FabricLoader.getInstance().getModContainer(modId).orElse(null)?.metadata }.getOrNull()

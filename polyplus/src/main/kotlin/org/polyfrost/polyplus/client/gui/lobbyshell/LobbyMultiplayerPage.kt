@@ -291,7 +291,7 @@ private fun FriendsPanel(friends: List<OnlineFriend>, availability: SocialAvaila
                 return@Column
             }
             SocialAvailability.SignedOut -> {
-                EmptyState("Not signed in", body, "Friends need a signed-in Minecraft account and a connection to OneClient.") {
+                EmptyState("Not signed in", body, "Friends need a signed-in Minecraft account and a connection to Chrome Client.") {
                     TextButton(
                         text = "Try again",
                         icon = LobbyIcons.REFRESH,

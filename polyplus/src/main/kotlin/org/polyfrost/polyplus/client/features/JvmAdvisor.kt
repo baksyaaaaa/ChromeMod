@@ -51,7 +51,7 @@ object JvmAdvisor {
     private const val WARMUP_FRAMES = 120L
     private const val SPIKE_FACTOR = 2.0
     private const val ADVICE_INTERVAL_MS = 2L * 24L * 60L * 60L * 1000L
-    private const val NOTIFICATION_TITLE = "OneClient RAM Analysis"
+    private const val NOTIFICATION_TITLE = "Chrome Client RAM Analysis"
     private const val NOTIFICATION_DURATION_MS = 60_000f
 
     enum class Kind { RAISE_HEAP, LOWER_HEAP, FREE_SYSTEM_MEMORY, SWITCH_TO_G1 }

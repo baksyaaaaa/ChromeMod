@@ -290,7 +290,7 @@ private fun WardrobeContent(online: Boolean, onBack: () -> Unit, onMarketplace: 
                 }
             },
             onClose = drawer::back,
-            onMarketplace = onMarketplace.takeIf { online },
+            onMarketplace = null,
             aura = AuraChoice(
                 auraColor,
                 onPreview = { color ->
@@ -442,9 +442,7 @@ private fun WardrobeContent(online: Boolean, onBack: () -> Unit, onMarketplace: 
                     },
                     bottom = when {
                         !online -> null
-                        loadState.ready -> {
-                            { SeasonalBundlePanel(items, onMarketplace, Modifier.fillMaxWidth()) }
-                        }
+                        loadState.ready -> null
                         else -> {
                             { Box(Modifier.fillMaxWidth().height(LoadingHeight)) { CosmeticsLoadingScreen(loadState, ::retryLoad) } }
                         }

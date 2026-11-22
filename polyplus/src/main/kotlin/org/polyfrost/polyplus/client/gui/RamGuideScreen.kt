@@ -32,14 +32,14 @@ import org.polyfrost.oneconfig.api.ui.v1.theme.OneConfigTheme
 import org.polyfrost.polyplus.client.features.JvmAdvisor
 
 private val MEMORY_STEPS = listOf(
-    "Open OneClient's settings and pick Minecraft settings, under GAME SETTINGS.",
+    "Open Chrome Client's settings and pick Minecraft settings, under GAME SETTINGS.",
     "Find the Memory row. The dropdown holds presets in GB, and the box beside it takes an exact amount in MB.",
     "To change it for one instance only, open that instance's own settings and use its Memory row instead.",
     "Relaunch the game. The new amount takes effect on the next launch.",
 )
 
 private val JVM_ARGUMENT_STEPS = listOf(
-    "Open OneClient's settings and pick Minecraft settings, under GAME SETTINGS.",
+    "Open Chrome Client's settings and pick Minecraft settings, under GAME SETTINGS.",
     "Find the JVM Arguments row, just under Memory. It takes launch arguments separated by spaces.",
     "Swap the collector flag there and leave the rest of the arguments as they were.",
     "Relaunch the game. The change takes effect on the next launch.",
@@ -60,7 +60,7 @@ private fun RamGuideContent(advice: JvmAdvisor.Advice, onDismiss: () -> Unit) {
         val scroll = rememberScrollState()
         ScrollContainer(scroll, Modifier.weight(1f, fill = false), scrollbar = false) {
             Column(Modifier.fillMaxWidth().padding(4.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                DialogTitle("Allocating RAM in OneClient")
+                DialogTitle("Allocating RAM in Chrome Client")
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

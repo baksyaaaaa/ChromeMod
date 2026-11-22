@@ -167,7 +167,7 @@ object BadMods {
                 id = detection.mod.id,
                 name = name,
                 message = buildString {
-                    append(explanation(detection.entry) ?: "$name is known to cause problems with OneClient. We recommend removing it.")
+                    append(explanation(detection.entry) ?: "$name is known to cause problems with Chrome Client. We recommend removing it.")
                     if (alternative != null) append(" Try ").append(alternative.first).append(" instead.")
                 },
                 alternative = alternative,

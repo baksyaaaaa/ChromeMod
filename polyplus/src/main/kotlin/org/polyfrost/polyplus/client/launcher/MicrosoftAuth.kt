@@ -446,13 +446,13 @@ object MicrosoftAuth {
             "#45de2b",
             """<svg viewBox="0 0 24 24" class="glyph"><path d="M20 6 9 17l-5-5"/></svg>""",
             "You're signed in!",
-            "You can close this tab and return to OneClient.",
+            "You can close this tab and return to Chrome Client.",
         ),
         FAILED(
             "#ff0000",
             """<svg viewBox="0 0 24 24" class="glyph"><path d="M18 6 6 18M6 6l12 12"/></svg>""",
             "Sign-in failed",
-            "Something went wrong. Close this tab and try again from OneClient.",
+            "Something went wrong. Close this tab and try again from Chrome Client.",
         ),
     }
 

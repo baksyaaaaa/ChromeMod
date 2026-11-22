@@ -253,7 +253,7 @@ internal fun FooterBrandText(platform: String, fontSize: TextUnit = 13.sp, prima
     BasicText(
         text = buildAnnotatedString {
             withStyle(SpanStyle(color = primary, fontWeight = FontWeight.Bold, fontFamily = Outfit)) {
-                append("ONECLIENT")
+                append("CHROME CLIENT")
             }
             withStyle(SpanStyle(color = secondary, fontFamily = bodyFont)) {
                 append("   ")

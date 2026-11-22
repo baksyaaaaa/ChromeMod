@@ -25,8 +25,8 @@ object ModpackDiff {
 
     // Modrinth slug to display name - on a tie, earlier packs win
     private val PACKS = listOf(
-        "oneclient-modpack" to "OneClient modpack",
-        "oneclient-skyblock" to "OneClient SkyBlock modpack",
+        "oneclient-modpack" to "Chrome Client modpack",
+        "oneclient-skyblock" to "Chrome Client SkyBlock modpack",
     )
 
     private const val MAX_VERSIONS_CHECKED = 10
@@ -56,7 +56,7 @@ object ModpackDiff {
 
     fun logAsync() {
         PolyPlusClient.SCOPE.launch(Dispatchers.IO) {
-            runSuspendCatching { log() }.onFailure { logger.warn("Failed to compare mods against the OneClient modpack", it) }
+            runSuspendCatching { log() }.onFailure { logger.warn("Failed to compare mods against the Chrome Client modpack", it) }
         }
     }
 
@@ -88,7 +88,7 @@ object ModpackDiff {
         }
 
         if (best == null) {
-            logger.info("No OneClient modpack found for Minecraft {}", mcVersion)
+            logger.info("No Chrome Client modpack found for Minecraft {}", mcVersion)
             return
         }
         val (slug, pack, version, diff) = best

@@ -183,7 +183,6 @@ private class LobbyTab(val label: String, val page: LobbyPage)
 private val TABS = listOf(
     LobbyTab("Play", LobbyPage.Home),
     LobbyTab("Wardrobe", LobbyPage.Wardrobe),
-    LobbyTab("Marketplace", LobbyPage.Marketplace),
     LobbyTab("Social", LobbyPage.Social),
     LobbyTab("Stats", LobbyPage.Stats),
     LobbyTab("News", LobbyPage.News),
@@ -304,7 +303,7 @@ private fun BoxScope.LobbyChrome(lobby: LobbyShell, screen: Screen, feed: LobbyF
             SceneTags(feed, root, notch)
             LobbyCornerCard(lobby, Modifier.align(Alignment.TopStart).padding(start = LobbyLayout.Margin, top = LobbyLayout.Top))
         }
-        LobbyPage.Wardrobe -> WardrobePage(onBack = { lobby.show(LobbyPage.Home) }, onMarketplace = { lobby.show(LobbyPage.Marketplace) })
+        LobbyPage.Wardrobe -> org.polyfrost.polyplus.client.gui.menuwardrobe.ChromeWardrobePage(onBack = { lobby.show(LobbyPage.Home) })
         LobbyPage.Multiplayer -> MultiplayerPage(lobby)
         LobbyPage.Singleplayer -> SingleplayerPage(
             selectedWorldId = lobby.selectedWorldId,
@@ -446,7 +445,7 @@ private fun BoxScope.Footer(screen: Screen) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         LobbyIcon("footer-logo", size = 14.dp)
-        FooterBrandText("${platformLabel()}   PolyPlus ${PolyPlusConstants.VERSION}", 11.sp, SocialTextPrimary)
+        FooterBrandText(platformLabel(), 11.sp, SocialTextPrimary)
         Spacer(Modifier.weight(1f))
         CopyrightText(screen, 11.sp, SocialTextSecondary, maxLines = 1)
     }
@@ -764,7 +763,7 @@ private fun MoreMenu(lobby: LobbyShell, screen: Screen, onClose: () -> Unit) {
     val entries = buildList<MenuEntry> {
         if (theme != null) add(MenuAction(theme.label, theme.toggle, icon = theme.icon, size = MenuItemSize.Regular))
         add(MenuAction("Replay tour", { onClose(); lobby.replayTour() }, icon = SOCIAL_ASSETS + "play-circle.svg", size = MenuItemSize.Regular))
-        add(MenuAction("Switch to OneClient v1 main menu", { onClose(); MainMenuReplacement.switchToPolyPlusMenu() }, icon = SOCIAL_ASSETS + "logo.svg", size = MenuItemSize.Regular))
+        add(MenuAction("Switch to Chrome Client v1 main menu", { onClose(); MainMenuReplacement.switchToPolyPlusMenu() }, icon = SOCIAL_ASSETS + "logo.svg", size = MenuItemSize.Regular))
         add(MenuAction("Switch to vanilla main menu", { onClose(); MainMenuReplacement.switchToVanilla() }, icon = SOCIAL_ASSETS + "minecraft-block.svg", size = MenuItemSize.Regular))
         if (!PolyPlusMainMenuConfig.hideMainMenuModButtons) {
             ModIntegrationButtons.withoutModMenu().forEach { button ->

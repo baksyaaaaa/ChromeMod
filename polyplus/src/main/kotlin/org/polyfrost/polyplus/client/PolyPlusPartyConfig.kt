@@ -13,7 +13,7 @@ import org.polyfrost.polyplus.client.party.SceneSharing
 
 object PolyPlusPartyConfig : Config(
     "${PolyPlusConstants.ID}-party.json",
-    "Party (OneClient)",
+    "Party (Chrome Client)",
     Category.OTHER,
 ) {
     @Transient

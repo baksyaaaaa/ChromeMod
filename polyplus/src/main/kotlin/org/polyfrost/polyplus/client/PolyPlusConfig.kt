@@ -32,7 +32,7 @@ import org.polyfrost.polyplus.privacy.LauncherEnvironment
 import java.nio.file.Files
 import java.nio.file.Path
 
-object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConstants.NAME} (OneClient)", Category.OTHER) {
+object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConstants.NAME} (Chrome Client)", Category.OTHER) {
     @Transient
     private val LOGGER = LogManager.getLogger()
 
@@ -94,14 +94,14 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
     @JvmStatic
     @Switch(
         title = "Problematic Mod Warnings",
-        description = "Warn on startup when an installed mod is on OneClient's list of mods known to cause crashes or conflicts.",
+        description = "Warn on startup when an installed mod is on Chrome Client's list of mods known to cause crashes or conflicts.",
     )
     var badModWarnings = true
 
     @JvmStatic
     @Switch(
-        title = "OneClient Startup Screen",
-        description = "Show OneClient's loading screen and first launch card when the game starts. Turn this off to use Minecraft's own loading and accessibility screens.",
+        title = "Chrome Client Startup Screen",
+        description = "Show Chrome Client's loading screen and first launch card when the game starts. Turn this off to use Minecraft's own loading and accessibility screens.",
     )
     var brandedStartup = true
 
@@ -121,8 +121,8 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
 
     @JvmStatic
     @Switch(
-        title = "OneClient Section in OneConfig",
-        description = "Show the OneClient pages in the OneConfig sidebar. These settings stay available from the Mods tab and Minecraft's options.",
+        title = "Chrome Client Section in OneConfig",
+        description = "Show the Chrome Client pages in the OneConfig sidebar. These settings stay available from the Mods tab and Minecraft's options.",
     )
     var oneConfigSection = true
 
@@ -134,8 +134,8 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
 
     @JvmStatic
     @Switch(
-        title = "OneClient Watermark",
-        description = "Show the OneClient logo in inventories and options screens.",
+        title = "Chrome Client Watermark",
+        description = "Show the Chrome Client logo in inventories and options screens.",
         subcategory = "Watermark",
     )
     var watermarkEnabled = false

@@ -52,7 +52,7 @@ object PolyPlusOneConfigIntegration {
 
     private val oneClientGroup = PageGroup.create(
         "polyplus:oneclient",
-        PageText.translatable("polyplus.pagegroup.oneclient", "OneClient"),
+        PageText.translatable("polyplus.pagegroup.oneclient", "Chrome Client"),
         ONECLIENT_GROUP_ORDER,
     )
 

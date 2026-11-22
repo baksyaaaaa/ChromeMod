@@ -99,7 +99,7 @@ internal fun BlockedMessage(availability: SocialAvailability, source: SocialSour
             SocialAvailability.SignedOut -> EmptyState(
                 "Not signed in",
                 Modifier.width(ConsentWidth).socialSurface(),
-                text = "Friends, messages and hosted worlds need a signed-in Minecraft account and a connection to OneClient.",
+                text = "Friends, messages and hosted worlds need a signed-in Minecraft account and a connection to Chrome Client.",
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(text = "Back", onClick = onBack, modifier = Modifier, size = ControlSize.Large)

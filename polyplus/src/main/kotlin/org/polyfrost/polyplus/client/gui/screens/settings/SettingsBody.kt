@@ -319,7 +319,7 @@ private fun SettingsRail(entries: List<SettingsEntry>, selected: String, activat
 internal val SettingsGroup.title: String
     get() = when (this) {
         SettingsGroup.Game -> "Game"
-        SettingsGroup.OneClient -> "OneClient"
+        SettingsGroup.OneClient -> "Chrome Client"
     }
 
 @Composable

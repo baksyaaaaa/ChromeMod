@@ -35,7 +35,7 @@ object VanillaMenuButton {
 
     private fun optionsButton(screenWidth: Int): Button =
         Button.builder(PolyPlusBadge.badgeIcon) { PolyPlusOneConfigIntegration.openOneClientSettings() }
-            .tooltip(Tooltip.create(Component.translatableWithFallback("polyplus.options.oneclient", "OneClient settings")))
+            .tooltip(Tooltip.create(Component.translatableWithFallback("polyplus.options.oneclient", "Chrome Client settings")))
             .bounds(screenWidth - SIZE - MARGIN, MARGIN, SIZE, SIZE)
             .build()
 

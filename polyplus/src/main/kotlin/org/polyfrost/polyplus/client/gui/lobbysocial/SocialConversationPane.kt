@@ -76,6 +76,12 @@ internal fun ColumnScope.ConversationBody(
     placeholder: String,
     offlineReason: String? = null,
 ) {
+    if (group.special) {   // the server's welcome chat: shows the credits line instead, and cannot be written to
+        androidx.compose.foundation.layout.Box(Modifier.weight(1f).fillMaxWidth().padding(16.dp)) {
+            Text("credits to the people above", color = OneConfigTheme.current.mutedText, style = OneConfigTheme.current.typography.body)
+        }
+        return
+    }
     val messages by GroupsRepository.messagesFlow(thread.id).collectAsState()
     val invites by SessionsRepository.incomingInvites.collectAsState()
     val inline = messages.mapNotNull { it.sessionInvite?.id }.toSet()

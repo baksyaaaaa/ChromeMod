@@ -70,7 +70,7 @@ private fun ColumnScope.DialogBody(content: @Composable ColumnScope.() -> Unit) 
 private fun ColumnScope.BadModsContent(warnings: List<BadMods.Warning>, onDismiss: () -> Unit, onDisable: () -> Unit) {
     DialogTitle(if (warnings.size == 1) "Problematic mod detected" else "${warnings.size} problematic mods detected")
     Text(
-        "These mods are known to cause crashes or conflicts with OneClient. We recommend removing them.",
+        "These mods are known to cause crashes or conflicts with Chrome Client. We recommend removing them.",
         color = SocialTextSecondary,
         style = OneConfigTheme.current.typography.label.copy(fontWeight = FontWeight.Normal),
     )

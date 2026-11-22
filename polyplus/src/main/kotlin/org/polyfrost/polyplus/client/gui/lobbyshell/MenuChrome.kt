@@ -38,7 +38,7 @@ private val NAV_UNDERLINE_HEIGHT = 2.dp
 internal fun Wordmark(modifier: Modifier = Modifier, mark: Modifier = Modifier, word: Modifier = Modifier) {
     Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Box(mark) { LobbyIcon("logo", size = 28.dp) }
-        Box(word) { Text("ONECLIENT", style = OneConfigTheme.current.typography.body.copy(fontSize = 22.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.5.sp, fontFamily = Outfit), maxLines = 1, softWrap = false) }
+        Box(word) { Text("CHROME CLIENT", style = OneConfigTheme.current.typography.body.copy(fontSize = 22.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.5.sp, fontFamily = Outfit), maxLines = 1, softWrap = false) }
     }
 }
 

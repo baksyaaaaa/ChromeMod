@@ -1038,7 +1038,7 @@ private fun ScreensPage(choices: Map<ScreenPart, Boolean>, onChoices: (Map<Scree
                 Modifier.width(SCREENS_ACTION_WIDTH.dp),
                 size = ControlSize.Compact,
                 enabled = choices.values.any { !it },
-                contentDescription = "Use all of OneClient's screens",
+                contentDescription = "Use all of Chrome Client's screens",
             )
             Spacer(Modifier.width(8.dp))
             TextButton(
@@ -1047,7 +1047,7 @@ private fun ScreensPage(choices: Map<ScreenPart, Boolean>, onChoices: (Map<Scree
                 Modifier.width(SCREENS_ACTION_WIDTH.dp),
                 size = ControlSize.Compact,
                 enabled = choices.values.any { it },
-                contentDescription = "Use none of OneClient's screens",
+                contentDescription = "Use none of Chrome Client's screens",
             )
         }
         Spacer(Modifier.height(SCREENS_HEADER_GAP.dp))
@@ -1085,13 +1085,13 @@ private fun ScreenRow(part: ScreenPart, ours: Boolean, onOurs: (Boolean) -> Unit
         )
         Spacer(Modifier.width(12.dp))
         Chip(
-            "OneClient",
+            "Chrome Client",
             ours,
             { if (!ours) onOurs(true) },
             Modifier.size(SCREEN_CHIP_WIDTH.dp, SCREEN_CHIP_HEIGHT.dp),
             size = ControlSize.Compact,
             role = A11yRole.Option,
-            contentDescription = "${part.title}: OneClient",
+            contentDescription = "${part.title}: Chrome Client",
         )
         Spacer(Modifier.width(CARD_CHIP_GAP.dp))
         Chip(
@@ -1751,7 +1751,7 @@ private fun LockupHeader() {
     ) {
         Box(Modifier.onGloballyPositioned { StartupOverlay.cardMark = StartupOverlay.place(it) }) { LobbyIcon("logo", size = 36.dp) }
         Box(Modifier.onGloballyPositioned { StartupOverlay.cardWord = StartupOverlay.place(it) }) {
-            Text("ONECLIENT", style = OneConfigTheme.current.typography.body.copy(fontSize = 28.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.2.sp, fontFamily = Outfit), maxLines = 1, softWrap = false)
+            Text("CHROME CLIENT", style = OneConfigTheme.current.typography.body.copy(fontSize = 28.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.2.sp, fontFamily = Outfit), maxLines = 1, softWrap = false)
         }
     }
 }
@@ -2338,7 +2338,7 @@ private fun TermsPage(
 
     val panelWidth = LocalPanelWidth.current
     if (top > TERMS_CONTENT_TOP) {
-        if (StartupOverlay.enabled()) LockupHeader() else Header("Welcome to", "OneClient")
+        if (StartupOverlay.enabled()) LockupHeader() else Header("Welcome to", "Chrome Client")
     }
     Box(
         Modifier
@@ -2467,7 +2467,7 @@ private fun pageSpeech(step: OnboardingStep, page: Int, waiting: Boolean): Strin
     val body = when (step) {
         OnboardingStep.Accessibility -> ""
         OnboardingStep.Terms ->
-            "Welcome to OneClient. Agree to the Terms of Service and Privacy Policy to use online features. $TERMS_NOTE"
+            "Welcome to Chrome Client. Agree to the Terms of Service and Privacy Policy to use online features. $TERMS_NOTE"
         OnboardingStep.LookAndFeel -> "Look and Feel. Choose the UI colors, UI style and GUI scale."
         OnboardingStep.Screens ->
             "Screens. " + ScreenPart.shown.joinToString(", ") { it.title } + "."
@@ -2758,7 +2758,7 @@ private const val TERMS_NOTE =
 private const val MOD_ORDER_TEXT = "Choose how the mods list is sorted. Recommended puts the mods you are most likely to tweak first."
 private const val SPRINT_TEXT = "Turn sprinting into a toggle so you keep running after you let go of the key."
 private const val WATERMARK_TEXT =
-    "Show the OneClient logo in inventories and options screens. You can move, resize or recolor it later in settings."
+    "Show the Chrome Client logo in inventories and options screens. You can move, resize or recolor it later in settings."
 private const val SCREENS_TOP = 122f
 private const val SCREENS_WIDTH = PANEL_WIDTH - CARD_MARGIN * 2f
 private const val SCREENS_ACTION_WIDTH = 96f
@@ -2774,7 +2774,7 @@ private const val WATERMARK_PREVIEW_HEIGHT = 56f
 private const val WATERMARK_LOGO_SIZE = 28f
 private const val WATERMARK_WORDMARK_HEIGHT = 18f
 private const val WATERMARK_WORDMARK_WIDTH = WATERMARK_WORDMARK_HEIGHT * (159f / 19f)
-private const val DONE_TEXT = "That’s all for now, thank you for choosing OneClient! We hope you have a nice experience using it."
+private const val DONE_TEXT = "That’s all for now, thank you for choosing Chrome Client! We hope you have a nice experience using it."
 
 private val LocalCardTitle = compositionLocalOf { "" }
 

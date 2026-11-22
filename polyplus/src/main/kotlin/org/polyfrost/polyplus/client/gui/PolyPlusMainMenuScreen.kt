@@ -464,8 +464,8 @@ private fun CenterColumn(modifier: Modifier, actions: MenuActions) {
         MainLogo()
         Spacer(Modifier.height(16.dp))
         Box(contentAlignment = Alignment.Center) {
-            Text("ONECLIENT", modifier = Modifier.offset(y = 3.dp), color = OneConfigTheme.current.onMediaShadow.copy(alpha = WORDMARK_SHADOW_ALPHA), style = OneConfigTheme.current.typography.body.copy(fontSize = 42.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.5.sp, fontFamily = Outfit), textAlign = TextAlign.Center)
-            Text("ONECLIENT", color = OneConfigTheme.current.onMedia, style = OneConfigTheme.current.typography.body.copy(fontSize = 42.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.5.sp, fontFamily = Outfit), textAlign = TextAlign.Center)
+            Text("CHROME CLIENT", modifier = Modifier.offset(y = 3.dp), color = OneConfigTheme.current.onMediaShadow.copy(alpha = WORDMARK_SHADOW_ALPHA), style = OneConfigTheme.current.typography.body.copy(fontSize = 42.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.5.sp, fontFamily = Outfit), textAlign = TextAlign.Center)
+            Text("CHROME CLIENT", color = OneConfigTheme.current.onMedia, style = OneConfigTheme.current.typography.body.copy(fontSize = 42.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.5.sp, fontFamily = Outfit), textAlign = TextAlign.Center)
         }
         Spacer(Modifier.height(48.dp))
         Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {

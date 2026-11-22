@@ -61,10 +61,10 @@ data class ServiceStatus(
     fun summary(): String {
         val names = affected.joinToString(", ")
         return when {
-            maintenance && names.isNotEmpty() -> "OneClient maintenance on $names"
-            maintenance -> "OneClient services are under maintenance"
-            names.isNotEmpty() -> "OneClient services with problems: $names"
-            else -> "Some OneClient services have problems"
+            maintenance && names.isNotEmpty() -> "Chrome Client maintenance on $names"
+            maintenance -> "Chrome Client services are under maintenance"
+            names.isNotEmpty() -> "Chrome Client services with problems: $names"
+            else -> "Some Chrome Client services have problems"
         }
     }
 }
@@ -133,7 +133,7 @@ object StatusPage {
         if (stateChanged) notifiedState = current.state
 
         when {
-            stateChanged && current.operational -> notify { Notifications.success(TITLE, "All OneClient services are working again.") }
+            stateChanged && current.operational -> notify { Notifications.success(TITLE, "All Chrome Client services are working again.") }
             stateChanged -> {
                 val message = listOfNotNull("${current.summary()}.", announcement).joinToString(" ")
                 notify {

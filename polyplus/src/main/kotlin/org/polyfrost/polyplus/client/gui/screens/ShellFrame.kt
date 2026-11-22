@@ -90,7 +90,7 @@ private val FrameMaxWidth = 1240.dp
 private val HeaderHeight = 38.dp
 private val NavHead = 34.dp
 private const val SWITCH_HINT_SHOWS = 3
-private const val SWITCH_HINT_TEXT = "Prefer the vanilla screen? You can switch back in OneClient \u203A Screens."
+private const val SWITCH_HINT_TEXT = "Prefer the vanilla screen? You can switch back in Chrome Client \u203A Screens."
 
 private val LocalVanillaSwitch = staticCompositionLocalOf<ShellScreen?> { null }
 

@@ -106,7 +106,7 @@ object LauncherAccountStore {
 
     private fun platformLauncherDirs(): List<File> {
         val home = File(System.getProperty("user.home") ?: return emptyList())
-        return listOf("OneClient", "OneClient-dev").map { app ->
+        return listOf("Chrome Client", "Chrome Client-dev").map { app ->
             val legacy = legacyLauncherDir(home, app)
             if (File(legacy, "settings.json").isFile) legacy else File(dataDir(home), "Polyfrost/$app")
         }
