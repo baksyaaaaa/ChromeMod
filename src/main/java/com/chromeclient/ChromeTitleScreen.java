@@ -466,8 +466,8 @@ public final class ChromeTitleScreen extends Screen {
                     rl = root.getChild("right_leg"), ll = root.getChild("left_leg");
             ra.xRot = -sw * 0.85f; la.xRot = sw * 0.85f;
             rl.xRot = sw * 1.0f; ll.xRot = -sw * 1.0f;
-            root.getChild("right_sleeve").copyFrom(ra); root.getChild("left_sleeve").copyFrom(la);
-            root.getChild("right_pants").copyFrom(rl); root.getChild("left_pants").copyFrom(ll);
+            root.getChild("right_sleeve").xRot = ra.xRot; root.getChild("left_sleeve").xRot = la.xRot;
+            root.getChild("right_pants").xRot = rl.xRot; root.getChild("left_pants").xRot = ll.xRot;
         } catch (Throwable ignored) {
             // parts not found: the model just stands
         }
