@@ -19,6 +19,10 @@ jobs:
             java: 21
             gradle: "9.2.0"
             newer: false
+          - mc: "26.3"
+            java: 25
+            gradle: "9.2.0"
+            newer: true
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +39,12 @@ jobs:
         run: |
           sed -i "s/^minecraft_version=.*/minecraft_version=${{ matrix.mc }}/" gradle.properties
           sed -i "s/^archives_base_name=.*/archives_base_name=chrome-client-${{ matrix.mc }}/" gradle.properties
-          if [ "${{ matrix.newer }}" = "true" ]; then cp build-26.gradle build.gradle; fi
+          if [ "${{ matrix.newer }}" = "true" ]; then
+            cp build-26.gradle build.gradle
+            sed -i 's/"minecraft": "[^"]*"/"minecraft": ">=26.1"/; s/"java": "[^"]*"/"java": ">=25"/' src/main/resources/fabric.mod.json
+          else
+            sed -i 's/"minecraft": "[^"]*"/"minecraft": ">=1.21.11 <1.22"/' src/main/resources/fabric.mod.json
+          fi
 
       - name: Look up the newest Fabric Loader and Fabric API for this Minecraft version
         run: |
@@ -76,8 +85,11 @@ jobs:
           VER=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
           JAR=$(ls build/libs/*.jar | grep -v -- '-sources' | head -n1)
           TAG="build-${{ github.run_number }}"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$JAR" --clobber
-          else
-            gh release create "$TAG" "$JAR" --title "Chrome Client $VER" --notes "Minecraft ${{ matrix.mc }}" --latest
-          fi
+          for i in 1 2 3; do
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              gh release upload "$TAG" "$JAR" --clobber && break
+            else
+              gh release create "$TAG" "$JAR" --title "Chrome Client $VER" --notes "Minecraft builds" --latest && break
+            fi
+            sleep $((RANDOM % 8 + 2))
+          done
