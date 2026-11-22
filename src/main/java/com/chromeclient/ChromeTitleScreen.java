@@ -50,6 +50,10 @@ public final class ChromeTitleScreen extends Screen {
 
     private final List<Item> items = new ArrayList<>();
     private double gs = 1;
+    /** the other main-menu look: your skin walks in, stops, the camera zooms and your saved servers appear */
+    private static boolean sceneMode;
+    private long sceneStart = System.currentTimeMillis();
+    private float sceneP = 1f;   // 0..1: how far the server list has faded in
 
     public ChromeTitleScreen() {
         super(Component.literal("Chrome Client"));
@@ -90,6 +94,9 @@ public final class ChromeTitleScreen extends Screen {
     protected void init() {
         items.clear();
         gs = Math.max(1.0, minecraft.getWindow().getGuiScale());
+        sceneStart = System.currentTimeMillis();
+        if (sceneMode) { initScene(); return; }
+        add(5, 2, 1561f, 24f, 179f, 38f, MenuSprites.BG_HALF, MenuSprites.BG_HALF_H, null, null, "Servers", null, () -> { sceneMode = true; minecraft.setScreen(new ChromeTitleScreen()); });
         // the middle column
         add(0, 1, 751f, 528f, 372f, 38f, MenuSprites.BG_WIDE, MenuSprites.BG_WIDE_H, MenuSprites.I_PERSON, MenuSprites.T_SINGLE, null, null,
                 () -> minecraft.setScreen(new SelectWorldScreen(this)));
@@ -128,6 +135,29 @@ public final class ChromeTitleScreen extends Screen {
         add(4, 2, 1561f, 530f, 254f, 37f, MenuSprites.BG_SIDE, MenuSprites.BG_SIDE, null, null, minecraft.getUser().getName(), null, null);
         add(0, 2, 1561f, 580f, 254f, 37f, MenuSprites.BG_SIDE, MenuSprites.BG_SIDE_H, MenuSprites.I_HOST, MenuSprites.T_HOST, null, null,
                 () -> minecraft.setScreen(new SelectWorldScreen(this)));
+    }
+
+    /** the walking-skin scene: buttons and your saved servers */
+    private void initScene() {
+        add(5, 2, 1561f, 24f, 179f, 38f, MenuSprites.BG_HALF, MenuSprites.BG_HALF_H, null, null, "Main menu", null, () -> { sceneMode = false; minecraft.setScreen(new ChromeTitleScreen()); });
+        add(2, 2, 1764f, 24f, 36f, 36f, MenuSprites.BG_SQ, MenuSprites.BG_SQ_H, MenuSprites.I_FULL, null, null, null,
+                () -> minecraft.getWindow().toggleFullScreen());
+        add(2, 2, 1811f, 24f, 36f, 36f, MenuSprites.BG_SQ, MenuSprites.BG_SQ_H, MenuSprites.I_QUIT, null, null, null,
+                () -> minecraft.stop());
+        try {
+            ServerList sl = new ServerList(minecraft);
+            sl.load();
+            int n = Math.min(7, sl.size());
+            for (int i = 0; i < n; i++) {
+                ServerData d = sl.get(i);
+                Item card = add(1, 1, 1003f, 470f + 65f * i, 254f, 53f, MenuSprites.BG_CARD, MenuSprites.BG_CARD_H, null, null, d.name, d.ip,
+                        () -> ConnectScreen.startConnecting(this, minecraft, ServerAddress.parseString(d.ip), d, false, null));
+                try { card.iconBytes = d.getIconBytes(); } catch (Throwable ignored) { }
+                card.hit.active = false;   // only clickable once the list has appeared
+            }
+        } catch (Throwable ignored) {
+            // no server list
+        }
     }
 
     // ---- drawing ----
@@ -184,20 +214,27 @@ public final class ChromeTitleScreen extends Screen {
         g.fill(0, 0, width, height, 0x1CFFFFFF);   // a light wash: lifts the dark parts of the moving background much more than the bright ones
         float f = f();
 
-        if (!model3d(g)) profile(g);
+        if (sceneMode) {
+            renderScene(g);
+        } else if (!model3d(g)) profile(g);
         // logo and name in the middle
-        {   // the glassy logo, centred on where the old one was
+        if (!sceneMode) {   // the glassy logo, centred on where the old one was
             float lw = 112f * f;
             g.pose().pushMatrix();
             g.pose().scale((float) (1.0 / gs), (float) (1.0 / gs));
             Logo.draw(g, rx(937f - 56f, 1), (362f - 56f) * f, lw);
             g.pose().popMatrix();
         }
-        sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
+        if (!sceneMode) sprAt(g, MenuSprites.T_TITLE, 937f - dw(MenuSprites.T_TITLE) / 2f, 466f - dh(MenuSprites.T_TITLE) / 2f, 1);
 
         for (Item it : items) {
             float x = rx(it.x, it.anchor), y = it.y * f;
-            boolean hover = it.hit != null && it.hit.isHoveredOrFocused();
+            if (sceneMode && it.kind == 1) {
+                if (sceneP <= 0f) continue;
+                x += (1f - sceneP) * 90f * f;   // slides in from the right
+                if (it.hit != null) it.hit.active = sceneP >= 0.98f;
+            }
+            boolean hover = it.hit != null && it.hit.isHoveredOrFocused() && it.hit.active;
             spr(g, hover ? it.bgH : it.bg, x, y);
             switch (it.kind) {
                 case 0 -> {    // icon + label as a group in the middle
@@ -206,6 +243,10 @@ public final class ChromeTitleScreen extends Screen {
                     spr(g, it.label, x + (gx + 25f) * f, y + (it.h - 22f) / 2f * f);
                 }
                 case 2 -> spr(g, it.icon, x + (it.w - 16f) / 2f * f, y + (it.h - 16f) / 2f * f);
+                case 5 -> {    // a text button
+                    float tw = textW(it.name, 14f, true);
+                    dyn(g, it.name, x + (it.w - tw) / 2f * f, y + it.h / 2f * f, 14f, true, WHITE, (it.w - 20f) * f);
+                }
                 case 3 -> {    // Quickplay header
                     spr(g, it.icon, x + 19f * f, y + (it.h - 16f) / 2f * f);
                     spr(g, it.label, x + (it.w - dw(it.label)) / 2f * f, y + (it.h - 22f) / 2f * f);
@@ -407,6 +448,91 @@ public final class ChromeTitleScreen extends Screen {
         }
     }
 
+    private static float ease(float t) {
+        t = Math.max(0f, Math.min(1f, t));
+        return t * t * (3f - 2f * t);
+    }
+
+    private static float clamp01(float t) {
+        return Math.max(0f, Math.min(1f, t));
+    }
+
+    /** turns the limbs of the model like a walk cycle; amount 0 = standing, 1 = full stride */
+    private void pose(net.minecraft.client.model.player.PlayerModel m, float phase, float amount) {
+        try {
+            net.minecraft.client.model.geom.ModelPart root = m.root();
+            float sw = (float) Math.sin(phase) * amount;
+            net.minecraft.client.model.geom.ModelPart ra = root.getChild("right_arm"), la = root.getChild("left_arm"),
+                    rl = root.getChild("right_leg"), ll = root.getChild("left_leg");
+            ra.xRot = -sw * 0.85f; la.xRot = sw * 0.85f;
+            rl.xRot = sw * 1.0f; ll.xRot = -sw * 1.0f;
+            root.getChild("right_sleeve").copyFrom(ra); root.getChild("left_sleeve").copyFrom(la);
+            root.getChild("right_pants").copyFrom(rl); root.getChild("left_pants").copyFrom(ll);
+        } catch (Throwable ignored) {
+            // parts not found: the model just stands
+        }
+    }
+
+    /** the walking scene: skin walks in from the left, stops, the camera zooms, the saved servers fade in */
+    private void renderScene(GuiGraphics g) {
+        try {
+            startSkinFetch();
+            pollSkin();
+            if (model3d == null) {
+                model3d = new net.minecraft.client.model.player.PlayerModel(
+                        minecraft.getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER), false);
+                model3dSlim = new net.minecraft.client.model.player.PlayerModel(
+                        minecraft.getEntityModels().bakeLayer(net.minecraft.client.model.geom.ModelLayers.PLAYER_SLIM), true);
+            }
+            net.minecraft.resources.Identifier tex;
+            net.minecraft.client.model.player.PlayerModel mdl;
+            if (ownTex != null) { tex = ownTex; mdl = ownSlim ? model3dSlim : model3d; }
+            else {
+                net.minecraft.world.entity.player.PlayerSkin sk = skin();
+                if (sk == null) return;
+                tex = sk.body().texturePath(); mdl = model3d;
+            }
+            float f = f();
+            float t = (System.currentTimeMillis() - sceneStart) / 1000f;
+            float walkEnd = 2.7f, zoomStart = 3.1f, zoomEnd = 4.1f;
+            float walk = clamp01(t / walkEnd);
+            float amount = 1f - ease((t - 2.3f) / 0.6f);               // legs stop swinging near the end
+            float zoom = ease((t - zoomStart) / (zoomEnd - zoomStart));
+            sceneP = ease((t - 3.7f) / 0.9f);
+            float phase = t * 9f;
+            pose(mdl, phase, t < 3.0f ? amount : 0f);
+            // design coordinates, measured from the middle of the screen
+            float cxD = Math.max(-260f, -260f + (680f + 260f) * (1f - (1f - walk) * (1f - walk) * (1f - walk) * 0.35f) * 1f);
+            cxD = -260f + (680f + 260f) * ease(walk * 0.6f + walk * walk * 0.4f);
+            float hD = 520f + (700f - 520f) * zoom;                      // body height
+            float feetD = 880f + (950f - 880f) * zoom;
+            cxD += (590f - 680f) * zoom;                                  // slides left while zooming
+            float bob = (float) Math.abs(Math.sin(phase)) * 7f * amount * (t < 3.0f ? 1f : 0f);
+            float side = hD / 0.9f;                                       // the box the model is fitted in
+            float cx = rx(cxD, 1), cy = (feetD - hD / 2f - bob) * f;
+            // soft shadow on the ground under the feet
+            for (int i = 0; i < 6; i++) {
+                float w = hD * (0.55f - i * 0.07f) * f, h = hD * 0.055f * (1f - i * 0.1f) * f;
+                roundBox(g, cx - w / 2f, feetD * f - h / 2f + 4f * f, w, h, h / 2f, 0x14000000);
+            }
+            int x0 = Math.round((cx - side * f / 2f) / (float) gs), x1 = Math.round((cx + side * f / 2f) / (float) gs);
+            int ya = Math.round((cy - side * f / 2f) / (float) gs), yb = Math.round((cy + side * f / 2f) / (float) gs);
+            float turn = 78f + (24f - 78f) * ease((t - walkEnd) / 0.4f);   // profile while walking, then turns toward the servers
+            g.submitSkinRenderState(mdl, tex, 0.97f * (yb - ya) / 2.125f, -3f, turn, -0.0625f, x0, ya, x1, yb);
+            // heading and hint next to the server list
+            if (sceneP > 0f) {
+                int a = (int) (255 * sceneP);
+                int white = (a << 24) | 0xFFFFFF, grey = (a << 24) | 0xC8C8CD;
+                float lx = rx(1003f, 1) + (1f - sceneP) * 90f * f;
+                dyn(g, "Saved servers", lx, 400f * f, 26f, true, white, 400f * f);
+                dyn(g, items.stream().anyMatch(i -> i.kind == 1) ? "Click a server to join it" : "No saved servers yet - add some under Multiplayer",
+                        lx, 438f * f, 13f, false, grey, 500f * f);
+            }
+        } catch (Throwable th) {
+            if (!logged) { logged = true; LOG.warn("walking scene failed", th); }
+        }
+    }
+
     /** a medium close-up of your skin in side profile (head and shoulders), above the account box */
     private void profile(GuiGraphics g) {
         net.minecraft.resources.Identifier tex = skinTexture();
@@ -476,7 +602,7 @@ public final class ChromeTitleScreen extends Screen {
         if (!loggedDrag) { loggedDrag = true; LOG.info("mouse drag reached the menu: button={} at {},{}", event.button(), event.x(), event.y()); }
         float f = f();
         double mx = 1874.0 - (minecraft.getWindow().getWidth() - event.x() * gs) / f, my = event.y() * gs / f;   // back to design pixels (right-anchored)
-        if (event.button() == 0 && mx >= 1561 && mx <= 1561 + 254 && my >= 300 && my <= 530) {
+        if (!sceneMode && event.button() == 0 && mx >= 1561 && mx <= 1561 + 254 && my >= 300 && my <= 530) {
             yaw += (float) dragX * 2.5f;
             return true;
         }
