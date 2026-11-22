@@ -128,11 +128,21 @@ object PolyPlusOneConfigIntegration {
      * (for example the HUD editor) the next time you press it, so it is switched off.
      */
     private fun keepRightShiftSimple() {
-        runCatching {
-            val cfg = Class.forName("org.polyfrost.oneconfig.internal.OneConfigConfig")
-            cfg.getField("rememberLastPage").setInt(null, 0)
-            cfg.getField("restoreHudEditor").setBoolean(null, false)
+        val apply = {
+            runCatching {
+                val cfg = Class.forName("org.polyfrost.oneconfig.internal.OneConfigConfig")
+                cfg.getField("rememberLastPage").setInt(null, 0)
+                cfg.getField("restoreHudEditor").setBoolean(null, false)
+            }
         }
+        apply()
+        // OneConfig loads its own settings file after we start and could switch it back on, so keep it off
+        Thread({
+            while (true) {
+                try { Thread.sleep(1000) } catch (_: InterruptedException) { return@Thread }
+                apply()
+            }
+        }, "Chrome menu keeper").apply { isDaemon = true }.start()
     }
 
     @JvmStatic
