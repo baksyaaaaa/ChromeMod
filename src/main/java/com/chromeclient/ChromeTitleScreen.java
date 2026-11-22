@@ -494,149 +494,68 @@ public final class ChromeTitleScreen extends Screen {
         fl(g, cx + x * f, y * f, w * f, h * f, c);
     }
 
-    /** a Japanese-style timber spawn square, drawn in blocky layers and animated: drifting clouds, swaying pines,
-     *  flickering fireplace, swinging lanterns, rising embers, slow camera drift */
+    private static final net.minecraft.resources.Identifier SPAWN_TEX =
+            net.minecraft.resources.Identifier.fromNamespaceAndPath("chromeclient", "textures/gui/spawn.png");
+
+    /** where the spawn picture sits on screen: {pixels per texel, left, top}; zoom 0..1 pushes in on the steps */
+    private float[] spawnCam(float zoom, float t) {
+        int W = minecraft.getWindow().getWidth(), H = minecraft.getWindow().getHeight();
+        float s0 = Math.max(W / 1920f, H / 1080f) * 1.05f;
+        float pan = (float) Math.sin(t * 0.3f) * 0.012f * W, bob = (float) Math.cos(t * 0.23f) * 0.008f * H;
+        float ox0 = (W - 1920f * s0) / 2f + pan, oy0 = (H - 1080f * s0) / 2f + bob;
+        float px = ox0 + 0.47f * 1920f * s0, py = oy0 + 0.80f * 1080f * s0;     // the steps stay put while we zoom
+        float s = s0 * (1f + 0.30f * zoom);
+        px -= zoom * 0.07f * W;                                                 // and slide left to make room for the servers
+        py -= zoom * 0.04f * H;
+        return new float[]{s, px - 0.47f * 1920f * s, py - 0.80f * 1080f * s};
+    }
+
+    /** your screenshot of the spawn as the backdrop, brought to life: slow camera drift, flickering fire and lanterns,
+     *  rising embers and drifting dust */
     private void drawSpawn(GuiGraphics g, float f, float zoom, float t) {
         int W = minecraft.getWindow().getWidth(), H = minecraft.getWindow().getHeight();
-        float cx = W / 2f;
-        float pan = (float) Math.sin(t * 0.35f) * 26f;           // slow camera drift
+        float[] c = spawnCam(zoom, t);
+        float s = c[0], ox = c[1], oy = c[2];
         g.pose().pushMatrix();
         g.pose().scale(1f / (float) gs, 1f / (float) gs);
-        // sky
-        for (int i = 0; i < 28; i++) {
-            float k = i / 27f;
-            fl(g, 0, 760f * f * i / 28f, W, 760f * f / 28f + 1,
-                    0xFF000000 | ((int) (118 + 70 * k) << 16) | ((int) (166 + 56 * k) << 8) | 255);
-        }
-        for (int i = 0; i < 6; i++) {                                // clouds
-            float x = ((i * 470f + t * 12f) % 2500f) - 700f;
-            float y = 90f + (i * 83) % 230;
-            dr(g, f, cx, x - 937f + pan * 0.2f, y, 230f, 24f, 0xD9FFFFFF);
-            dr(g, f, cx, x - 937f + 40f + pan * 0.2f, y - 18f, 120f, 20f, 0xD9FFFFFF);
-        }
-        // camera push-in on the pavilion
-        g.pose().translate(cx, 700f * f);
-        float sc = 1f + 0.2f * zoom;
-        g.pose().scale(sc, sc);
-        g.pose().translate(-cx, -700f * f);
-
-        // distant pines on the right
-        for (int k = 0; k < 4; k++) {
-            float bx = 520f + k * 150f + pan * 0.5f, sw = (float) Math.sin(t * 1.1f + k) * 3f;
-            float top = 260f + (k * 47) % 90;
-            dr(g, f, cx, bx - 937f + 20f, top + 120f, 16f, 330f, 0xFF4B3524);
-            for (int tier = 0; tier < 6; tier++) {
-                float w = 70f + tier * 36f, y = top + tier * 46f;
-                for (int row = 0; row < 3; row++) {
-                    float ww = w - row * 18f;
-                    int c = (row + tier) % 2 == 0 ? 0xFF2C5A31 : 0xFF244B29;
-                    dr(g, f, cx, bx - 937f + 28f - ww / 2f + sw * (1f - tier / 6f), y + row * 14f, ww, 14f, c);
-                }
-            }
-        }
-        // left building: slate roof, white plaster, dark timber
-        float lx = -900f + pan * 0.7f;
-        for (int r = 0; r < 12; r++) {
-            float rx = lx + 80f + r * 18f, y = 110f + r * 26f;
-            dr(g, f, cx, rx, y, 640f - r * 18f, 26f, r % 2 == 0 ? 0xFF3A3B46 : 0xFF2F303A);
-        }
-        dr(g, f, cx, lx + 120f, 420f, 580f, 270f, 0xFFE9E7E1);
-        for (int i = 0; i < 6; i++) dr(g, f, cx, lx + 120f + i * 116f, 420f, 12f, 270f, 0xFF4A3220);
-        dr(g, f, cx, lx + 120f, 420f, 580f, 12f, 0xFF4A3220);
-        dr(g, f, cx, lx + 120f, 548f, 580f, 12f, 0xFF4A3220);
-        for (int i = 0; i < 4; i++) {
-            dr(g, f, cx, lx + 150f + i * 140f, 450f, 70f, 80f, 0xFF5A3A24);
-            dr(g, f, cx, lx + 158f + i * 140f, 458f, 54f, 64f, 0xFFC9D8E2);
-        }
-        dr(g, f, cx, lx + 120f, 640f, 580f, 60f, 0xFF7A4A34);
-        // gravel plaza
-        for (int j = 0; j < 26; j++) {
-            float y = 640f + j * j * 0.62f, h = 6f + j * 1.9f;
-            if (y > 1050f) break;
-            float cw = 10f + j * 3.2f;
-            int row0 = (int) Math.floor((-W / 2f / f) / cw) - 1;
-            for (float x = -1100f + (j % 2) * cw / 2f; x < 1100f; x += cw) {
-                int n = hash((int) (x / cw) + j * 31, j);
-                int base = n < 70 ? 0xFF8F8A8E : n < 150 ? 0xFF9E9A9C : n < 215 ? 0xFFAAA6A6 : 0xFF86828A;
-                dr(g, f, cx, x + pan * 0.3f, y, cw + 1f, h + 1f, base);
-            }
-        }
-        // pavilion floor: blue-grey tiles with a few oak inlays
-        float fx0 = -300f + pan * 0.6f;
-        for (int j = 0; j < 7; j++)
-            for (int i = 0; i < 14; i++) {
-                float tw = 46f + j * 4f, th = 26f + j * 4f;
-                float y = 665f + j * 32f + j * j * 2f, x = fx0 + 20f + i * tw - (j * 12f);
-                int n = hash(i, j * 7);
-                int c = n % 11 == 0 ? 0xFFB08A52 : ((i + j) & 1) == 0 ? 0xFF9DAFAE : 0xFF93A5A4;
-                dr(g, f, cx, x, y, tw - 2f, th - 2f, c);
-            }
-        // brick chimney and fireplace
-        float bx = -20f + pan * 0.6f;
-        dr(g, f, cx, bx, 300f, 120f, 360f, 0xFFA4533F);
-        for (int r = 0; r < 18; r++) {
-            dr(g, f, cx, bx, 300f + r * 20f, 120f, 3f, 0xFF7C3E31);
-            for (float xx = (r % 2) * 20f; xx < 120f; xx += 40f) dr(g, f, cx, bx + xx, 300f + r * 20f, 3f, 20f, 0xFF7C3E31);
-        }
-        dr(g, f, cx, bx + 18f, 540f, 84f, 120f, 0xFF1D1210);                 // fire opening
-        for (int i = 0; i < 6; i++) {                                           // flames
-            float fh = 36f + (float) (Math.sin(t * 9f + i * 1.7f) * 14f + Math.sin(t * 13f + i) * 8f);
-            float fx = bx + 24f + i * 13f;
-            dr(g, f, cx, fx, 650f - fh, 12f, fh, 0xFFFF7A1A);
-            dr(g, f, cx, fx + 2f, 650f - fh * 0.62f, 8f, fh * 0.62f, 0xFFFFC43A);
-            dr(g, f, cx, fx + 4f, 650f - fh * 0.3f, 4f, fh * 0.3f, 0xFFFFF0A0);
-        }
-        for (int i = 0; i < 10; i++) {                                          // embers rising
-            float ph = (t * 0.55f + i * 0.173f) % 1f;
-            float ex = bx + 40f + (float) Math.sin(i * 3.1f + ph * 6f) * 40f, ey = 540f - ph * 260f;
-            dr(g, f, cx, ex, ey, 5f, 5f, ((int) (255 * (1f - ph)) << 24) | 0xFFA030);
-        }
-        // fire glow on the floor
-        dr(g, f, cx, bx - 60f, 640f, 240f, 90f, 0x1AFF8A20);
-        // dark slate under the roof and the crossbeam
-        dr(g, f, cx, -330f + pan * 0.6f, 140f, 760f, 190f, 0xFF383842);
-        for (int r = 0; r < 9; r++) dr(g, f, cx, -330f + pan * 0.6f, 140f + r * 21f, 760f, 3f, 0xFF2A2A32);
-        // oak posts
-        float[] px = {-340f, 330f};
-        float[] pw = {80f, 110f};
-        for (int i = 0; i < 2; i++) {
-            float x = px[i] + pan * (i == 0 ? 0.8f : 1.0f);
-            dr(g, f, cx, x, 280f, pw[i], 640f, 0xFFA8793F);
-            for (int k = 0; k < 9; k++) dr(g, f, cx, x + 6f + k * (pw[i] / 9f), 280f, 5f, 640f, k % 2 == 0 ? 0xFF946830 : 0xFFB8894A);
-            dr(g, f, cx, x - 14f, 860f, pw[i] + 28f, 60f, 0xFF5A3B20);       // base block
-        }
-        // crossbeam
-        dr(g, f, cx, -340f + pan * 0.8f, 290f, 800f + pan * 0.2f, 62f, 0xFF8A6030);
-        for (int k = 0; k < 4; k++) dr(g, f, cx, -340f + pan * 0.8f, 296f + k * 15f, 800f, 3f, 0xFF6B4A22);
-        // big dark-oak roof, stepped diagonal
-        for (int r = 0; r < 15; r++) {
-            float x = -520f + r * 26f + pan * 0.9f, y = r * 20f - 20f;
-            int c = r % 2 == 0 ? 0xFF6B4A28 : 0xFF5C3F20;
-            dr(g, f, cx, x, y, 1500f - r * 26f, 20f, c);
-            dr(g, f, cx, x, y + 17f, 1500f - r * 26f, 3f, 0xFF3F2A14);
-            for (float xx = (r % 2) * 55f; xx < 1500f - r * 26f; xx += 110f) dr(g, f, cx, x + xx, y, 3f, 17f, 0xFF4A3118);
-        }
-        dr(g, f, cx, 380f + pan * 0.9f, 0f, 120f, 300f, 0xFF7C5830);          // big roof beam end with ring pattern
-        for (int k = 0; k < 4; k++) dr(g, f, cx, 395f + k * 12f + pan * 0.9f, 20f + k * 12f, 90f - k * 24f, 90f - k * 24f, k % 2 == 0 ? 0xFF8A6535 : 0xFF6E4C26);
-        // hanging chains and lanterns that swing
-        float[] lxs = {-170f, 190f};
-        for (int i = 0; i < 2; i++) {
-            float sw = (float) Math.sin(t * 1.6f + i * 1.9f) * 9f, x = lxs[i] + pan * 0.7f;
-            dr(g, f, cx, x + sw * 0.15f, 350f, 5f, 90f, 0xFF3B3B44);
-            dr(g, f, cx, x - 9f + sw, 440f, 24f, 34f, 0xFF4A3524);
-            dr(g, f, cx, x - 5f + sw, 446f, 16f, 22f, 0xFFFFC857);
-            dr(g, f, cx, x - 40f + sw, 420f, 92f, 92f, 0x14FFB84A);
-        }
-        // front wooden steps and a bush
-        for (int k = 0; k < 4; k++) dr(g, f, cx, -330f + k * 6f + pan * 0.9f, 900f + k * 22f, 760f - k * 12f, 22f, k % 2 == 0 ? 0xFF9A6C3A : 0xFF8A5E30);
-        for (int i = 0; i < 6; i++)
-            for (int j = 0; j < 3; j++)
-                dr(g, f, cx, -470f + i * 26f + pan, 910f + j * 22f, 26f, 22f, hash(i, j) > 120 ? 0xFF3F8B35 : 0xFF2F7029);
+        fl(g, 0, 0, W, H, 0xFF6F9BE0);
+        g.pose().pushMatrix();
+        g.pose().translate(ox, oy);
+        g.pose().scale(s, s);
+        g.blit(RenderPipelines.GUI_TEXTURED, SPAWN_TEX, 0, 0, 0f, 0f, 1920, 1080, 1920, 1080);
         g.pose().popMatrix();
-        // soft vignette
-        g.pose().pushMatrix();
-        g.pose().scale(1f / (float) gs, 1f / (float) gs);
-        fl(g, 0, 0, W, H, 0x10000000);
+        // fire and lantern glow, pulsing a little out of step
+        float[][] lights = {{0.535f, 0.46f, 150f, 0.9f}, {0.435f, 0.44f, 70f, 0.5f}, {0.545f, 0.435f, 60f, 0.45f}, {0.282f, 0.445f, 55f, 0.3f}};
+        for (int i = 0; i < lights.length; i++) {
+            float fl = 0.75f + 0.25f * (float) Math.sin(t * (7f + i * 1.3f) + i * 2f) + 0.1f * (float) Math.sin(t * 17f + i);
+            float cx = ox + lights[i][0] * 1920f * s, cy = oy + lights[i][1] * 1080f * s, r = lights[i][2] * s;
+            for (int k = 0; k < 5; k++) {
+                float rr = r * (1f - k * 0.17f);
+                int a = (int) (Math.max(0f, Math.min(1f, fl * lights[i][3])) * 14f);
+                fl(g, cx - rr, cy - rr, rr * 2f, rr * 2f, (a << 24) | 0xFFA030);
+            }
+        }
+        // embers rising from the fireplace
+        for (int i = 0; i < 14; i++) {
+            float ph = (t * 0.35f + i * 0.0713f) % 1f;
+            float ex = ox + (0.525f + (float) Math.sin(i * 2.3f + ph * 5f) * 0.018f) * 1920f * s;
+            float ey = oy + (0.50f - ph * 0.30f) * 1080f * s;
+            float sz = (2.5f + (i % 3)) * (W / 1920f) * (1f - ph * 0.6f);
+            int a = (int) (230 * (1f - ph));
+            fl(g, ex, ey, sz, sz, (a << 24) | (i % 2 == 0 ? 0xFFB040 : 0xFF7A20));
+        }
+        // dust motes drifting through the light
+        for (int i = 0; i < 18; i++) {
+            float x = ((i * 0.137f + t * 0.012f * (1 + i % 3)) % 1f) * W;
+            float y = ((i * 0.291f + 0.15f * (float) Math.sin(t * 0.4f + i)) % 1f) * H * 0.8f + H * 0.05f;
+            fl(g, x, y, 2f * (W / 1920f), 2f * (W / 1920f), 0x40FFFFFF);
+        }
+        // a touch of vignette so the skin and the servers stand out
+        for (int i = 0; i < 6; i++) {
+            float k = i * 0.012f;
+            fl(g, 0, 0, W, H * k + 1, 0x10000000);
+            fl(g, 0, H - H * k - 1, W, H * k + 1, 0x14000000);
+        }
         g.pose().popMatrix();
     }
 
@@ -668,23 +587,24 @@ public final class ChromeTitleScreen extends Screen {
             sceneP = ease((t - 3.7f) / 0.9f);
             float phase = t * 9f;
             pose(mdl, phase, t < 3.0f ? amount : 0f);
-            // design coordinates, measured from the middle of the screen
-            float cxD = Math.max(-260f, -260f + (680f + 260f) * (1f - (1f - walk) * (1f - walk) * (1f - walk) * 0.35f) * 1f);
-            cxD = -260f + (680f + 260f) * ease(walk * 0.6f + walk * walk * 0.4f);   // ends at 680 (design), then 865 with the zoom
-            float hD = 520f + (700f - 520f) * zoom;                      // body height
-            float feetD = 1000f + (930f - 1000f) * ease((t - 2.2f) / 0.8f) + 46f * zoom;   // walks along the gravel, then steps up onto the wooden steps
-            cxD += (865f - 680f) * zoom;                                  // slides left while zooming
-            float bob = (float) Math.abs(Math.sin(phase)) * 7f * amount * (t < 3.0f ? 1f : 0f);
-            float side = hD / 0.9f;                                       // the box the model is fitted in
-            float cx = rx(cxD, 1), cy = (feetD - hD / 2f - bob) * f;
+            float[] cam = spawnCam(zoom, t);
+            float S = cam[0];
+            // feet position in the picture: walks in from the left along the plaza, then steps up onto the steps and stops
+            float wk = ease(walk * 0.6f + walk * walk * 0.4f);
+            float u = -0.10f + (0.47f + 0.10f) * wk, v = 0.93f + (0.84f - 0.93f) * ease((t - 2.1f) / 0.9f);
+            float hD = 0.30f * 1080f * S;                                // body height in pixels
+            float bob = (float) Math.abs(Math.sin(phase)) * 0.008f * 1080f * S * amount * (t < 3.0f ? 1f : 0f);
+            float side = hD / 0.9f;                                      // the box the model is fitted in
+            float cx = cam[1] + u * 1920f * S, feetY = cam[2] + v * 1080f * S;
+            float cy = feetY - hD / 2f - bob;
             drawSpawn(g, f, zoom, t);
-            // soft shadow on the ground under the feet
+            // soft contact shadow under the feet so the skin sits in the scene
             for (int i = 0; i < 6; i++) {
-                float w = hD * (0.55f - i * 0.07f) * f, h = hD * 0.055f * (1f - i * 0.1f) * f;
-                roundBox(g, cx - w / 2f, feetD * f - h / 2f + 4f * f, w, h, h / 2f, 0x14000000);
+                float w = hD * (0.55f - i * 0.07f), h = hD * 0.06f * (1f - i * 0.1f);
+                roundBox(g, cx - w / 2f, feetY - h / 2f + 2f, w, h, h / 2f, 0x18000000);
             }
-            int x0 = Math.round((cx - side * f / 2f) / (float) gs), x1 = Math.round((cx + side * f / 2f) / (float) gs);
-            int ya = Math.round((cy - side * f / 2f) / (float) gs), yb = Math.round((cy + side * f / 2f) / (float) gs);
+            int x0 = Math.round((cx - side / 2f) / (float) gs), x1 = Math.round((cx + side / 2f) / (float) gs);
+            int ya = Math.round((cy - side / 2f) / (float) gs), yb = Math.round((cy + side / 2f) / (float) gs);
             float turn = 78f + (24f - 78f) * ease((t - walkEnd) / 0.4f);   // profile while walking, then turns toward the servers
             g.submitSkinRenderState(mdl, tex, 0.97f * (yb - ya) / 2.125f, -28f, turn, -0.0625f, x0, ya, x1, yb);
             // heading and hint next to the server list
