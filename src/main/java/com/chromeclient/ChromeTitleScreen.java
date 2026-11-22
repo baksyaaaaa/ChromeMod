@@ -473,6 +473,93 @@ public final class ChromeTitleScreen extends Screen {
         }
     }
 
+    private static void fl(GuiGraphics g, float x, float y, float w, float h, int c) {
+        g.fill(Math.round(x), Math.round(y), Math.round(x + w), Math.round(y + h), c);
+    }
+
+    /** a blocky stone-brick spawn hub in the style of the old McPvP spawn: castle wall, arched gates, torches, brick plaza */
+    private void drawSpawn(GuiGraphics g, float f, float zoom, float t) {
+        int W = minecraft.getWindow().getWidth(), H = minecraft.getWindow().getHeight();
+        float cx = W / 2f, hor = 860f * f;
+        g.pose().pushMatrix();
+        g.pose().scale(1f / (float) gs, 1f / (float) gs);
+        // sky
+        for (int i = 0; i < 24; i++) {
+            float k = i / 23f;
+            int r = (int) (96 + 100 * k), gr = (int) (160 + 62 * k), b = (int) (232 + 12 * k);
+            fl(g, 0, hor * i / 24f, W, hor / 24f + 1, 0xFF000000 | (r << 16) | (gr << 8) | b);
+        }
+        // blocky clouds
+        for (int i = 0; i < 5; i++) {
+            float x = ((i * 520f + t * 14f) % 2400f) - 250f;
+            float y = (110f + (i * 97) % 220) * f;
+            fl(g, cx - 937f * f + x * f, y, 220f * f, 26f * f, 0xCCFFFFFF);
+            fl(g, cx - 937f * f + x * f + 40f * f, y - 20f * f, 120f * f, 22f * f, 0xCCFFFFFF);
+        }
+        // the camera pushes in on the wall
+        g.pose().translate(cx, hor);
+        float sc = 1f + 0.10f * zoom;
+        g.pose().scale(sc, sc);
+        g.pose().translate(-cx, -hor);
+        // castle wall
+        float wx = cx - 620f * f, ww = 1240f * f, wt = hor - 360f * f;
+        fl(g, wx, wt, ww, 360f * f, 0xFF7A7A7E);
+        for (int r = 0; r < 18; r++) {           // brick rows
+            float ry = wt + r * 20f * f;
+            fl(g, wx, ry, ww, Math.max(1, 2f * f), 0xFF5E5E63);
+            for (float bx = (r % 2) * 30f; bx < 1240f; bx += 60f) fl(g, wx + bx * f, ry, Math.max(1, 2f * f), 20f * f, 0xFF5E5E63);
+        }
+        // battlements
+        for (int i = 0; i < 20; i++) fl(g, wx + i * 62f * f, wt - 26f * f, 36f * f, 26f * f, 0xFF86868B);
+        fl(g, wx, wt, ww, 6f * f, 0xFF9A9AA0);
+        // central tower
+        float tx = cx - 130f * f, tw = 260f * f, tt = wt - 170f * f;
+        fl(g, tx, tt, tw, 170f * f + 1, 0xFF808085);
+        for (int r = 0; r < 9; r++) fl(g, tx, tt + r * 20f * f, tw, Math.max(1, 2f * f), 0xFF5E5E63);
+        for (int i = 0; i < 5; i++) fl(g, tx + i * 56f * f - 4f * f, tt - 24f * f, 36f * f, 24f * f, 0xFF8E8E93);
+        fl(g, cx - 18f * f, tt + 40f * f, 36f * f, 60f * f, 0xFF1B1B22);    // tower window
+        fl(g, cx - 18f * f, tt + 40f * f, 36f * f, 6f * f, 0xFFFFC857);
+        // three arched gates (kits / factions / games)
+        float[] gx = {-420f, -70f, 280f};
+        int[] gc = {0xFFE8523A, 0xFF4F8DF7, 0xFF5BD97A};
+        for (int i = 0; i < 3; i++) {
+            float x = cx + gx[i] * f, w = 140f * f, y = hor - 210f * f;
+            fl(g, x - 10f * f, y - 10f * f, w + 20f * f, 220f * f, 0xFF4A4A50);          // frame
+            fl(g, x, y + 30f * f, w, 180f * f, 0xFF121218);                              // door
+            fl(g, x + 20f * f, y, w - 40f * f, 30f * f, 0xFF121218);                     // arch top
+            fl(g, x + 6f * f, y + 14f * f, 14f * f, 16f * f, 0xFF121218);
+            fl(g, x + w - 20f * f, y + 14f * f, 14f * f, 16f * f, 0xFF121218);
+            fl(g, x + w / 2f - 30f * f, y - 40f * f, 60f * f, 20f * f, gc[i]);           // banner above the gate
+            fl(g, x + w / 2f - 30f * f, y - 20f * f, 60f * f, 4f * f, 0x66000000);
+        }
+        // torches with a flicker
+        float[] tp = {-520f, -240f, 120f, 420f, 560f};
+        for (float tpx : tp) {
+            float x = cx + tpx * f, y = hor - 250f * f;
+            float fk = (float) Math.sin(t * 8f + tpx) * 2f * f;
+            fl(g, x, y + 14f * f, 8f * f, 32f * f, 0xFF6B4A2B);
+            fl(g, x - 3f * f, y - fk, 14f * f, 16f * f + fk, 0xFFFFB02E);
+            fl(g, x, y + 4f * f - fk, 8f * f, 8f * f, 0xFFFFE680);
+        }
+        g.pose().popMatrix();
+        g.pose().pushMatrix();
+        g.pose().scale(1f / (float) gs, 1f / (float) gs);
+        // plaza floor, brick tiles that get bigger toward the camera
+        fl(g, 0, hor, W, H - hor, 0xFF8C8C92);
+        for (int r = 0; r < 14; r++) {
+            float k = r / 13f, y = hor + (H - hor) * k * k;
+            fl(g, 0, y, W, Math.max(1, 2f * f), 0xFF6B6B72);
+            float step = (70f + 260f * k) * f;
+            float off = (r % 2) * step / 2f;
+            for (float x = cx % step - step + off; x < W; x += step)
+                fl(g, x, y, Math.max(1, 2f * f), (H - hor) * ((r + 1f) / 13f) * ((r + 1f) / 13f) - (H - hor) * k * k + 2f, 0xFF6B6B72);
+        }
+        // darker cobble path through the middle
+        fl(g, cx - 120f * f, hor, 240f * f, H - hor, 0x22000000);
+        fl(g, 0, hor, W, 8f * f, 0xFFA8A8AE);     // lit edge where the wall meets the plaza
+        g.pose().popMatrix();
+    }
+
     /** the walking scene: skin walks in from the left, stops, the camera zooms, the saved servers fade in */
     private void renderScene(GuiGraphics g) {
         try {
@@ -510,6 +597,7 @@ public final class ChromeTitleScreen extends Screen {
             float bob = (float) Math.abs(Math.sin(phase)) * 7f * amount * (t < 3.0f ? 1f : 0f);
             float side = hD / 0.9f;                                       // the box the model is fitted in
             float cx = rx(cxD, 1), cy = (feetD - hD / 2f - bob) * f;
+            drawSpawn(g, f, zoom, t);
             // soft shadow on the ground under the feet
             for (int i = 0; i < 6; i++) {
                 float w = hD * (0.55f - i * 0.07f) * f, h = hD * 0.055f * (1f - i * 0.1f) * f;
