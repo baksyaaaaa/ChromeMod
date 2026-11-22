@@ -10,7 +10,7 @@ import java.util.regex.PatternSyntaxException;
 
 /**
  * A timer that watches the game chat for payments ("Steve paid you $500") while it runs
- * and remembers the biggest one. Start / stop it in the Right Shift menu, the result shows on the HUD.
+ * and remembers the biggest one. Any chat line with "outbid" in it puts the clock back to 10 seconds. Start / stop it in the Right Shift menu, the result shows on the HUD.
  * If your server words payments differently, put your own pattern in config/chromeclient.json as "payRegex",
  * using named groups: (?<amount>...) and optionally (?<player>...).
  */
@@ -44,6 +44,9 @@ public final class PayTimer {
             // $500 received from Steve
             new Pat(Pattern.compile("(?i)\\$\\s*" + AMT + "\\s+(?:was\\s+)?(?:received|sent|paid)\\s+(?:to\\s+you\\s+)?from\\s+" + WHO), 1, 2),
     };
+
+    private static final Pattern OUTBID = Pattern.compile("(?i)out[\\s-]?bid");
+    private static final long OUTBID_RESET_MS = 10_000L;
 
     private Pattern customCache;
     private String customSource = "";
@@ -104,6 +107,12 @@ public final class PayTimer {
     /** every chat / server message goes through here while the timer runs */
     public void onMessage(String text) {
         if (!running || text == null || text.isEmpty()) return;
+        // an auction bid that outbids someone: the clock goes back to 10 seconds
+        if (OUTBID.matcher(text).find()) {
+            endMs = System.currentTimeMillis() + OUTBID_RESET_MS;
+            totalMs = OUTBID_RESET_MS;
+            return;
+        }
         Pattern custom = customPattern();
         if (custom != null) {
             Matcher m = custom.matcher(text);
