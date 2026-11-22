@@ -11,6 +11,11 @@ jobs:
           mkdir -p w && cd w
           curl -sfL -o oc.jar "https://repo.polyfrost.org/releases/org/polyfrost/oneconfig/1.21.11-fabric/1.9.0/1.21.11-fabric-1.9.0.jar"
           mkdir x && cd x && unzip -qo ../oc.jar
-          echo "=== OneConfig.class ==="
+          echo "=== OneConfig registerKeybinds ==="
           javap -p -c -constants -cp . org.polyfrost.oneconfig.internal.OneConfig > /tmp/oc.txt
-          grep -nE "Hud|Keybind|keybind|Key|key|Shift|Press|Double|\"" /tmp/oc.txt | head -120
+          awk '/private static void registerKeybinds/{f=1} f{print} /return/{if(f&&++n>0)exit}' /tmp/oc.txt | head -60
+          sed -n '/lambda\$registerKeybinds\$5/,/return/p' /tmp/oc.txt | head -20
+          echo "=== OneConfigConfig fields ==="
+          javap -p -constants -cp . org.polyfrost.oneconfig.internal.OneConfigConfig | head -60
+          echo "=== OneConfigConfig clinit strings ==="
+          javap -p -c -constants -cp . org.polyfrost.oneconfig.internal.OneConfigConfig | grep -nE "String|Keybind|KEY|Shift|int  *[0-9]|bipush|sipush|sipush|iconst|ldc" | head -80
