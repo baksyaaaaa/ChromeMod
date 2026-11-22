@@ -78,6 +78,7 @@ public class ChromeClientMod implements ClientModInitializer {
             Freelook.update(freelookKey.isDown() && client.player != null && client.screen == null);
             handleZoom(client);
             handleSprint(client);
+            try { MusicKeeper.tick(client); } catch (Throwable ignored) { }
         });
 
         // hand the FOV back before the game saves its options

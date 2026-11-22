@@ -273,10 +273,7 @@ internal fun VoiceButtons(party: Party?, leave: Boolean = true) {
 
 @Composable
 internal fun PartyButtons(party: Party?, onVoice: (() -> Unit)? = null) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        InviteButton(party)
-        if (party != null) PartyMenuButton(party, onVoice)
-    }
+    // parties are gone: no invite / party buttons
 }
 
 @Composable
@@ -296,12 +293,12 @@ private fun MicBlockedButton(notice: String, blocked: Boolean) {
 
 @Composable
 internal fun InviteButton(party: Party?) {
-    if (!PartyRepository.canInvite(party)) return
-    PartyPopupButton(PartyIcons.INVITE, "Invite to party") { InvitePicker(party) }
+    // parties are gone: there is no invite button
 }
 
 @Composable
 internal fun SceneTagInvite(player: String) {
+    if (System.nanoTime() > 0L) return   // parties are gone: no invite button on player tags
     val party by PartyRepository.party.collectAsState()
     val outgoing by PartyRepository.outgoingInvites.collectAsState()
     val current = party

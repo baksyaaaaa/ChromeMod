@@ -189,9 +189,20 @@ public class ClickGui extends Screen {
 
         // ---- Music ----
         List<Mod> music = new ArrayList<>();
-        music.add(new Mod("YT Music", "Player drop-down. Needs the YT Music mod.", null, null)
-                .add(text(() -> YtBridge.installed() ? "YT Music mod found. Key: J" : "YT Music mod not installed"))
-                .add(action(() -> "Open player", () -> { if (YtBridge.installed()) later = () -> { Config.save(); Extras.save(); Minecraft.getInstance().setScreen(new MusicScreen(this)); }; }))
+        music.add(new Mod("YT Music", "Play, skip and set the volume of the YT Music mod.", null, null)
+                .add(text(() -> {
+                    if (!YtBridge.installed()) return "YT Music mod not installed";
+                    YtBridge.Track t = YtBridge.current();
+                    if (t == null || t.title() == null || t.title().isBlank()) return "Nothing playing yet. Press Play or open the player.";
+                    String a = t.artist() == null || t.artist().isBlank() ? "" : "  -  " + t.artist();
+                    return (t.playing() ? "Playing: " : "Paused: ") + t.title() + a;
+                }))
+                .add(action(() -> { YtBridge.Track t = YtBridge.current(); return t != null && t.playing() ? "Pause" : "Play"; },
+                        () -> { if (YtBridge.installed()) { if (!YtBridge.browserRunning()) YtBridge.ensureBrowser(); YtBridge.togglePlay(); } }))
+                .add(action(() -> "Previous song", () -> { if (YtBridge.installed()) YtBridge.prev(); }))
+                .add(action(() -> "Next song", () -> { if (YtBridge.installed()) YtBridge.next(); }))
+                .add(slider("Volume", () -> YtBridge.installed() ? YtBridge.volume() : 50, v -> { if (YtBridge.installed()) YtBridge.setVolume((int) Math.round(v)); }, 0, 100, "%.0f"))
+                .add(action(() -> "Open the player", () -> { if (YtBridge.installed()) later = () -> { Config.save(); Extras.save(); Minecraft.getInstance().setScreen(new MusicScreen(this)); }; }))
                 .add(toggle("Hide its top-right bar", () -> Extras.hideYtBar, v -> Extras.hideYtBar = v)));
         tabs.add(music);
         tabs.add(new ArrayList<>());   // cosmetics has its own layout

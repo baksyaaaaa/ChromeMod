@@ -18,6 +18,7 @@ public final class YtBridge {
     private static Object player;
     private static Method mPlaying, mTitle, mArtist, mPosition, mDuration, mExact;
     private static boolean failed = false;
+    private static long failedAt = 0;
     private static boolean overlayHidden = false;
 
     public static boolean installed() {
@@ -39,6 +40,7 @@ public final class YtBridge {
     }
 
     private static boolean bind() {
+        if (failed && System.currentTimeMillis() - failedAt > 8000) { failed = false; player = null; }   // a hiccup must not break it for good
         if (failed) return false;
         if (player != null) return true;
         if (!installed()) return false;
@@ -57,7 +59,7 @@ public final class YtBridge {
             hideTopRightOverlay(client);
             return true;
         } catch (Throwable t) {
-            failed = true;   // a different version of that mod: just no lyrics
+            failed = true; failedAt = System.currentTimeMillis();   // tried again in a few seconds
             return false;
         }
     }
