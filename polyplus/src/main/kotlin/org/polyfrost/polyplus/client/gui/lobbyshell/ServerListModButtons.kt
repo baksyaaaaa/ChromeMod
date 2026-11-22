@@ -26,7 +26,7 @@ import org.polyfrost.polyplus.mixin.client.access.ScreenAccessor
 internal class ServerListModButton(val label: String, val mod: String?, val enabled: Boolean, val press: () -> Unit)
 
 internal object ServerListModButtons {
-    private val logger = LogManager.getLogger("PolyPlus/ServerListModButtons")
+    private val logger = LogManager.getLogger("Chrome/ServerListModButtons")
     private const val UNNAMED = "Mod button"
 
     private class Found(

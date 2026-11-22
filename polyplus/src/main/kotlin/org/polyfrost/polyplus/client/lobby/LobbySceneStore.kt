@@ -148,7 +148,7 @@ object LobbySceneStore {
     private var loaded = false
 
     private val writer = Executors.newSingleThreadExecutor { task ->
-        Thread(task, "PolyPlus lobby store").apply { isDaemon = true }
+        Thread(task, "Chrome lobby store").apply { isDaemon = true }
     }
 
     val scenes: List<LobbySceneEntry>

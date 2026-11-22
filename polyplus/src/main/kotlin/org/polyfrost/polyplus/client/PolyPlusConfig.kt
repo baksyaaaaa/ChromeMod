@@ -291,8 +291,8 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
 
     @JvmStatic
     @Switch(
-        title = "PolyPlus User Indicators",
-        description = "Show a badge on the nametag and tab list of players who are using PolyPlus.",
+        title = "Chrome User Indicators",
+        description = "Show a badge on the nametag and tab list of players who are using Chrome.",
     )
     var showPolyPlusIndicator = true
 
@@ -457,7 +457,7 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
     @Keybind(
         title = "Socials Menu",
         subcategory = "Keybinds",
-        description = "Open the PolyPlus Socials menu",
+        description = "Open the Chrome Socials menu",
     )
     var socialsMenuKeybind = OneConfigKeybind(intArrayOf(InputConstants.KEY_GRAVE), null, KeyModifiers.SHIFT, 0L) { state ->
         if (state) {
@@ -469,7 +469,7 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
     @Keybind(
         title = "Emote Wheel",
         subcategory = "Keybinds",
-        description = "Open the PolyPlus Emote Wheel",
+        description = "Open the Chrome Emote Wheel",
     )
     var emoteWheelKeybind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L) { state ->
         EmoteWheelKeybind.onKeybindState(state)
@@ -479,7 +479,7 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
     @Keybind(
         title = "Open Wardrobe",
         subcategory = "Keybinds",
-        description = "Open the PolyPlus wardrobe",
+        description = "Open the Chrome wardrobe",
     )
     var wardrobeKeybind = OneConfigKeybind(null, null, KeyModifiers.NONE, 0L) { state ->
         if (state) {
@@ -534,7 +534,7 @@ object PolyPlusConfig : Config("${PolyPlusConstants.ID}.json", "${PolyPlusConsta
         true
     }
 
-    @Dropdown(title = "API URL", description = "The URL used for the PolyPlus API. Only change if you know what you're doing.")
+    @Dropdown(title = "API URL", description = "The URL used for the Chrome API. Only change if you know what you're doing.")
     var apiUrl: BackendUrl = BackendUrl.PRODUCTION
         get() = when {
             PolyPlusConstants.IS_DEV_ENV -> field

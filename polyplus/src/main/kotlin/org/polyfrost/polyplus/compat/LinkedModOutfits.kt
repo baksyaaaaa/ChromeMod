@@ -10,7 +10,7 @@ object LinkedModOutfits {
     private const val CHECK_INTERVAL = 20
     private const val SKIN_OVERRIDE = "skinOverriddenByServer"
 
-    private val logger = LogManager.getLogger("PolyPlus/LinkedModOutfits")
+    private val logger = LogManager.getLogger("Chrome/LinkedModOutfits")
     private val hook = ReflectiveHook(logger)
 
     private class Hooks(

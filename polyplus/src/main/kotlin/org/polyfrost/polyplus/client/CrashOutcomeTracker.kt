@@ -31,7 +31,7 @@ object CrashOutcomeTracker {
     private val pending = ConcurrentLinkedQueue<Pending>()
 
     private val watcher = Executors.newSingleThreadScheduledExecutor { runnable ->
-        Thread(runnable, "PolyPlus Crash Outcome").apply { isDaemon = true }
+        Thread(runnable, "Chrome Crash Outcome").apply { isDaemon = true }
     }
 
     val handlerMods: String by lazy {
@@ -101,7 +101,7 @@ object CrashOutcomeTracker {
                         val entry = pending.poll() ?: break
                         entry.complete(CrashKind.HARD_CRASH)
                     }
-                }, "PolyPlus Crash Outcome Shutdown"),
+                }, "Chrome Crash Outcome Shutdown"),
             )
         }
     }

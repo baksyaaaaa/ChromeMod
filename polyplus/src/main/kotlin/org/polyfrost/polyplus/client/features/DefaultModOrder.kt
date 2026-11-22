@@ -20,7 +20,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 object DefaultModOrder {
-    private val logger = LogManager.getLogger("PolyPlus/DefaultModOrder")
+    private val logger = LogManager.getLogger("Chrome/DefaultModOrder")
 
     private const val RESOURCE = "/assets/polyplus/mod-order"
     private const val FILE_NAME = "mod-order"

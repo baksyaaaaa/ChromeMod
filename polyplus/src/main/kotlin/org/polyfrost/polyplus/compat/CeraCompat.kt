@@ -8,7 +8,7 @@ import java.lang.reflect.Method
 
 // Cera only applies resource pack lightmaps while a player exists, which the lobby never has
 object CeraCompat {
-    private val hook = ReflectiveHook(LogManager.getLogger("PolyPlus/CeraCompat"))
+    private val hook = ReflectiveHook(LogManager.getLogger("Chrome/CeraCompat"))
 
     private val lightMaps: Pair<Method, Method>? by lazy {
         if (!Mods.cera) return@lazy null

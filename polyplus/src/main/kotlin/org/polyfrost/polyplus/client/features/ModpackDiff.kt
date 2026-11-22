@@ -21,7 +21,7 @@ import java.util.HexFormat
 import org.polyfrost.polyplus.client.utils.runSuspendCatching
 
 object ModpackDiff {
-    private val logger = LogManager.getLogger("PolyPlus/ModpackDiff")
+    private val logger = LogManager.getLogger("Chrome/ModpackDiff")
 
     // Modrinth slug to display name - on a tie, earlier packs win
     private val PACKS = listOf(

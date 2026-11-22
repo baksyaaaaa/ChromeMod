@@ -44,8 +44,8 @@ internal fun CosmeticsLoadingScreen(
         )
         Text(
             when {
-                outdatedRuntime -> "PolyPlus needs a newer Fabric Language Kotlin. Update it and restart the game."
-                failed -> "PolyPlus couldn't reach its servers (${state.failure}). Check your connection and try again."
+                outdatedRuntime -> "Chrome needs a newer Fabric Language Kotlin. Update it and restart the game."
+                failed -> "Chrome couldn't reach its servers (${state.failure}). Check your connection and try again."
                 else -> state.label
             },
             modifier = Modifier.width(360.dp),

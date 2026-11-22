@@ -550,7 +550,7 @@ class EosSdkBridge {
             loginResult.localUserId
         } else {
             check(loginResult.result == EosResult.InvalidUser) { "EOS::Connect::Login failed: ${loginResult.result}" }
-            logger.info("No EOS user mapped to this Poly+ account yet, creating one")
+            logger.info("No EOS user mapped to this Chrome account yet, creating one")
 
             val createResult = awaitOnTick("EOS::Connect::CreateUser") {
                 requireNotNull(platform).connect.createUser(loginResult.continuanceToken)

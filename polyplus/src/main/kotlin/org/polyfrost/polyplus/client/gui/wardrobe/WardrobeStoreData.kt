@@ -102,7 +102,7 @@ private const val MAX_STORE_PAGES = 10
 
 private const val STORE_LOADING = "Loading the store..."
 
-private const val STORE_FAILED = "Couldn't reach the PolyPlus store."
+private const val STORE_FAILED = "Couldn't reach the Chrome store."
 
 internal const val CONSENT_NOTE_ID = "polyplus-consent"
 
@@ -242,7 +242,7 @@ internal fun buildWardrobeEntries(
                 entries += WardrobeEntry.Group(
                     "minecraft",
                     "Minecraft capes",
-                    "Everyone sees this cape, including players without PolyPlus.",
+                    "Everyone sees this cape, including players without Chrome.",
                 )
                 when (mojangState) {
                     MojangCapeState.Idle, MojangCapeState.Loading ->
@@ -260,19 +260,19 @@ internal fun buildWardrobeEntries(
                 }
                 entries += WardrobeEntry.Group(
                     "polyplus",
-                    "PolyPlus capes",
-                    "Players with PolyPlus see this cape instead of your Minecraft cape.",
+                    "Chrome capes",
+                    "Players with Chrome see this cape instead of your Minecraft cape.",
                     forceToggle = polyPlusAvailable,
                 )
                 if (!polyPlusAvailable) {
-                    entries += WardrobeEntry.Note(CONSENT_NOTE_ID, "PolyPlus capes need online services.")
+                    entries += WardrobeEntry.Note(CONSENT_NOTE_ID, "Chrome capes need online services.")
                 } else if (ownedItems.isEmpty() && shopItems.isEmpty()) {
                     entries += WardrobeEntry.Note(
                         "polyplus",
                         when {
                             CosmeticType.Cape in store.failedTypes -> STORE_FAILED
                             store.loading -> STORE_LOADING
-                            else -> "No PolyPlus capes found."
+                            else -> "No Chrome capes found."
                         },
                     )
                 }

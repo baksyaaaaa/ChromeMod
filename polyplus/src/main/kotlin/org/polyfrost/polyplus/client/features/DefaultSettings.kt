@@ -28,7 +28,7 @@ import kotlin.io.path.readLines
 import kotlin.io.path.writeText
 
 object DefaultSettings {
-    private val logger = LogManager.getLogger("PolyPlus/DefaultSettings")
+    private val logger = LogManager.getLogger("Chrome/DefaultSettings")
 
     private const val VANILLA_OPTIONS_ID = "vanilla-options"
     private const val TICK_SCAN_INTERVAL = 20
@@ -349,7 +349,7 @@ object DefaultSettings {
         reported = true
         runCatching {
             Notifications.error(
-                "PolyPlus",
+                "Chrome",
                 "Couldn't apply default settings for ${failures.joinToString(", ")}. See the log for details.",
             )
         }.onFailure { logger.error("Could not show the default settings failure notification", it) }

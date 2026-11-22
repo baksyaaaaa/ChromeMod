@@ -24,7 +24,7 @@ import org.polyfrost.polyplus.client.lobby.LobbyScene
 import org.polyfrost.polyplus.client.utils.ClientPlatform
 import java.io.IOException
 
-private val LOGGER = LogManager.getLogger("PolyPlus/SingleplayerFlows")
+private val LOGGER = LogManager.getLogger("Chrome/SingleplayerFlows")
 
 internal class SingleplayerFlows {
     private val mc = Minecraft.getInstance()

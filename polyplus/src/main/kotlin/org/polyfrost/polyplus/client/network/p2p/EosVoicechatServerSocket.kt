@@ -23,7 +23,7 @@ internal class EosVoicechatServerSocket : VoicechatSocket {
 
     override fun open(port: Int, bindAddress: String) {
         logger.info(
-            "Opening the PolyPlus P2P voice chat server bridge on {}:{}",
+            "Opening the Chrome P2P voice chat server bridge on {}:{}",
             bindAddress,
             port,
         )
@@ -85,7 +85,7 @@ internal class EosVoicechatServerSocket : VoicechatSocket {
         closed = true
         udpSocket?.close()
         EosVoicechatBridge.unregisterServerSocket(this)
-        logger.info("Closed the PolyPlus P2P voice chat server bridge.")
+        logger.info("Closed the Chrome P2P voice chat server bridge.")
     }
 
     override fun isClosed(): Boolean = closed

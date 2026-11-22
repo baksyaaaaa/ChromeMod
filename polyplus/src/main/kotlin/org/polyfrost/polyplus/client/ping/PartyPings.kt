@@ -165,7 +165,7 @@ object PartyPings {
     fun handleError(packet: ClientboundPacket.Error): Boolean {
         if (packet.code !in QUIET_ERRORS) return false
         if (System.currentTimeMillis() - lastPingPacketAt > ERROR_WINDOW_MS) return false
-        LOGGER.debug("Ping rejected by Poly+ ({}): {}", packet.code, packet.message)
+        LOGGER.debug("Ping rejected by Chrome ({}): {}", packet.code, packet.message)
         return true
     }
 

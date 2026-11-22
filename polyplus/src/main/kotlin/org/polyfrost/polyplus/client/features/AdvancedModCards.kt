@@ -5,7 +5,7 @@ import org.polyfrost.oneconfig.api.ui.v1.ModCardType
 import org.polyfrost.oneconfig.api.ui.v1.ModCardTypes
 
 object AdvancedModCards {
-    private val logger = LogManager.getLogger("PolyPlus/AdvancedModCards")
+    private val logger = LogManager.getLogger("Chrome/AdvancedModCards")
 
     private const val PIVOT = "skyboxify"
 

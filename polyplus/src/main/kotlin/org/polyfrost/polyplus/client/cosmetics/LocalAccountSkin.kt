@@ -21,7 +21,7 @@ import org.polyfrost.polyplus.mixin.client.access.MinecraftAccessor
 *///?}
 
 object LocalAccountSkin {
-    private val LOGGER = LogManager.getLogger("PolyPlus/LocalSkin")
+    private val LOGGER = LogManager.getLogger("Chrome/LocalSkin")
     private val RETRY_MILLIS = longArrayOf(5_000L, 30_000L, 120_000L, 600_000L)
     private const val TEXTURES = "textures"
 

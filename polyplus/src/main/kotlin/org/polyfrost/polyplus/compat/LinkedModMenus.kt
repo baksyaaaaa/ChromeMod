@@ -17,7 +17,7 @@ internal object LinkedModMenus {
     private const val FRIENDS_TAB = 1
     private const val LOGO = "assets/essential/textures/menu/logo.png"
 
-    private val logger = LogManager.getLogger("PolyPlus/LinkedModMenus")
+    private val logger = LogManager.getLogger("Chrome/LinkedModMenus")
     private val noticesShown = AtomicBoolean(false)
 
     private val actions: Map<Entry, () -> Unit> by lazy {

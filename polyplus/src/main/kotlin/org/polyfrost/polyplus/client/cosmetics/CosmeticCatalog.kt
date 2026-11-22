@@ -163,7 +163,7 @@ object CosmeticCatalog {
         if (isRuntimeMismatch(error)) {
             LOGGER.error(
                 "Failed to decode the cosmetic catalog: the kotlinx-serialization runtime on the " +
-                    "classpath is older than PolyPlus needs. Update fabric-language-kotlin.",
+                    "classpath is older than Chrome needs. Update fabric-language-kotlin.",
                 error,
             )
             return

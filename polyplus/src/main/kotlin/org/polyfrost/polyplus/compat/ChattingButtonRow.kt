@@ -15,7 +15,7 @@ internal object ChattingButtonRow {
 
     private val GLOBAL_BUTTON_TOGGLES = listOf("getChatScreenshot", "getChatDeleteHistory", "getChatSearch")
 
-    private val logger = LogManager.getLogger("PolyPlus/ChattingButtonRow")
+    private val logger = LogManager.getLogger("Chrome/ChattingButtonRow")
 
     private var api: Api? =
         if (Mods.chatting) runCatching { Api() }.getOrNull() else null

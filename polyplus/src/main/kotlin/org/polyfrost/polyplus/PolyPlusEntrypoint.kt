@@ -28,10 +28,10 @@ class PolyPlusEntrypoint
 
         //? if ornithe {
         /*KeybindEvents.REGISTER_KEYBINDS.register {
-            dropModifier = KeybindRegistry.register("Drop Stack Modifier", Keyboard.KEY_NONE, "PolyPlus")
-            hideScreen = KeybindRegistry.register("Hide Screen", Keyboard.KEY_F1, "PolyPlus")
-            customDebug = KeybindRegistry.register("Custom F3", Keyboard.KEY_F3, "PolyPlus")
-            clearShaders = KeybindRegistry.register("Clear Vanilla Shaders", Keyboard.KEY_F4, "PolyPlus")
+            dropModifier = KeybindRegistry.register("Drop Stack Modifier", Keyboard.KEY_NONE, "Chrome")
+            hideScreen = KeybindRegistry.register("Hide Screen", Keyboard.KEY_F1, "Chrome")
+            customDebug = KeybindRegistry.register("Custom F3", Keyboard.KEY_F3, "Chrome")
+            clearShaders = KeybindRegistry.register("Clear Vanilla Shaders", Keyboard.KEY_F4, "Chrome")
         }
         *///?}
     }

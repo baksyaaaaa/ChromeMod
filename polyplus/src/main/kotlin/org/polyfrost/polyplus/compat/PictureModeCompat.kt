@@ -7,7 +7,7 @@ object PictureModeCompat {
     private const val CLIENT = "mod.icanttellyou.picturemode.client.PictureModeClient"
     private const val STATE = "mod.icanttellyou.picturemode.client.PictureModeState"
 
-    private val hook = ReflectiveHook(LogManager.getLogger("PolyPlus/PictureModeCompat"))
+    private val hook = ReflectiveHook(LogManager.getLogger("Chrome/PictureModeCompat"))
     private val installed: Boolean by lazy { Mods.loaded("picturemode") }
     private var field: Field? = null
     private var lobbyState: Any? = null

@@ -84,14 +84,14 @@ object SessionsRepository {
     fun rejoin(sessionId: String) = PolyPlusClient.SCOPE.launch {
         val invites = SessionsApi.incomingInvites().getOrElse {
             LOGGER.error("Failed to look up session $sessionId to rejoin it", it)
-            Notifications.info("PolyPlus", "Couldn't reach Poly+ to rejoin that world")
+            Notifications.info("Chrome", "Couldn't reach Chrome to rejoin that world")
             return@launch
         }
         _incomingInvites.value = invites
         val invite = invites.firstOrNull { it.sessionId == sessionId }
         if (invite == null) {
             P2PSessionManager.forgetRejoin()
-            Notifications.info("PolyPlus", "That world has closed")
+            Notifications.info("Chrome", "That world has closed")
             return@launch
         }
         accept(invite)
@@ -110,6 +110,6 @@ object SessionsRepository {
         if (!NotificationDedup.shouldNotify("session_invite:$inviteId")) return
         PlayerNamesRepository.resolve(listOf(sender))
         val name = PlayerNamesRepository.nameOr(sender)
-        Notifications.info("PolyPlus", "$name invited you to their world")
+        Notifications.info("Chrome", "$name invited you to their world")
     }
 }

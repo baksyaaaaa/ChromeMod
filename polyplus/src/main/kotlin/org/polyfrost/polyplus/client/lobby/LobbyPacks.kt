@@ -67,7 +67,7 @@ object LobbyPacks {
     private val waiting = ConcurrentHashMap.newKeySet<String>()
     private val settled = AtomicBoolean(false)
     private val hasher = Executors.newSingleThreadExecutor { task ->
-        Thread(task, "PolyPlus Lobby Packs").apply {
+        Thread(task, "Chrome Lobby Packs").apply {
             isDaemon = true
             priority = Thread.MIN_PRIORITY
         }

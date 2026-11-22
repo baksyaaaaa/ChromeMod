@@ -84,7 +84,7 @@ object PolyPlusSentry {
     private const val OVERFLOW_REPORT_STACK_BYTES = 8L * 1024 * 1024
 
     private val overflowReporter: ExecutorService = Executors.newSingleThreadExecutor { task ->
-        Thread(null, task, "PolyPlus Overflow Report", OVERFLOW_REPORT_STACK_BYTES).apply {
+        Thread(null, task, "Chrome Overflow Report", OVERFLOW_REPORT_STACK_BYTES).apply {
             isDaemon = true
         }
     }

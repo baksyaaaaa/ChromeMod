@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.delay
 
 object MinecraftLoginGate {
-    private val LOGGER = LogManager.getLogger("PolyPlus/LoginGate")
+    private val LOGGER = LogManager.getLogger("Chrome/LoginGate")
 
     internal const val MAX_HOLD_MS = 20_000L
 

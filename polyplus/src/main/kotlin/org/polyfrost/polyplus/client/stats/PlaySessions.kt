@@ -61,7 +61,7 @@ internal object PlaySessions {
     const val WORLD_PREFIX = "world:"
     const val SERVER_PREFIX = "server:"
 
-    private val LOGGER = LogManager.getLogger("PolyPlus/Stats")
+    private val LOGGER = LogManager.getLogger("Chrome/Stats")
     private const val MIN_SESSION_MILLIS = 10_000L
     private const val SAVE_EVERY_MILLIS = 30_000L
     private const val LONGEST_TICK_MILLIS = 5_000L

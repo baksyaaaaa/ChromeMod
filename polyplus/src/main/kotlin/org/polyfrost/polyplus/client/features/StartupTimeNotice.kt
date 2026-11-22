@@ -23,7 +23,7 @@ object StartupTimeNotice {
         if (!PolyPlusConfig.startupTimeNotification) return
         val startMillis = runCatching { ManagementFactory.getRuntimeMXBean().startTime }.getOrNull() ?: return
         val seconds = (System.currentTimeMillis() - startMillis) / 1000.0
-        runCatching { Notifications.info("PolyPlus", String.format(Locale.ROOT, "Game loaded in %.1fs", seconds)) }
+        runCatching { Notifications.info("Chrome", String.format(Locale.ROOT, "Game loaded in %.1fs", seconds)) }
     }
 
     private fun loaded(): Boolean {

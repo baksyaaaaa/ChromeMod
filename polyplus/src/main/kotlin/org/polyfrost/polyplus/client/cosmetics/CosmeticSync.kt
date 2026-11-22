@@ -159,7 +159,7 @@ object CosmeticSync {
                 is ClientboundPacket.PlayerCosmeticEquipped -> handlePlayerCosmeticEquipped(packet)
                 is ClientboundPacket.PlayerParticleColorChanged -> handleParticleColorChanged(packet)
                 is ClientboundPacket.PlayerPresence -> {
-                    LOGGER.info("PolyPlus presence: {} is now {}", packet.player, if (packet.online) "online" else "offline")
+                    LOGGER.info("Chrome presence: {} is now {}", packet.player, if (packet.online) "online" else "offline")
                     CosmeticCatalog.setPolyPlusUser(UUID.fromString(packet.player), packet.online)
                 }
                 is ClientboundPacket.OwnershipUpdated -> handleOwnershipUpdated(packet)
@@ -327,7 +327,7 @@ object CosmeticSync {
         packet.requestId?.let(pendingSubscriptions::remove)
         if (packet.rejected.isNotEmpty()) {
             rollBackSubscriptions(packet.rejected)
-            LOGGER.warn("PolyPlus server rejected {} subscription(s).", packet.rejected.size)
+            LOGGER.warn("Chrome server rejected {} subscription(s).", packet.rejected.size)
         }
         for ((uuidString, equipment) in packet.equipped) {
             val uuid = UUID.fromString(uuidString)
@@ -343,7 +343,7 @@ object CosmeticSync {
         }
         //?}
         if (packet.users.isNotEmpty()) {
-            LOGGER.info("PolyPlus presence snapshot: {} online user(s): {}", packet.users.size, packet.users)
+            LOGGER.info("Chrome presence snapshot: {} online user(s): {}", packet.users.size, packet.users)
         }
         for (uuidString in packet.users) {
             CosmeticCatalog.setPolyPlusUser(UUID.fromString(uuidString), true)
@@ -601,7 +601,7 @@ object CosmeticSync {
         if (dropped > 0 && !capWarned) {
             capWarned = true
             LOGGER.warn(
-                "PolyPlus is at its subscription cap ({}); skipping {} further player(s).",
+                "Chrome is at its subscription cap ({}); skipping {} further player(s).",
                 MAX_PLAYER_SUBSCRIPTIONS,
                 dropped,
             )
@@ -633,7 +633,7 @@ object CosmeticSync {
         val players = pendingSubscriptions.remove(requestId) ?: return
         rollBackSubscriptions(players)
         LOGGER.warn(
-            "PolyPlus subscription request {} was rejected ({}): rolled back {} player(s).",
+            "Chrome subscription request {} was rejected ({}): rolled back {} player(s).",
             requestId,
             packet.code,
             players.size,

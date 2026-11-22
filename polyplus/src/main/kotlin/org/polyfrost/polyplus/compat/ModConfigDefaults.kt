@@ -18,7 +18,7 @@ import kotlin.io.path.writeText
 
 object ModConfigDefaults {
 
-    private val logger = LogManager.getLogger("PolyPlus/ModConfigDefaults")
+    private val logger = LogManager.getLogger("Chrome/ModConfigDefaults")
 
     private const val APPLIED_FILE = "polyplus-mod-defaults.txt"
 

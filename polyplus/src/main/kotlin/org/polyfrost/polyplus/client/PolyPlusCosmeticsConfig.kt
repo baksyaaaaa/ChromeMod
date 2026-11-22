@@ -39,7 +39,7 @@ object PolyPlusCosmeticsConfig : Config(
 
     @JvmStatic
     @Switch(
-        title = "Force PolyPlus Capes",
+        title = "Force Chrome Capes",
         description = "Show the capes picked in the wardrobe even when another mod sets its own cape.",
     )
     var forcePolyPlusCapes = false

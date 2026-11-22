@@ -145,7 +145,7 @@ object MicrosoftAuthErrors {
 
     fun forStep(step: MsaAuthStep, cause: Throwable? = null): MicrosoftAuthException = when (step) {
         MsaAuthStep.DeviceCodeRequest -> MicrosoftAuthException(
-            "PolyPlus could not start the Microsoft sign-in, so no sign-in code could be created.",
+            "Chrome could not start the Microsoft sign-in, so no sign-in code could be created.",
             listOf(
                 "Check that your internet connection is working",
                 "Wait a moment and try signing in again",
@@ -205,7 +205,7 @@ object MicrosoftAuthErrors {
     }
 
     fun network(cause: Throwable? = null): MicrosoftAuthException = MicrosoftAuthException(
-        "PolyPlus could not connect to a Microsoft, Xbox, or Minecraft service needed for sign-in. This is usually a local network, DNS, proxy, firewall, hosts file, VPN, or antivirus issue.",
+        "Chrome could not connect to a Microsoft, Xbox, or Minecraft service needed for sign-in. This is usually a local network, DNS, proxy, firewall, hosts file, VPN, or antivirus issue.",
         listOf(
             "Check that your internet connection is working",
             "Allow Minecraft through your firewall, antivirus, proxy, VPN, and hosts file rules",

@@ -14,7 +14,7 @@ object EosFailureDiagnosis {
                 "descriptors EOS needs. Note that this is a limitation of Epic's SDK, not of your connection."
         }
         if (backendReachable) {
-            return "The Poly+ backend is connected, so the network itself is up; EOS specifically cannot reach " +
+            return "The Chrome backend is connected, so the network itself is up; EOS specifically cannot reach " +
                 "api.epicgames.dev. A DNS blocker, VPN or per-application firewall rule is the usual cause."
         }
         return null

@@ -48,7 +48,7 @@ import kotlinx.serialization.json.putJsonObject
 import org.polyfrost.polyplus.client.utils.runSuspendCatching
 
 object MicrosoftAuth {
-    private val LOGGER = LogManager.getLogger("PolyPlus/Accounts")
+    private val LOGGER = LogManager.getLogger("Chrome/Accounts")
 
     private const val CLIENT_ID = "9419b7ee-1448-4d1b-b52a-550d8f36ab56"
     private const val SCOPES = "XboxLive.SignIn XboxLive.offline_access"

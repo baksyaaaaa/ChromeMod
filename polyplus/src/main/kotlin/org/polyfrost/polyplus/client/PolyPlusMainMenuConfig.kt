@@ -140,7 +140,7 @@ object PolyPlusMainMenuConfig : Config(
     @Dropdown(
         title = "Menu Backdrop",
         description = "Choose what appears behind the Chrome Client v1 main menu.",
-        options = ["PolyPlus", "Minecraft Panorama", "Vanilla Panorama"],
+        options = ["Chrome", "Minecraft Panorama", "Vanilla Panorama"],
         subcategory = "Background",
     )
     var mainMenuBackground: MainMenuBackground = MainMenuBackground.PANORAMA
@@ -148,7 +148,7 @@ object PolyPlusMainMenuConfig : Config(
     @JvmStatic
     @Switch(
         title = "Custom Panorama",
-        description = "Use the PolyPlus panorama instead of the vanilla Minecraft one.",
+        description = "Use the Chrome panorama instead of the vanilla Minecraft one.",
         subcategory = "Background",
     )
     var customPanorama = true

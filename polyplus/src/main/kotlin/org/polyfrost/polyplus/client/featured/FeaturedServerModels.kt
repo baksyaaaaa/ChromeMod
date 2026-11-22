@@ -63,7 +63,7 @@ object OutlineStyleSerializer : KSerializer<OutlineStyle> {
 }
 
 private object UnknownOutlineStyles {
-    private val logger = LogManager.getLogger("PolyPlus/FeaturedServers")
+    private val logger = LogManager.getLogger("Chrome/FeaturedServers")
     private val reported = Collections.synchronizedSet(mutableSetOf<String>())
 
     fun report(raw: JsonElement) {

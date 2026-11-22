@@ -22,7 +22,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 object JvmAdvisor {
-    private val logger = LogManager.getLogger("PolyPlus/JvmAdvisor")
+    private val logger = LogManager.getLogger("Chrome/JvmAdvisor")
 
     const val PRESSURE_UNKNOWN = 0
     const val PRESSURE_NORMAL = 1

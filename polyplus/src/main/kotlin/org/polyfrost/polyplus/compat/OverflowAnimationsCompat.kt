@@ -7,7 +7,7 @@ import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 
 object OverflowAnimationsCompat {
-    private val logger = LogManager.getLogger("PolyPlus/OverflowAnimationsCompat")
+    private val logger = LogManager.getLogger("Chrome/OverflowAnimationsCompat")
 
     private val oldSneakModel: MethodHandle? by lazy {
         if (!Mods.overflowAnimations) return@lazy null

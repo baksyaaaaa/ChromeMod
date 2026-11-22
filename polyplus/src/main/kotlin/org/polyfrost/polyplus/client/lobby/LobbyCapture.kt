@@ -160,7 +160,7 @@ object LobbyCapture {
     )
 
     private val worker = Executors.newSingleThreadExecutor { task ->
-        Thread(task, "PolyPlus Lobby Capture").apply {
+        Thread(task, "Chrome Lobby Capture").apply {
             isDaemon = true
             priority = Thread.MIN_PRIORITY
         }

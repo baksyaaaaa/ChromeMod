@@ -13,7 +13,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 object LauncherAccountStore {
-    private val LOGGER = LogManager.getLogger("PolyPlus/Accounts")
+    private val LOGGER = LogManager.getLogger("Chrome/Accounts")
     private const val AUTH_FILE = "auth.json"
     private const val MAX_WALK_UP = 5
 

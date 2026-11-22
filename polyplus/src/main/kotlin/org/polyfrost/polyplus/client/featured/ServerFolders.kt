@@ -8,8 +8,8 @@ import java.util.concurrent.Executors
 import kotlinx.serialization.Serializable
 
 object ServerFolders {
-    private val logger = LogManager.getLogger("PolyPlus/ServerFolders")
-    private val writer = Executors.newSingleThreadExecutor { Thread(it, "PolyPlus server folders").apply { isDaemon = true } }
+    private val logger = LogManager.getLogger("Chrome/ServerFolders")
+    private val writer = Executors.newSingleThreadExecutor { Thread(it, "Chrome server folders").apply { isDaemon = true } }
 
     @Volatile
     private var state: State? = null

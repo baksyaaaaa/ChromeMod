@@ -6,7 +6,7 @@ import java.lang.reflect.Method
 object NotEnoughAnimationsCompat {
     private const val STATE_CLASS = "dev.tr7zw.notenoughanimations.access.ExtendedLivingRenderState"
 
-    private val hook = ReflectiveHook(LogManager.getLogger("PolyPlus/NotEnoughAnimationsCompat"))
+    private val hook = ReflectiveHook(LogManager.getLogger("Chrome/NotEnoughAnimationsCompat"))
     private var setEntity: Method? = null
     private var looked = false
 

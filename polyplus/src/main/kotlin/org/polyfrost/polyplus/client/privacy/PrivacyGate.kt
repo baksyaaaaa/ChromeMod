@@ -6,7 +6,7 @@ import org.polyfrost.polyplus.client.PolyPlusConfig
 import org.polyfrost.polyplus.privacy.PrivacyConsent
 
 class OnlineServicesDisabledException(url: String) : IllegalStateException(
-    "PolyPlus online features are disabled (Terms of Service / Privacy Policy not accepted): $url",
+    "Chrome online features are disabled (Terms of Service / Privacy Policy not accepted): $url",
 ) {
     override fun fillInStackTrace(): Throwable = this
 }

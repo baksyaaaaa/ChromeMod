@@ -28,7 +28,7 @@ object FeaturedServers {
     private const val DEVELOPMENT_FILE_PROPERTY = "polyplus.featuredServers.file"
     private const val MAX_CATALOG_BYTES = 1_048_576
 
-    private val logger = LogManager.getLogger("PolyPlus/FeaturedServers")
+    private val logger = LogManager.getLogger("Chrome/FeaturedServers")
     private val lock = Any()
     private val refreshing = AtomicBoolean(false)
     private val lastAttemptMillis = AtomicLong(0L)

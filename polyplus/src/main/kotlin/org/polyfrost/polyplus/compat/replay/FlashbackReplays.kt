@@ -43,7 +43,7 @@ object FlashbackReplays : ReplayProvider {
     private const val MAX_DEPTH = 8
     private const val MAX_FILES = 5000
 
-    private val logger = LogManager.getLogger("PolyPlus/FlashbackReplays")
+    private val logger = LogManager.getLogger("Chrome/FlashbackReplays")
     private val gson = Gson()
     private val loggedUnreadable = AtomicBoolean()
     private val failures = ReflectiveHook(logger)

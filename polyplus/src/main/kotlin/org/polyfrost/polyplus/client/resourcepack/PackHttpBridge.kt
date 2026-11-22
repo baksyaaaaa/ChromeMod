@@ -10,7 +10,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
 object PackHttpBridge {
-    private val LOGGER = LogManager.getLogger("PolyPlus/PackBridge")
+    private val LOGGER = LogManager.getLogger("Chrome/PackBridge")
 
     const val PLACEHOLDER_HOST = "polyplus-p2p.invalid"
     private const val PATH_PREFIX = "/polyplus/pack/"
@@ -48,7 +48,7 @@ object PackHttpBridge {
             val created = HttpServer.create(InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0)
             created.createContext(PATH_PREFIX, ::handle)
             created.executor = Executors.newCachedThreadPool { runnable ->
-                Thread(runnable, "PolyPlus Pack Bridge ${threadIds.incrementAndGet()}").apply { isDaemon = true }
+                Thread(runnable, "Chrome Pack Bridge ${threadIds.incrementAndGet()}").apply { isDaemon = true }
             }
             created.start()
             server = created

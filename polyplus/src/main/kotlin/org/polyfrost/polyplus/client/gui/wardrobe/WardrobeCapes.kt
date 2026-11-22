@@ -67,9 +67,9 @@ internal fun ForceCapesToggle() {
     val hover = rememberHoverState()
     TooltipBox(
         text = if (modName != null) {
-            "$modName sets your cape. Turn this on to show your PolyPlus cape instead, or your Minecraft cape if you have none."
+            "$modName sets your cape. Turn this on to show your Chrome cape instead, or your Minecraft cape if you have none."
         } else {
-            "When another mod sets your cape, its cape is shown. Turn this on to show your PolyPlus cape instead, or your Minecraft cape if you have none."
+            "When another mod sets your cape, its cape is shown. Turn this on to show your Chrome cape instead, or your Minecraft cape if you have none."
         },
         placement = TooltipPlacement.AboveStart,
     ) {

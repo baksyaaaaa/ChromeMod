@@ -72,7 +72,7 @@ import kotlin.math.tan
 import net.minecraft.block.Blocks as FeatherBlocks
 
 object LobbyUtil {
-    private val pool = Executors.newCachedThreadPool { task -> Thread(task, "PolyPlus Lobby IO").apply { isDaemon = true } }
+    private val pool = Executors.newCachedThreadPool { task -> Thread(task, "Chrome Lobby IO").apply { isDaemon = true } }
 
     fun getNanos(): Long = System.nanoTime()
 

@@ -25,7 +25,7 @@ object SocialErrors {
         if (hostOnScreen()) {
             _events.tryEmit(message)
         } else {
-            runCatching { Notifications.error("PolyPlus", message) }
+            runCatching { Notifications.error("Chrome", message) }
         }
     }
 

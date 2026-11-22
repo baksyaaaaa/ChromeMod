@@ -261,7 +261,7 @@ object PlayTogether {
         if (canJoinLate(current)) {
             PartyNotices.send("${current.leaderName} started Play together on $where", PartyNotices.MOVE_MS, "Join", { joinFromNotice(current) })
         } else {
-            Notifications.info("PolyPlus", "${current.leaderName} started Play together on $where. Open Social to join.")
+            Notifications.info("Chrome", "${current.leaderName} started Play together on $where. Open Social to join.")
         }
     }
 

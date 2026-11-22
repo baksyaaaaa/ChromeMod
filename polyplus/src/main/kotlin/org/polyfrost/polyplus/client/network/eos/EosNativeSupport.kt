@@ -47,12 +47,12 @@ object EosNativeSupport {
     val unsupportedReason: String? = run {
         when {
             platform !in BUNDLED_PLATFORMS ->
-                "Poly+ multiplayer isn't supported on your processor ($osArch, $osName)."
+                "Chrome multiplayer isn't supported on your processor ($osArch, $osName)."
 
             !platform.endsWith("-x86_64") -> null
 
             else -> missingX86Features()?.let {
-                "Poly+ multiplayer is disabled, your processor doesn't meet the minimum requirements."
+                "Chrome multiplayer is disabled, your processor doesn't meet the minimum requirements."
             }
         }
     }

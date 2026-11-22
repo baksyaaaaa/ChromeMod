@@ -54,7 +54,7 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 
-private val LOGGER = LogManager.getLogger("PolyPlus/WorldDraft")
+private val LOGGER = LogManager.getLogger("Chrome/WorldDraft")
 private const val VANILLA_PACK = "vanilla"
 
 internal fun bindVanilla(screen: Screen) {

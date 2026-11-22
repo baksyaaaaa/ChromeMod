@@ -66,16 +66,16 @@ object PolyPlusCommands {
                     return@executes Command.SINGLE_SUCCESS
                 }
                 PolyPlusClient.refresh()
-                LOGGER.info("PolyPlus Client refresh triggered via command.")
+                LOGGER.info("Chrome Client refresh triggered via command.")
                 ctx.source.sendFeedback(
-                    Component.literal("PolyPlus will refresh in the background.")
+                    Component.literal("Chrome will refresh in the background.")
                         .withStyle(ChatFormatting.GREEN),
                 )
                 Command.SINGLE_SUCCESS
             })
             .then(commands.literal("version").executes { ctx ->
                 ctx.source.sendFeedback(
-                    Component.literal("PolyPlus Client version: ${PolyPlusConstants.VERSION}")
+                    Component.literal("Chrome Client version: ${PolyPlusConstants.VERSION}")
                         .withStyle(ChatFormatting.AQUA),
                 )
                 Command.SINGLE_SUCCESS
@@ -83,7 +83,7 @@ object PolyPlusCommands {
             .then(commands.literal("sharepack").executes { ctx ->
                 if (P2PSessionManager.currentSessionId == null) {
                     ctx.source.sendFeedback(
-                        Component.literal("You're not hosting a Poly+ world, so there's nobody to share a pack with.")
+                        Component.literal("You're not hosting a Chrome world, so there's nobody to share a pack with.")
                             .withStyle(ChatFormatting.RED),
                     )
                 } else {

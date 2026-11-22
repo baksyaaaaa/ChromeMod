@@ -24,7 +24,7 @@ import net.minecraft.server.entity.living.player.ServerPlayerEntity
 *///?}
 
 object HostSharedPack {
-    private val LOGGER = LogManager.getLogger("PolyPlus/SharedPack")
+    private val LOGGER = LogManager.getLogger("Chrome/SharedPack")
 
     @Volatile var prepared: List<SharedResourcePack.Prepared> = emptyList()
         private set

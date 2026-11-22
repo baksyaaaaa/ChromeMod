@@ -98,7 +98,7 @@ object PolyPlusClient {
     private val cosmeticsRefreshQueued = AtomicBoolean(false)
 
     private val EXCEPTION_HANDLER = CoroutineExceptionHandler { _, throwable ->
-        LOGGER.error("Uncaught exception in PolyPlus coroutine", throwable)
+        LOGGER.error("Uncaught exception in Chrome coroutine", throwable)
     }
 
     @JvmField val SCOPE = CoroutineScope(SupervisorJob() + Dispatchers.Default + EXCEPTION_HANDLER)
@@ -162,7 +162,7 @@ object PolyPlusClient {
 
     private inline fun step(name: String, block: () -> Unit) {
         runCatching(block).onFailure { error ->
-            LOGGER.error("PolyPlus init step '{}' failed; continuing without it", name, error)
+            LOGGER.error("Chrome init step '{}' failed; continuing without it", name, error)
         }
     }
 
@@ -231,7 +231,7 @@ object PolyPlusClient {
 
         step("websocket") {
             PolyConnection.initialize {
-                LOGGER.info("Connected to PolyPlus WebSocket server.")
+                LOGGER.info("Connected to Chrome WebSocket server.")
 
                 SCOPE.launch {
                     PolyConnection.sendPacket(ServerboundPacket.GetActiveCosmetics(ClientPlatform.localPlayerUuid().toString()))
@@ -264,7 +264,7 @@ object PolyPlusClient {
     // Full reset of auth caches and API data
     fun refresh() {
         if (!PrivacyConsent.allowsOnlineServices()) return
-        LOGGER.info("Refreshing PolyPlus Client...")
+        LOGGER.info("Refreshing Chrome Client...")
 
         SCOPE.launch {
             runSuspendCatching { PolyAuthorization.reset() }

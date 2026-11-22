@@ -6,7 +6,7 @@ import java.util.Properties
 
 object PolyPlusConstants {
     const val ID = "polyplus"
-    const val NAME = "PolyPlus"
+    const val NAME = "Chrome"
 
     val IS_DEV_ENV: Boolean = FabricLoader.getInstance().isDevelopmentEnvironment
 

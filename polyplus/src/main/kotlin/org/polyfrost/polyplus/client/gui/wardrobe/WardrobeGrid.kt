@@ -779,7 +779,7 @@ private fun LibraryIntro(note: String, action: String?, onAction: () -> Unit) {
 private fun ConsentNote(text: String, onConsent: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     if (open) {
-        ConsentStep("PolyPlus capes and cosmetics need online services.", Modifier.fillMaxWidth(), { open = false }) {
+        ConsentStep("Chrome capes and cosmetics need online services.", Modifier.fillMaxWidth(), { open = false }) {
             open = false
             onConsent()
         }

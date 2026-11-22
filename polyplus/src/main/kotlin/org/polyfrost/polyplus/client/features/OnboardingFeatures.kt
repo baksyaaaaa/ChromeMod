@@ -26,7 +26,7 @@ import org.polyfrost.polyplus.compat.Mods
 import java.util.concurrent.ConcurrentHashMap
 
 object OnboardingFeatures {
-    private val logger = LogManager.getLogger("PolyPlus/Onboarding")
+    private val logger = LogManager.getLogger("Chrome/Onboarding")
     private val warnedModApplyFailures = ConcurrentHashMap.newKeySet<String>()
 
     @Volatile

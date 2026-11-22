@@ -95,7 +95,7 @@ internal fun checkoutFailureMessage(error: Throwable): String =
 internal fun wardrobeFailure(error: Throwable, action: String): String {
     LOGGER.warn("Couldn't {}: {}: {}", action, error.javaClass.simpleName, error.message?.replace(URL_QUERY, ""))
     return if (error is OnlineServicesDisabledException) {
-        "Accept the Terms of Service and Privacy Policy under Privacy in the PolyPlus settings."
+        "Accept the Terms of Service and Privacy Policy under Privacy in the Chrome settings."
     } else {
         "Couldn't $action. Try again later."
     }

@@ -17,8 +17,8 @@ import org.polyfrost.polyplus.privacy.PrivacyConsent
 
 internal object OutfitApi {
     const val PRIVACY_MESSAGE =
-        "Outfits need the Terms of Service and Privacy Policy. Accept them under Privacy in the PolyPlus settings."
-    private const val OFFLINE_MESSAGE = "Couldn't reach the PolyPlus servers."
+        "Outfits need the Terms of Service and Privacy Policy. Accept them under Privacy in the Chrome settings."
+    private const val OFFLINE_MESSAGE = "Couldn't reach the Chrome servers."
 
     fun url(path: String): String = "${PolyPlusConfig.apiUrl}$path"
 
@@ -46,11 +46,11 @@ internal object OutfitApi {
             HttpStatusCode.Conflict -> conflict
             HttpStatusCode.BadRequest -> backendText(error) ?: badRequest
             HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden ->
-                "Couldn't sign in to PolyPlus. Try again in a moment."
+                "Couldn't sign in to Chrome. Try again in a moment."
             HttpStatusCode.TooManyRequests -> "Too many changes at once. Try again in a moment."
             else -> backendText(error) ?: OFFLINE_MESSAGE
         }
-        is ServerResponseException -> "The PolyPlus servers are having trouble. Try again later."
+        is ServerResponseException -> "The Chrome servers are having trouble. Try again later."
         else -> OFFLINE_MESSAGE
     }
 

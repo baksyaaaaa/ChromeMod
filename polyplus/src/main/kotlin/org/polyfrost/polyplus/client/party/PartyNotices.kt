@@ -21,7 +21,7 @@ internal object PartyNotices {
         dismiss: String? = null,
         onDismiss: () -> Unit = {},
     ): Notification {
-        val builder = Notifications.builder("PolyPlus", message)
+        val builder = Notifications.builder("Chrome", message)
             .duration(duration)
             .action(NotificationAction(join, primary = true, onClick = { ClientPlatform.runOnMain(onJoin) }))
         if (dismiss != null) builder.action(NotificationAction(dismiss, onClick = { ClientPlatform.runOnMain(onDismiss) }))

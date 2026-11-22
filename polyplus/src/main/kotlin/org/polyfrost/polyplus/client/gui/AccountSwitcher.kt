@@ -388,7 +388,7 @@ private fun DiscordRow() {
     val name = with(DiscordLink) { link?.label() }
     val signedOut = state.unavailable == DiscordLink.Unavailable.SignedOut
     val subtitle = when {
-        signedOut -> "Couldn't sign in to PolyPlus"
+        signedOut -> "Couldn't sign in to Chrome"
         state.waiting -> "Finish in your browser"
         state.unlinking -> "Unlinking…"
         confirmUnlink -> "Unlink?"

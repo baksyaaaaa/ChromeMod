@@ -17,7 +17,7 @@ import org.polyfrost.polyplus.client.gui.SocialNotices
 import org.polyfrost.polyplus.client.social.SocialErrors
 import org.polyfrost.polyplus.client.utils.ClientPlatform
 
-private val LOGGER = LogManager.getLogger("PolyPlus/SingleplayerFlows")
+private val LOGGER = LogManager.getLogger("Chrome/SingleplayerFlows")
 
 internal class SingleplayerFlows {
     private val mc = Minecraft.getInstance()

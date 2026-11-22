@@ -39,7 +39,7 @@ object LegalDocuments {
 
     private const val DOCUMENT_URL = "https://data-v2.polyfrost.org/oneclient/tos.json"
 
-    private val LOGGER = LogManager.getLogger("PolyPlus/Legal")
+    private val LOGGER = LogManager.getLogger("Chrome/Legal")
 
     private val client by lazy {
         HttpClient(CIO) {

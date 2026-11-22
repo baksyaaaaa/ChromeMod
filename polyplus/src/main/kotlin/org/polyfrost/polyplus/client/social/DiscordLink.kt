@@ -161,17 +161,17 @@ object DiscordLink {
         LOGGER.warn(fallback, error)
         if (error.signedOut()) _state.update { it.copy(unavailable = Unavailable.SignedOut) }
         val message = when {
-            error is OnlineServicesDisabledException -> "Online features are off. Turn them on under Privacy in the PolyPlus settings."
-            error.signedOut() -> "$fallback. Couldn't sign in to PolyPlus."
+            error is OnlineServicesDisabledException -> "Online features are off. Turn them on under Privacy in the Chrome settings."
+            error.signedOut() -> "$fallback. Couldn't sign in to Chrome."
             error is ClientRequestException && error.response.status == HttpStatusCode.TooManyRequests -> "$fallback. Try again in a moment."
-            error is ServerResponseException -> "$fallback. The PolyPlus servers are having trouble."
+            error is ServerResponseException -> "$fallback. The Chrome servers are having trouble."
             else -> "$fallback. Check your connection."
         }
-        runCatching { Notifications.error("PolyPlus", message) }
+        runCatching { Notifications.error("Chrome", message) }
     }
 
     private fun notify(message: String) {
-        runCatching { Notifications.info("PolyPlus", message) }
+        runCatching { Notifications.info("Chrome", message) }
     }
 
     private fun Throwable.signedOut(): Boolean =

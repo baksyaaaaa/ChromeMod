@@ -8,7 +8,7 @@ import java.lang.invoke.MethodType
 
 internal object OpSecCompat {
 
-    private val logger = LogManager.getLogger("PolyPlus/OpSecCompat")
+    private val logger = LogManager.getLogger("Chrome/OpSecCompat")
 
     private val translationProtection: Pair<MethodHandle, MethodHandle>? by lazy {
         if (!FabricLoader.getInstance().isModLoaded("opsec")) return@lazy null

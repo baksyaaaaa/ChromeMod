@@ -14,7 +14,7 @@ import org.polyfrost.polyplus.client.social.execute
 *///?}
 
 object P2PPeerAlerts {
-    private val LOGGER = LogManager.getLogger("PolyPlus/P2P")
+    private val LOGGER = LogManager.getLogger("Chrome/P2P")
 
     private const val TIMEOUT_KEY = "disconnect.timeout"
 

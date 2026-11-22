@@ -456,7 +456,7 @@ private fun WorldConfigurationModal(
 }
 
 private fun socialHostModeLabel(mode: HostMode): String = when (mode) {
-    HostMode.FRIENDS -> "Friends (Poly+)"
+    HostMode.FRIENDS -> "Friends (Chrome)"
     HostMode.LAN -> "LAN"
 }
 
@@ -517,7 +517,7 @@ private fun InviteFriendsModal(
         }
 
         when (val status = eosStatus) {
-            EosStatus.Connecting -> Text("Connecting to Poly+ multiplayer services...", color = SocialTextSecondary, style = OneConfigTheme.current.typography.small)
+            EosStatus.Connecting -> Text("Connecting to Chrome multiplayer services...", color = SocialTextSecondary, style = OneConfigTheme.current.typography.small)
             is EosStatus.Failed -> Text(status.reason + " You can still host on LAN.", color = OneConfigTheme.current.warning, style = OneConfigTheme.current.typography.small)
             EosStatus.Ready -> {}
         }

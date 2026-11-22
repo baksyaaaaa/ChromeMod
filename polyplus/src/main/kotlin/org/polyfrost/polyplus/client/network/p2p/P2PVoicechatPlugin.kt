@@ -20,7 +20,7 @@ class P2PVoicechatPlugin : VoicechatPlugin {
         val host = P2PChannelRegistry.connectedPeers().firstOrNull() ?: return
         val bridge = EosVoicechatBridge.currentBridge()
         if (bridge == null) {
-            LOGGER.warn("Joined a world over PolyPlus P2P, but the EOS bridge isn't installed. We can't route voice chat over it, falling back to default UDP (probably won't reach the host).")
+            LOGGER.warn("Joined a world over Chrome P2P, but the EOS bridge isn't installed. We can't route voice chat over it, falling back to default UDP (probably won't reach the host).")
             return
         }
 

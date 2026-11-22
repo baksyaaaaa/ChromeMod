@@ -7,7 +7,7 @@ import java.time.Instant
 import java.util.UUID
 
 object OneLauncherAccounts {
-    private val LOGGER = LogManager.getLogger("PolyPlus/Accounts")
+    private val LOGGER = LogManager.getLogger("Chrome/Accounts")
 
     data class Account(
         val id: UUID,

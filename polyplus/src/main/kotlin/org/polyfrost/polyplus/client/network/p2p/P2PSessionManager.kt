@@ -100,9 +100,9 @@ object P2PSessionManager {
     private var authJob: Job? = null
 
     private const val CONSENT_REQUIRED =
-        "Poly+ multiplayer is off until you accept the Terms of Service and Privacy Policy."
+        "Chrome multiplayer is off until you accept the Terms of Service and Privacy Policy."
     private const val RESTART_REQUIRED =
-        "Restart your game to turn Poly+ multiplayer back on."
+        "Restart your game to turn Chrome multiplayer back on."
 
     private const val AUTH_READY_TIMEOUT_MS = 15_000L
     // EOS Connect auth expires after an hour, and gg.sona.eos doesn't expose EOS_Connect_AddNotifyAuthExpiration
@@ -114,7 +114,7 @@ object P2PSessionManager {
     private const val STALL_RESTART_READY_TIMEOUT_MS = 20_000L
     private const val EOS_SDK_PACKAGE = "gg.sona.eos"
     private const val JOIN_INVITE_PROPERTY = "polyplus.joinInvite"
-    private const val STALL_UNRECOVERABLE = "Poly+ multiplayer stopped responding. Restart your game, and if you see this message, please report it at https://polyfrost.org/discord."
+    private const val STALL_UNRECOVERABLE = "Chrome multiplayer stopped responding. Restart your game, and if you see this message, please report it at https://polyfrost.org/discord."
 
     data class JoinTarget(val host: EosProductUserId, val socket: EosP2PSocketId)
 
@@ -192,7 +192,7 @@ object P2PSessionManager {
                         when {
                             started == null -> {
                                 if (PrivacyConsent.allowsOnlineServices()) {
-                                    _status.value = EosStatus.Failed("Unable to start Poly+ multiplayer services.")
+                                    _status.value = EosStatus.Failed("Unable to start Chrome multiplayer services.")
                                 }
                                 false
                             }
@@ -485,7 +485,7 @@ object P2PSessionManager {
                     .explain(EosFailureDiagnosis.openFileDescriptors(), PolyConnection.isConnected)
                     ?.let(LOGGER::error)
             }
-            return fail("EOS Connect login failed; P2P hosting/joining is unavailable", it, "Unable to connect to Poly+ multiplayer services.")
+            return fail("EOS Connect login failed; P2P hosting/joining is unavailable", it, "Unable to connect to Chrome multiplayer services.")
         }
 
         if (!isCurrent(bridge)) {
@@ -589,20 +589,20 @@ object P2PSessionManager {
     private suspend fun joinLaunchInvite(inviteId: Int) {
         if (!awaitEosReady()) {
             LOGGER.error("Gave up waiting for EOS Connect readiness; cannot join invite {}", inviteId)
-            val reason = (status.value as? EosStatus.Failed)?.reason ?: "Poly+ multiplayer took too long to connect."
-            Notifications.error("PolyPlus", reason)
+            val reason = (status.value as? EosStatus.Failed)?.reason ?: "Chrome multiplayer took too long to connect."
+            Notifications.error("Chrome", reason)
             return
         }
 
         val invites = SessionsApi.incomingInvites().getOrElse {
             LOGGER.error("Failed to load session invite {}", inviteId, it)
-            Notifications.error("PolyPlus", it.toUserMessage("Couldn't load your world invite."))
+            Notifications.error("Chrome", it.toUserMessage("Couldn't load your world invite."))
             return
         }
         val invite = invites.find { it.id == inviteId }
         if (invite == null) {
             LOGGER.warn("Session invite {} from the launch arguments is no longer open", inviteId)
-            Notifications.error("PolyPlus", "This world invite has expired.")
+            Notifications.error("Chrome", "This world invite has expired.")
             return
         }
         SessionsRepository.accept(invite)
@@ -680,13 +680,13 @@ object P2PSessionManager {
         //? if = 1.8.9 {
         /*minecraft.execute {
             val screen = ConnectScreen(TitleScreen(), minecraft, P2P_PLACEHOLDER_IP, 2)
-            minecraft.setCurrentServerEntry(ServerListEntry("PolyPlus P2P session", P2P_PLACEHOLDER_IP, false))
+            minecraft.setCurrentServerEntry(ServerListEntry("Chrome P2P session", P2P_PLACEHOLDER_IP, false))
             minecraft.setScreen(screen)
         }
         *///?} else {
         val address = ServerAddress.parseString("$P2P_PLACEHOLDER_IP:2")
         val serverData = ServerData(
-            "PolyPlus P2P session",
+            "Chrome P2P session",
             P2P_PLACEHOLDER_IP,
             ServerData.Type.OTHER,
         )

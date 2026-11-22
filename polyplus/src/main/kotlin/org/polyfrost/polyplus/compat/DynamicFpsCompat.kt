@@ -5,7 +5,7 @@ import org.polyfrost.polyplus.client.utils.AnimationActivity
 import java.lang.reflect.Method
 
 object DynamicFpsCompat {
-    private val hook = ReflectiveHook(LogManager.getLogger("PolyPlus/DynamicFpsCompat"))
+    private val hook = ReflectiveHook(LogManager.getLogger("Chrome/DynamicFpsCompat"))
     //? if > 1.8.9 {
     private const val MOD_CLASS = "dynamic_fps.impl.DynamicFPSMod"
     //?} else {

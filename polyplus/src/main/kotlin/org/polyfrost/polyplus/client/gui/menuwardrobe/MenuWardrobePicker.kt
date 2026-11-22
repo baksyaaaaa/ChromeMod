@@ -118,7 +118,7 @@ internal class PickerModel(
 private enum class PickerFilter(val label: String) {
     All("All"),
     Equipped("Equipped"),
-    PolyPlus("PolyPlus"),
+    PolyPlus("Chrome"),
     Minecraft("Minecraft"),
 }
 

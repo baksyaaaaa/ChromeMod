@@ -33,7 +33,7 @@ import org.polyfrost.polyplus.privacy.PrivacyConsent
 import java.util.concurrent.atomic.AtomicBoolean
 
 object BadMods {
-    private val logger = LogManager.getLogger("PolyPlus/BadMods")
+    private val logger = LogManager.getLogger("Chrome/BadMods")
 
     private const val DATA_URL = "https://data-v2.polyfrost.org"
     private const val LIST_URL = "$DATA_URL/oneclient/bad-mods.json"

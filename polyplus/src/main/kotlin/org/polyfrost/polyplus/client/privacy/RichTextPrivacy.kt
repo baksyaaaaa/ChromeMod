@@ -27,7 +27,7 @@ import net.fabricmc.fabric.api.resource.v1.pack.ModPackResources
 
 object RichTextPrivacy {
     //? if > 1.8.9 {
-    private val logger = LogManager.getLogger("PolyPlus/RichTextPrivacy")
+    private val logger = LogManager.getLogger("Chrome/RichTextPrivacy")
 
     private val BLOCKED_MODS = listOf(
         "debugify",

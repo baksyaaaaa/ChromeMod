@@ -49,10 +49,10 @@ private const val ONECLIENT_ENTRY_PREFIX = "oneclient:config:"
 private const val ONECLIENT_FOCUS = "oneclient:option:"
 
 internal object OneClientSettingsPages : SettingsEntryProvider {
-    private val logger = LogManager.getLogger("PolyPlus/OneClientSettings")
+    private val logger = LogManager.getLogger("Chrome/OneClientSettings")
     private val shell = ShellController()
     private val saver = Executors.newSingleThreadExecutor { runnable ->
-        Thread(runnable, "PolyPlus-OneClientSettingsSave").apply { isDaemon = true }
+        Thread(runnable, "Chrome-OneClientSettingsSave").apply { isDaemon = true }
     }
 
     fun register() = SettingsPages.register(this)

@@ -21,7 +21,7 @@ internal class EosVoicechatClientSocket(
     @Volatile private var closed = false
 
     override fun open() {
-        logger.info("Opening the PolyPlus P2P voice chat bridge to the host ({})...", host)
+        logger.info("Opening the Chrome P2P voice chat bridge to the host ({})...", host)
         EosVoicechatBridge.registerClientSocket(this)
         bridge.acceptConnection(EosVoicechatBridge.SOCKET_ID, host)
     }
@@ -41,7 +41,7 @@ internal class EosVoicechatClientSocket(
     override fun close() {
         closed = true
         EosVoicechatBridge.unregisterClientSocket(this)
-        logger.info("Closed the PolyPlus P2P voice chat bridge to {}.", host)
+        logger.info("Closed the Chrome P2P voice chat bridge to {}.", host)
     }
 
     override fun isClosed(): Boolean = closed

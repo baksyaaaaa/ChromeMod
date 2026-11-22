@@ -15,7 +15,7 @@ import org.polyfrost.polyplus.client.PolyPlusConfig
 import org.polyfrost.polyplus.client.utils.ClientPlatform
 
 object AdaptiveBlurDefaults {
-    private val logger = LogManager.getLogger("PolyPlus/AdaptiveBlur")
+    private val logger = LogManager.getLogger("Chrome/AdaptiveBlur")
 
     private const val POLYPLUS_PACKAGE = "org.polyfrost.polyplus."
     private const val FALLBACK_REFRESH_RATE = 60

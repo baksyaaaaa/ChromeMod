@@ -9,7 +9,7 @@ object AccountSwitchCompat {
     private const val SESSION = "gg.essential.util.USession"
     private const val REAUTH_EVENT = "gg.essential.event.client.ReAuthEvent"
 
-    private val hook = ReflectiveHook(LogManager.getLogger("PolyPlus/AccountSwitchCompat"), Level.DEBUG)
+    private val hook = ReflectiveHook(LogManager.getLogger("Chrome/AccountSwitchCompat"), Level.DEBUG)
 
     private val poster: ((UUID, String, String) -> Unit)? by lazy(::resolve)
 

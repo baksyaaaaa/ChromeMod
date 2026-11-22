@@ -77,10 +77,10 @@ object StatusPage {
     private const val FEED_URL = "https://status.polyfrost.org/index.json"
     private const val POLL_INTERVAL_MS = 5 * 60 * 1000L
     private const val RESOURCE_TYPE = "status_page_resource"
-    private const val BACKEND_SERVICE = "Poly+"
-    private const val TITLE = "PolyPlus"
+    private const val BACKEND_SERVICE = "Chrome"
+    private const val TITLE = "Chrome"
 
-    private val LOGGER = LogManager.getLogger("PolyPlus/Status")
+    private val LOGGER = LogManager.getLogger("Chrome/Status")
 
     private val _status = MutableStateFlow<ServiceStatus?>(null)
     val status: StateFlow<ServiceStatus?> = _status.asStateFlow()

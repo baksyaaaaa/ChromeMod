@@ -12,7 +12,7 @@ import org.polyfrost.polyplus.privacy.PrivacyConsent
 import java.util.concurrent.atomic.AtomicBoolean
 
 object PrivacyEnforcement {
-    private val LOGGER = LogManager.getLogger("PolyPlus/Privacy")
+    private val LOGGER = LogManager.getLogger("Chrome/Privacy")
 
     private val syncing = AtomicBoolean(false)
 
@@ -33,7 +33,7 @@ object PrivacyEnforcement {
 
         if (allowed) {
             if (bootstrapped.compareAndSet(false, true)) {
-                LOGGER.info("Consent granted; bootstrapping PolyPlus online services.")
+                LOGGER.info("Consent granted; bootstrapping Chrome online services.")
                 PolyPlusClient.refreshCosmetics()
             }
             BadMods.checkAsync()

@@ -33,7 +33,7 @@ import java.util.UUID
 import java.util.concurrent.CompletableFuture
 
 object AccountSwitch {
-    private val LOGGER = LogManager.getLogger("PolyPlus/Accounts")
+    private val LOGGER = LogManager.getLogger("Chrome/Accounts")
 
     fun apply(account: LauncherAccountStore.StoredAccount): Boolean = runCatching {
         val newId = LauncherAccountStore.parseUuid(account.id) ?: error("bad account id ${account.id}")

@@ -42,7 +42,7 @@ import java.util.Locale
 import java.util.WeakHashMap
 import java.util.concurrent.CompletableFuture
 
-private val LOGGER = LogManager.getLogger("PolyPlus/SingleplayerWorlds")
+private val LOGGER = LogManager.getLogger("Chrome/SingleplayerWorlds")
 
 private const val META_SEPARATOR = " · "
 

@@ -23,7 +23,7 @@ object LobbySoundGate {
     private val lock = Any()
     private val groups = ArrayList<Group>()
     private val timer: ScheduledExecutorService by lazy {
-        Executors.newSingleThreadScheduledExecutor { Thread(it, "PolyPlus Lobby Audio").apply { isDaemon = true } }
+        Executors.newSingleThreadScheduledExecutor { Thread(it, "Chrome Lobby Audio").apply { isDaemon = true } }
     }
 
     fun hold(channels: Collection<Channel>, after: Group? = null, delayNanos: Long = 0L): Group = synchronized(lock) {

@@ -266,7 +266,7 @@ object PolyAuthorization {
             mc.sessionService.joinServer(mc.session.profile, accessToken, serverId)
             *///?}
         } catch (_: InvalidCredentialsException) {
-            LOGGER.warn("Mojang rejected this session (offline account or expired token); PolyPlus sign-in waits for a new one")
+            LOGGER.warn("Mojang rejected this session (offline account or expired token); Chrome sign-in waits for a new one")
             rejectedAccessToken = accessToken
             throw SessionRejectedException()
         } catch (e: Exception) {

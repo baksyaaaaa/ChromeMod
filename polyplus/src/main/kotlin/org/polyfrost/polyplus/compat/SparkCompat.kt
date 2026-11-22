@@ -63,7 +63,7 @@ internal object SparkCompat {
     private const val PROFILER_ACTIVITY = "Profiler"
     private const val HEALTH_ACTIVITY = "Health report"
     private const val SENDER = "me.lucko.spark.common.command.sender.CommandSender"
-    private const val SENDER_NAME = "PolyPlus"
+    private const val SENDER_NAME = "Chrome"
     private val SPARK_LINK = Regex("""https://spark\.lucko\.me/[A-Za-z0-9]+""")
 
     private val methods = ConcurrentHashMap<String, Method>()
@@ -292,7 +292,7 @@ internal object SparkCompat {
                 if (ClientPlatform.currentScreen() is OneClientPauseScreen) {
                     SocialNotices.emit(message)
                 } else {
-                    Notifications.builder("PolyPlus", message)
+                    Notifications.builder("Chrome", message)
                         .action(NotificationAction("Open", primary = true, onClick = { ClientPlatform.openUri(url) }))
                         .send()
                 }

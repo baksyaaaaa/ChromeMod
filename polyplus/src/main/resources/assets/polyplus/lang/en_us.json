@@ -9,7 +9,7 @@
   "polyplus.serverFolder.pick": "Pick an existing folder",
   "polyplus.serverSort": "Sort: %s",
   "polyplus.serverSort.custom": "Custom",
-  "polyplus.mmc.debugifyNote": "Chrome Client/PolyPlus note: we automatically disable the bannable features from Debugify, so you can keep playing safely.",
+  "polyplus.mmc.debugifyNote": "Chrome note: we automatically disable the bannable features from Debugify, so you can keep playing safely.",
   "polyplus.session.refresh": "Refresh Session",
   "polyplus.session.refreshing": "Refreshing session...",
   "polyplus.session.reconnecting": "Reconnecting...",

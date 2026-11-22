@@ -36,7 +36,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.polyfrost.polyplus.client.utils.runSuspendCatching
 
 object SessionRefresh {
-    private val LOGGER = LogManager.getLogger("PolyPlus/Accounts")
+    private val LOGGER = LogManager.getLogger("Chrome/Accounts")
 
     private const val LOGIN_FAILED_KEY = "disconnect.loginFailedInfo"
     private const val INVALID_SESSION_KEY = "disconnect.loginFailedInfo.invalidSession"

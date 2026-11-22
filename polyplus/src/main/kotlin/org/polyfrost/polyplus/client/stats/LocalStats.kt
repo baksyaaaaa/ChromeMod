@@ -40,7 +40,7 @@ internal class StatsReport(
 }
 
 internal object LocalStats {
-    private val LOGGER = LogManager.getLogger("PolyPlus/Stats")
+    private val LOGGER = LogManager.getLogger("Chrome/Stats")
     private const val MILLIS_PER_TICK = 50L
     private const val WEEK_DAYS = 7L
     private val STATS_FOLDERS = listOf("players/stats", "stats")

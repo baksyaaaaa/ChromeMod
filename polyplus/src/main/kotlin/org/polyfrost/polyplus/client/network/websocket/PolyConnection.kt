@@ -123,7 +123,7 @@ object PolyConnection {
 
     fun sendMessage(message: String): Result<Unit> {
         if (!PrivacyConsent.allowsOnlineServices()) {
-            return Result.failure(IllegalStateException("PolyPlus online features are disabled"))
+            return Result.failure(IllegalStateException("Chrome online features are disabled"))
         }
 
         if (session == null) {
@@ -147,7 +147,7 @@ object PolyConnection {
 
     private fun start() {
         if (!PrivacyConsent.allowsOnlineServices()) {
-            LOGGER.info("PolyPlus WebSocket disabled: the Terms of Service and Privacy Policy were not accepted.")
+            LOGGER.info("Chrome WebSocket disabled: the Terms of Service and Privacy Policy were not accepted.")
             return
         }
 
@@ -171,7 +171,7 @@ object PolyConnection {
                 try {
                     val reason = connectOnce()
                     if (closing || !isActive) break
-                    LOGGER.warn("PolyPlus WebSocket closed: {}", reason)
+                    LOGGER.warn("Chrome WebSocket closed: {}", reason)
                     notifyDisconnected(null)
                 } catch (e: CancellationException) {
                     throw e
@@ -185,21 +185,21 @@ object PolyConnection {
                     if (closing || !isActive) break
                     if (isAuthFailure(e)) {
                         if (tokenRefreshed) {
-                            LOGGER.warn("PolyPlus WebSocket still rejected (401) after a token refresh.")
+                            LOGGER.warn("Chrome WebSocket still rejected (401) after a token refresh.")
                         } else {
-                            LOGGER.warn("PolyPlus WebSocket authentication failed (401); refreshing token before retry.")
+                            LOGGER.warn("Chrome WebSocket authentication failed (401); refreshing token before retry.")
                             tokenRefreshed = true
                             runSuspendCatching { PolyAuthorization.reset() }
                         }
                         notifyDisconnected(null)
                     } else if (isTransientHandshakeFailure(e)) {
                         transientFailures++
-                        LOGGER.debug("PolyPlus WebSocket handshake failed ({}); retrying.", e.message)
+                        LOGGER.debug("Chrome WebSocket handshake failed ({}); retrying.", e.message)
                         if (transientFailures >= TRANSIENT_FAILURES_BEFORE_NOTIFYING) {
                             notifyDisconnected(null)
                         }
                     } else {
-                        LOGGER.error("PolyPlus WebSocket connection failed", e)
+                        LOGGER.error("Chrome WebSocket connection failed", e)
                         notifyDisconnected(e)
                     }
                 } finally {
@@ -219,7 +219,7 @@ object PolyConnection {
 
                 attempt++
                 val backoff = reconnectDelay(attempt)
-                LOGGER.info("Reconnecting to PolyPlus WebSocket in {} ms (attempt {}).", backoff, attempt)
+                LOGGER.info("Reconnecting to Chrome WebSocket in {} ms (attempt {}).", backoff, attempt)
                 delay(backoff)
             }
         }
@@ -306,7 +306,7 @@ object PolyConnection {
         disconnectNotified = true
         val reason = error?.message?.let { ": $it" } ?: "."
         runCatching {
-            Notifications.error("PolyPlus", "Lost connection to PolyPlus$reason Reconnecting...${StatusPage.disconnectHint()}")
+            Notifications.error("Chrome", "Lost connection to Chrome$reason Reconnecting...${StatusPage.disconnectHint()}")
         }.onFailure { LOGGER.error("Failed to show disconnect notification", it) }
     }
 
@@ -319,7 +319,7 @@ object PolyConnection {
         if (!disconnectNotified) return
         disconnectNotified = false
         runCatching {
-            Notifications.success("PolyPlus", "Reconnected to PolyPlus.")
+            Notifications.success("Chrome", "Reconnected to Chrome.")
         }.onFailure { LOGGER.error("Failed to show reconnect notification", it) }
     }
 

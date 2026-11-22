@@ -21,7 +21,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 
 object P2PPackTransport {
-    private val LOGGER = LogManager.getLogger("PolyPlus/PackTransport")
+    private val LOGGER = LogManager.getLogger("Chrome/PackTransport")
 
     val SOCKET_ID: EosP2PSocketId = EosP2PSocketId("polyplus-resourcepack-share")
 

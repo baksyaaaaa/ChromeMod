@@ -5,7 +5,7 @@ import org.apache.logging.log4j.LogManager
 import java.util.UUID
 
 object SessionAccounts {
-    private val LOGGER = LogManager.getLogger("PolyPlus/Accounts")
+    private val LOGGER = LogManager.getLogger("Chrome/Accounts")
 
     private var captured = false
     private var launchAccount: LauncherAccountStore.StoredAccount? = null

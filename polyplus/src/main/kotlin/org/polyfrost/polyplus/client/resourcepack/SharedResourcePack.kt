@@ -12,7 +12,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 object SharedResourcePack {
-    private val LOGGER = LogManager.getLogger("PolyPlus/SharedPack")
+    private val LOGGER = LogManager.getLogger("Chrome/SharedPack")
 
     const val MAX_PACK_BYTES = 100L * 1024 * 1024
 

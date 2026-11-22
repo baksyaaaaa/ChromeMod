@@ -186,6 +186,6 @@ object FriendsRepository {
         if (!NotificationDedup.shouldNotify("friend_request:$requestId")) return
         PlayerNamesRepository.resolve(listOf(sender))
         val name = PlayerNamesRepository.nameOr(sender)
-        Notifications.info("PolyPlus", "$name sent you a friend request")
+        Notifications.info("Chrome", "$name sent you a friend request")
     }
 }

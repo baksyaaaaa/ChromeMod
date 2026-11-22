@@ -155,7 +155,7 @@ object OutfitLibrary {
         error,
         notFound = "That outfit no longer exists.",
         conflict = "You've reached the limit of $limit outfits. Delete one to make room.",
-        badRequest = "PolyPlus couldn't save that outfit.",
+        badRequest = "Chrome couldn't save that outfit.",
     )
 
     internal fun activeOutfit(): OutfitInfo? = activeOutfitId?.let { id -> outfits.firstOrNull { it.id == id } }

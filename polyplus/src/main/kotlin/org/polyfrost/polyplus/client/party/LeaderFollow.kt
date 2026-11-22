@@ -130,7 +130,7 @@ object LeaderFollow {
                 LOGGER.error("Failed to look up session {} to join the party leader", current.sessionId, error)
                 ClientPlatform.runOnMain {
                     current.joining = false
-                    SocialErrors.emit("Couldn't reach Poly+ to join ${current.name}'s world", error)
+                    SocialErrors.emit("Couldn't reach Chrome to join ${current.name}'s world", error)
                 }
                 return@launch
             }
