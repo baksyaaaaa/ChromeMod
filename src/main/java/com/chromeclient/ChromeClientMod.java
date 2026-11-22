@@ -37,7 +37,6 @@ public class ChromeClientMod implements ClientModInitializer {
         Fx.init(); Aura.init();            // our own glowing / sparkling particles
         HudPack.load();
         HudPack.init();       // potion / keybind / target / performance panels, crosshair, jump ripples
-        new Buddy().init();   // /buddy <uuid>: a little buddy follows you
         Hud hud = new Hud();
         hudInstance = hud;
 

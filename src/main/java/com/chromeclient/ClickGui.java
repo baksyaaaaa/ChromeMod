@@ -185,10 +185,6 @@ public class ClickGui extends Screen {
                 .add(toggle("See other players' capes", () -> Extras.seeCapes, v -> Extras.seeCapes = v))
                 .add(toggle("See other players' wings", () -> Extras.seeWings, v -> Extras.seeWings = v)));
         misc.add(new Mod("Auto sprint", "Sprints for you while you walk forward.", () -> c.autoSprint, v -> c.autoSprint = v));
-        misc.add(new Mod("Buddy", "A little copy of a skin that follows you.", Buddy::enabled, Buddy::setEnabled)
-                .add(slider("Size", Buddy::size, v -> Buddy.setSize(v.floatValue()), 0.2, 1.5, "%.2f"))
-                .add(text(() -> "Name: " + Buddy.name() + "   Skin: " + Buddy.skinText()))
-                .add(action(() -> "Skin, name and presets", () -> later = () -> { Config.save(); Minecraft.getInstance().setScreen(new BuddyScreen(this)); })));
         tabs.add(misc);
 
         // ---- Music ----

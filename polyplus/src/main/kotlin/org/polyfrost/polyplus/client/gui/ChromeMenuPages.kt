@@ -2,6 +2,7 @@
 
 package org.polyfrost.polyplus.client.gui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import java.util.function.BooleanSupplier
 import java.util.function.Consumer
@@ -88,15 +91,18 @@ internal fun ChromeModulesPage(tab: String) {
 private fun ModuleBlock(mod: Map<String, Any?>, refresh: Int, changed: () -> Unit) {
     val on = mod["on"] as? BooleanSupplier
     val setOn = mod["setOn"] as? Consumer<Boolean>
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    val enabled = on?.asBoolean ?: true
+    Column(
+        Modifier.fillMaxWidth().background(Color(0x14FFFFFF), RoundedCornerShape(12.dp)).padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             if (on != null && setOn != null) {
-                val state = on.asBoolean
                 TextButton(
-                    text = "${mod["name"]}: ${if (state) "On" else "Off"}",
-                    onClick = { setOn.accept(!state); changed() },
-                    style = if (state) ControlStyle.Primary else ControlStyle.Secondary,
-                    modifier = Modifier.width(220.dp).height(34.dp),
+                    text = "${mod["name"]}: ${if (enabled) "On" else "Off"}",
+                    onClick = { setOn.accept(!enabled); changed() },
+                    style = if (enabled) ControlStyle.Primary else ControlStyle.Secondary,
+                    modifier = Modifier.width(230.dp).height(34.dp),
                 )
             } else {
                 Text("${mod["name"]}")
@@ -104,19 +110,25 @@ private fun ModuleBlock(mod: Map<String, Any?>, refresh: Int, changed: () -> Uni
             Text("${mod["desc"]}", color = OneConfigTheme.current.mutedText)
         }
         val opts = mod["opts"] as List<Map<String, Any?>>
-        if (refresh < 0) Text("")   // reads the counter so everything redraws after a change
-        for (o in opts) {
-            if (!(o["vis"] as BooleanSupplier).asBoolean) continue
-            OptionRow(o, changed)
+        if (opts.isNotEmpty()) {
+            if (!enabled) {
+                Text("Turn it on to change its settings.", color = OneConfigTheme.current.mutedText)
+            } else {
+                for (o in opts) {
+                    if (!(o["vis"] as BooleanSupplier).asBoolean) continue
+                    OptionRow(o, refresh, changed)
+                }
+            }
         }
     }
 }
 
 @Suppress("UNCHECKED_CAST")
 @Composable
-private fun OptionRow(o: Map<String, Any?>, changed: () -> Unit) {
+private fun OptionRow(o: Map<String, Any?>, refresh: Int, changed: () -> Unit) {
+    if (refresh < 0) return   // the counter is a parameter, so the row is drawn again after every change
     val label = (o["label"] as Supplier<String>).get()
-    Row(Modifier.fillMaxWidth().padding(start = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(Modifier.fillMaxWidth().padding(start = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         when (o["kind"] as String) {
             "TOGGLE" -> {
                 val get = o["getB"] as BooleanSupplier
