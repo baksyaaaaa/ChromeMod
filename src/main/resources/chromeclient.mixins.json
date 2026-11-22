@@ -10,9 +10,7 @@
     "LivingRendererMixin",
     "HandTransformMixin",
     "LowFireMixin",
-    "TitleScreenMixin",
-    "SignTextMixin",
-    "ButtonStyleMixin"
+    "SignTextMixin"
   ],
   "injectors": {
     "defaultRequire": 0
