@@ -34,7 +34,6 @@ object Parties {
         PlayTogether.earlyInitialize()
         LeaderFollow.earlyInitialize()
         HostJoinRequests.earlyInitialize()
-        HudManager.register(PartyVoiceHud(), PolyPlusConstants.ID, "assets/polyplus/brand/oneclient.svg")
         PartyRepository.refreshed.onEach { PartyPresence.forceSend() }.launchIn(PolyPlusClient.SCOPE)
         PolyConnection.onClosed { ClientPlatform.runOnMain(::resetSession) }
         eventHandler<TickEvent.End> {
