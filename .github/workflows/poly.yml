@@ -34,16 +34,6 @@ jobs:
       - run: chmod +x ./gradlew
       - name: Build
         run: ./gradlew ":${{ matrix.mc }}-fabric:build" -x test -x detekt -x checkstyleMain -x checkstyleTest --stacktrace 2>&1 | tee ../poly-build.log
-      - name: TEMP look at OneConfig's keybind config
-        if: matrix.mc == '1.21.11' && success()
-        run: |
-          mkdir -p /tmp/oc && cd /tmp/oc
-          for j in $(find ~/.gradle -name '*.jar' 2>/dev/null); do
-            if unzip -l "$j" 2>/dev/null | grep -q 'internal/OneConfigConfig.class'; then echo "FOUND $j"; unzip -qo "$j" -d x; break; fi
-          done
-          cd x && javap -p -constants -cp . org.polyfrost.oneconfig.internal.OneConfigConfig | head -80
-          echo "=== clinit ==="
-          javap -p -c -constants -cp . org.polyfrost.oneconfig.internal.OneConfigConfig | grep -nE "ldc|bipush|sipush|iconst|Keybind|Shift|getstatic" | head -120
       - name: Show the errors
         if: failure()
         run: |

@@ -1,0 +1,21 @@
+name: Inspect OneConfig
+on:
+  push:
+    paths: [".github/workflows/inspect.yml"]
+jobs:
+  look:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download and search
+        run: |
+          mkdir -p w && cd w
+          curl -sfL -o i.jar "https://repo.polyfrost.org/releases/org/polyfrost/oneconfig/internal/1.9.0/internal-1.9.0.jar" || curl -sfL -o i.jar "https://repo.polyfrost.org/snapshots/org/polyfrost/oneconfig/internal/1.9.0/internal-1.9.0.jar"
+          ls -la i.jar
+          mkdir x && cd x && unzip -qo ../i.jar
+          javap -p -c -constants -cp . org.polyfrost.oneconfig.internal.OneConfigConfig > /tmp/c.txt
+          echo "=== initialize/clinit: keybind defaults ==="
+          grep -nE "minimalMenuKeybind|oneConfigKeybind|openingBehavior|timeBeforeReset|OneConfigKeybind.\"<init>\"|newarray|KeyModifiers|sipush  *[0-9]+|bipush  *[0-9]+" /tmp/c.txt | head -80
+          echo "=== who opens the HUD editor ==="
+          grep -rl -a "openEditor" --include=*.class . | head
+          echo "=== openingBehavior use ==="
+          grep -n "openingBehavior\|timeBeforeReset\|keybindClosesGui" /tmp/c.txt | head -30
