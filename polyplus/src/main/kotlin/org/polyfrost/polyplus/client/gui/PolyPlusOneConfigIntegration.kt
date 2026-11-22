@@ -85,7 +85,6 @@ object PolyPlusOneConfigIntegration {
         OneClientPageSpec("cosmetics", "-cosmetics", "Cosmetics", "assets/polyplus/ico/stars.svg"),
         OneClientPageSpec("lobby", "-lobby", "Lobby", SOCIAL_ASSETS + "minecraft-block.svg"),
         OneClientPageSpec("mainmenu", "-mainmenu", "Main menu", "layers"),
-        OneClientPageSpec("party", "-party", "Party", SOCIAL_ASSETS + "users-01.svg"),
         OneClientPageSpec("pause", "-pause", "Pause screen", SOCIAL_ASSETS + "pause-circle.svg"),
         OneClientPageSpec("screens", "-screens", "Screens", "cog"),
     ).mapIndexed { index, spec -> OneClientConfigPage(spec, index, oneClientGroup) }
