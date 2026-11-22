@@ -17,5 +17,6 @@ final class FixedNormal implements VertexConsumer {
     @Override public VertexConsumer setUv(float u, float v) { to.setUv(u, v); return this; }
     @Override public VertexConsumer setUv1(int u, int v) { to.setUv1(u, v); return this; }
     @Override public VertexConsumer setUv2(int u, int v) { to.setUv2(u, v); return this; }
+    @Override public VertexConsumer setLineWidth(float w) { to.setLineWidth(w); return this; }
     @Override public VertexConsumer setNormal(float x, float y, float z) { to.setNormal(nx, ny, nz); return this; }
 }
