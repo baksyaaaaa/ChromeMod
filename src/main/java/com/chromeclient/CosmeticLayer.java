@@ -281,7 +281,9 @@ public final class CosmeticLayer extends RenderLayer {
                     final int lt = light;
                     for (Piece p : cp) {
                         final ModelPart part = p.part();
-                        final int tint = p.tint();
+                        final int t0 = p.tint();
+                        // one even light made the cape lighter than the body next to it: bring it down to match (about 0.8 of full)
+                        final int tint = (t0 & 0xFF000000) | (Math.round(((t0 >> 16) & 255) * 0.8f) << 16) | (Math.round(((t0 >> 8) & 255) * 0.8f) << 8) | Math.round((t0 & 255) * 0.8f);
                         queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(p.tex()), (pp, vc) -> {
                             PoseStack ps = new PoseStack();
                             ps.last().set(pp);
