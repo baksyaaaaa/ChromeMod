@@ -195,7 +195,6 @@ public final class CosmeticLayer extends RenderLayer {
         lobHat = hat; lobCape = cape; lobWings = wings;
     }
 
-    @Override
     /** a lavender C in front of the name of every player who uses Chrome Client (you included) */
     private static void tagChromeUser(Minecraft mc, AvatarRenderState av, boolean preview) {
         try {
@@ -210,6 +209,7 @@ public final class CosmeticLayer extends RenderLayer {
         } catch (Throwable ignored) { }
     }
 
+    @Override
     public void submit(PoseStack pose, SubmitNodeCollector queue, int light, EntityRenderState state, float yRot, float xRot) {
         try {
             Minecraft mc = Minecraft.getInstance();
