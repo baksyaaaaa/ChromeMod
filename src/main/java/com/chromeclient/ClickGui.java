@@ -174,6 +174,10 @@ public class ClickGui extends Screen {
         render.add(new Mod("Freelook", "Hold Left Alt to look around without turning.", () -> Extras.freelook, v -> Extras.freelook = v));
         render.add(new Mod("Zoom", "Hold C to zoom in.", () -> c.zoom, v -> c.zoom = v));
         render.add(new Mod("Far sign text", "Skips the text on signs further than 24 blocks away (it is too small to read there).", () -> Extras.farSigns, v -> Extras.farSigns = v));
+        render.add(new Mod("Buddy", "A little copy of a skin that follows you.", Buddy::enabled, Buddy::setEnabled)
+                .add(slider("Size", Buddy::size, v -> Buddy.setSize(v.floatValue()), 0.2, 1.5, "%.2f"))
+                .add(text(() -> "Name: " + Buddy.name() + "   Skin: " + Buddy.skinText()))
+                .add(action(() -> "Skin, name and presets", () -> later = () -> { Config.save(); Minecraft.getInstance().setScreen(new BuddyScreen(this)); })));
         tabs.add(render);
 
         // ---- Misc ----

@@ -29,6 +29,7 @@ public class ChromeClientMod implements ClientModInitializer {
     public void onInitializeClient() {
         Config.load();
         Extras.load();
+        new Buddy().init();   // /buddy <uuid>: a little buddy follows you
         Lyrics.init();   // lyric pop-ups for the YT Music mod
         Cosmetics.load();
         Cosmetics.init(); CosmeticSync.init();
