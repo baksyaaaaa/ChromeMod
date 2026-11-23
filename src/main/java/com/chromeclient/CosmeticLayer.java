@@ -196,6 +196,20 @@ public final class CosmeticLayer extends RenderLayer {
     }
 
     @Override
+    /** a lavender C in front of the name of every player who uses Chrome Client (you included) */
+    private static void tagChromeUser(Minecraft mc, AvatarRenderState av, boolean preview) {
+        try {
+            if (preview || av.nameTag == null || mc.level == null || mc.player == null) return;
+            if (av.nameTag.getString().startsWith("C ")) return;   // already tagged: the same state can be submitted twice
+            if (!(mc.level.getEntity(av.id) instanceof net.minecraft.world.entity.player.Player pl)) return;
+            boolean user = pl == mc.player ? CosmeticSync.share : CosmeticSync.isUser(pl.getUUID());
+            if (!user) return;
+            av.nameTag = net.minecraft.network.chat.Component.literal("C ")
+                    .withStyle(net.minecraft.network.chat.Style.EMPTY.withColor(0x9AA5FF).withBold(true))
+                    .append(av.nameTag.copy().withStyle(net.minecraft.network.chat.Style.EMPTY.withBold(false)));
+        } catch (Throwable ignored) { }
+    }
+
     public void submit(PoseStack pose, SubmitNodeCollector queue, int light, EntityRenderState state, float yRot, float xRot) {
         try {
             Minecraft mc = Minecraft.getInstance();
@@ -203,6 +217,7 @@ public final class CosmeticLayer extends RenderLayer {
             final boolean lobby = av.id == lobbyId;   // the lobby scene swaps in its own player, so mc.player is NOT null there
             final boolean preview = previewing || lobby;
             HatMesh.preview = preview;
+            tagChromeUser(mc, av, preview);
             if (!preview && (mc.player == null || mc.level == null)) return;
             var self = preview ? null : mc.level.getEntity(av.id);
             if (self != null && self.isInvisible()) return;   // invisible players show nothing of theirs

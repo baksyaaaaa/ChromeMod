@@ -39,6 +39,7 @@ public final class CosmeticSync {
     public record Remote(int hat, int cape, int wings, int effect, int where, float amount, boolean effectOn) {}
 
     private static final Map<UUID, Remote> remote = new ConcurrentHashMap<>();
+    private static final java.util.Set<UUID> users = ConcurrentHashMap.newKeySet();   // players the service knows: they use Chrome Client
     private static final Map<UUID, Long> asked = new ConcurrentHashMap<>();
     private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
     private static String lastSent = "";
@@ -56,6 +57,9 @@ public final class CosmeticSync {
     public static boolean on() {
         return url != null && url.startsWith("http");
     }
+
+    /** true when the service knows this player, that is, they use Chrome Client */
+    public static boolean isUser(UUID id) { return users.contains(id); }
 
     /** another player's cosmetics, or null when we know of none */
     public static Remote get(UUID id) {
@@ -143,7 +147,8 @@ public final class CosmeticSync {
             JsonObject all = JsonParser.parseString(r.body()).getAsJsonObject();
             for (String id : ids) {
                 UUID u = UUID.fromString(id);
-                if (!all.has(id) || !all.get(id).isJsonObject()) { remote.put(u, new Remote(0, 0, 0, 0, 0, 0.5f, true)); continue; }
+                if (!all.has(id) || !all.get(id).isJsonObject()) { remote.put(u, new Remote(0, 0, 0, 0, 0, 0.5f, true)); users.remove(u); continue; }
+                users.add(u);
                 JsonObject o = all.getAsJsonObject(id);
                 remote.put(u, new Remote(
                         clamp(o, "h", Cosmetics.ITEMS[0].length - 1), clamp(o, "c", Cosmetics.ITEMS[1].length - 1),
