@@ -87,17 +87,22 @@ public final class HatMesh {
         final boolean pv = preview;
         final float gain = pv ? 1.6f : 1f;   // the menu lights are dimmer than the world's: brighten the colours there
         queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(WHITE), (p, vc) -> {
+            org.joml.Vector3f wn = new org.joml.Vector3f();
             for (int i = 0; i < quads.length; i++) {
                 int v = quads[i];
+                float shade = gain;
+                if (!pv) {   // shaded like a block: top 1.0, sides 0.8 / 0.6, bottom 0.5, by the direction the face really points in the world
+                    p.transformNormal(data[v * 6] / 127f, data[v * 6 + 1] / 127f, data[v * 6 + 2] / 127f, wn);
+                    shade = wn.x * wn.x * 0.6f + wn.z * wn.z * 0.8f + wn.y * wn.y * (wn.y > 0f ? 1.0f : 0.5f);
+                }
                 vc.addVertex(p, pos[v * 3] / 16f, pos[v * 3 + 1] / 16f, pos[v * 3 + 2] / 16f)
-                        .setColor(Math.min(255, Math.round((data[v * 6 + 3] & 255) * gain)), Math.min(255, Math.round((data[v * 6 + 4] & 255) * gain)), Math.min(255, Math.round((data[v * 6 + 5] & 255) * gain)), 255)
+                        .setColor(Math.min(255, Math.round((data[v * 6 + 3] & 255) * shade)), Math.min(255, Math.round((data[v * 6 + 4] & 255) * shade)), Math.min(255, Math.round((data[v * 6 + 5] & 255) * shade)), 255)
                         .setUv(0.5f, 0.5f)
                         .setOverlay(OverlayTexture.NO_OVERLAY)
                         .setLight(light)
                         ;
                 if (pv) vc.setNormal(p, 0f, 0f, 1f);   // menu figure: lit from the front like the body next to it
-                else if (flat) vc.setNormal(0f, 1f, 0f);   // fixed normal that does not follow the head, so looking up/down never changes the lighting
-                else vc.setNormal(p, data[v * 6] / 127f, data[v * 6 + 1] / 127f, data[v * 6 + 2] / 127f);
+                else vc.setNormal(0f, 1f, 0f);          // the block shading is already in the colours
             }
         });
     }
