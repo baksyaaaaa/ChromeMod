@@ -276,19 +276,11 @@ public final class CosmeticLayer extends RenderLayer {
                 if (cape > 0 && !elytraOn) {
                     List<Piece> cp = clothCape(2000 + cape, cape);
                     for (Piece p : cp) vanillaCape(p.part(), av);
-                    // the cape is lit evenly, like the back of your body: one fixed normal for all of it
-                    org.joml.Vector3f bn = pose.last().transformNormal(0f, 0f, 1f, new org.joml.Vector3f());
+                    // lit exactly like the game's own cape: the cape model, an opaque solid layer, the player's own light, the model's own normals
                     final int lt = light;
                     for (Piece p : cp) {
-                        final ModelPart part = p.part();
-                        final int t0 = p.tint();
-                        // one even light made the cape lighter than the body next to it: bring it down to match (about 0.8 of full)
-                        final int tint = (t0 & 0xFF000000) | (Math.round(((t0 >> 16) & 255) * 0.8f) << 16) | (Math.round(((t0 >> 8) & 255) * 0.8f) << 8) | Math.round((t0 & 255) * 0.8f);
-                        queue.submitCustomGeometry(pose, RenderTypes.entityCutoutNoCull(p.tex()), (pp, vc) -> {
-                            PoseStack ps = new PoseStack();
-                            ps.last().set(pp);
-                            part.render(ps, new FixedNormal(vc, bn.x, bn.y, bn.z), lt, OverlayTexture.NO_OVERLAY, tint);
-                        });
+                        queue.submitModelPart(p.part(), pose, RenderTypes.entitySolid(p.tex()), lt, OverlayTexture.NO_OVERLAY,
+                                null, false, false, p.tint(), null, 0);
                     }
                 }
                 if (wings > 0) {
