@@ -17,11 +17,16 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
+import java.security.KeyFactory
+import java.security.Signature
+import java.security.spec.PKCS8EncodedKeySpec
+import java.util.Base64
 
 /**
  * The Social tab's friends and direct messages. Everything goes through the Chrome Client cosmetics service (the Cosmetics repo, server.js),
- * not through Polyfrost's servers. You sign in with Mojang's own check: the game's session joins a one-time id the
- * service made up, and the service asks Mojang whether that really happened - so nobody can write as somebody else.
+ * not through Polyfrost's servers. You sign in with your Mojang player certificate (the key pair Mojang signs for you, the
+ * one Minecraft signs chat with): the game signs a one-time id from the service with it, and the service checks both
+ * signatures by itself - so nobody can write as somebody else, and nothing depends on the service reaching Mojang.
  */
 object ChromeChat {
     private const val BASE = "https://cosmetics-md7h.onrender.com"
@@ -81,15 +86,21 @@ object ChromeChat {
             return false
         }
         val mc = Minecraft.getInstance()
-        try {
-            mc.services().sessionService().joinServer(mc.user.profileId, mc.user.accessToken, nonce)
+        val proof = try {
+            certificateProof(mc.user.accessToken, nonce)
         } catch (_: Exception) {
-            status = "Chat needs a signed-in Minecraft account."
+            null
+        }
+        if (proof == null) {
+            status = "Chat needs a signed-in Minecraft account. Restart the game from the launcher."
             return false
         }
+        proof.first.addProperty("uuid", mc.user.profileId.toString().replace("-", ""))
         val body = JsonObject().apply {
             addProperty("name", mc.user.name)
             addProperty("nonce", nonce)
+            add("cert", proof.first)
+            addProperty("sig", proof.second)
         }
         val (code, json) = call("POST", "/chat/login", body, withToken = false)
         val newToken = json?.get("token")?.asString
@@ -101,6 +112,49 @@ object ChromeChat {
         signedIn = true
         status = ""
         return true
+    }
+
+    /** the base64 inside a PEM block (Mojang's "RSA ... KEY" blocks hold PKCS#8 / X.509, the way Minecraft reads them) */
+    private fun pemContents(pem: String): String =
+        pem.lines().filter { !it.startsWith("-----") }.joinToString("") { it.trim() }
+
+    /**
+     * Gets the Mojang player certificate with the game's access token and signs [nonce] with its private key.
+     * Returns the certificate's public part (uuid is filled in by the caller) and the signature, or null.
+     */
+    private fun certificateProof(accessToken: String, nonce: String): Pair<JsonObject, String>? {
+        val request = HttpRequest.newBuilder(URI.create("https://api.minecraftservices.com/player/certificates"))
+            .timeout(Duration.ofSeconds(30))
+            .header("Authorization", "Bearer $accessToken")
+            .POST(HttpRequest.BodyPublishers.noBody())
+            .build()
+        val response = http.send(request, HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() !in 200..299) return null
+        val cert = JsonParser.parseString(response.body()).asJsonObject
+        val keyPair = cert.getAsJsonObject("keyPair") ?: return null
+        val privateKey = KeyFactory.getInstance("RSA")
+            .generatePrivate(PKCS8EncodedKeySpec(Base64.getDecoder().decode(pemContents(keyPair.get("privateKey").asString))))
+        val signature = Signature.getInstance("SHA256withRSA").run {
+            initSign(privateKey)
+            update(nonce.toByteArray(Charsets.UTF_8))
+            sign()
+        }
+        val publicPart = JsonObject().apply {
+            addProperty("expiresAt", cert.get("expiresAt").asString)
+            addProperty("publicKey", pemContents(keyPair.get("publicKey").asString))
+            addProperty("keySig", cert.get("publicKeySignatureV2").asString)
+        }
+        return publicPart to Base64.getEncoder().encodeToString(signature)
+    }
+
+    /** name -> uuid through Mojang, from the game (the service can't reach Mojang itself) */
+    private fun lookUp(name: String): String? = try {
+        val request = HttpRequest.newBuilder(URI.create("https://api.mojang.com/users/profiles/minecraft/" + java.net.URLEncoder.encode(name, Charsets.UTF_8)))
+            .timeout(Duration.ofSeconds(15)).GET().build()
+        val response = http.send(request, HttpResponse.BodyHandlers.ofString())
+        if (response.statusCode() == 200) JsonParser.parseString(response.body()).asJsonObject.get("id")?.asString else null
+    } catch (_: Exception) {
+        null
     }
 
     fun select(uuid: String?) {
@@ -199,7 +253,13 @@ object ChromeChat {
 
     private fun obj(vararg pairs: Pair<String, String>) = JsonObject().apply { pairs.forEach { addProperty(it.first, it.second) } }
 
-    suspend fun addFriend(name: String) = act("/social/request", obj("name" to name.trim()), "Friend request sent to ${name.trim()}.")
+    suspend fun addFriend(name: String): Unit {
+        val clean = name.trim()
+        val uuid = withContext(Dispatchers.IO) { lookUp(clean) }
+        val body = obj("name" to clean)
+        if (uuid != null) body.addProperty("u", uuid)
+        act("/social/request", body, "Friend request sent to $clean.")
+    }
 
     suspend fun accept(uuid: String) = act("/social/accept", obj("u" to uuid), "")
 
